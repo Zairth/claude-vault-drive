@@ -1,4 +1,4 @@
-# claude-obsidian-drive
+# claude-vault-drive
 
 Un vault Obsidian partagé (Google Drive ou tout dossier synchronisé), consultable
 et maintenu par Claude Code — **sans MCP, sans plugin, sans service qui tourne**.
@@ -8,7 +8,7 @@ vitrine humaine (graphe, wikilinks), Claude Code y accède directement.
 ## Ce que contient ce repo
 
 ```
-claude-obsidian-drive/
+claude-vault-drive/
 ├── .claude/
 │   ├── commands/
 │   │   ├── doc-ingest.md    # /doc-ingest — ingérer une source (validation conversationnelle)

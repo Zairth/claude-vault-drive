@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# claude-obsidian-drive/.claude/scripts/vault-init.sh
+# claude-vault-drive/.claude/scripts/vault-init.sh
 # Initialise tout en un appel : config locale + structure du vault + fichiers
 # du template. Idempotent : ne remplace jamais un fichier déjà présent.
 # Usage : bash .claude/scripts/vault-init.sh "/chemin/du/vault"
@@ -17,7 +17,7 @@ project_root="$(cd "$claude_directory/.." && pwd)"
 template_directory="$project_root/vault-template"
 
 if [[ ! -d "$template_directory" ]]; then
-    echo "ERREUR : vault-template/ introuvable à la racine du projet ($project_root) — lancer ce script depuis un clone de claude-obsidian-drive." >&2
+    echo "ERREUR : vault-template/ introuvable à la racine du projet ($project_root) — lancer ce script depuis un clone de claude-vault-drive." >&2
     exit 1
 fi
 
