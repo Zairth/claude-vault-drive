@@ -35,36 +35,33 @@ claude-obsidian-drive/
 - **Échecs explicites** : Drive non monté, vault non initialisé → message clair,
   jamais de vault vide silencieux.
 
-## Installation dans un projet
+## Installation
 
-1. Copier `.claude/commands/` et `.claude/scripts/` dans le `.claude/` du projet
-   (ou cloner ce repo comme point de départ du projet).
-2. Écrire le chemin du vault (une seule ligne) dans `.claude/vault-path.local` :
+**Prérequis** : [Claude Code](https://claude.com/claude-code) ; Google Drive
+pour Desktop si le vault doit être partagé (sinon n'importe quel dossier local
+convient) ; Obsidian est **facultatif** — c'est la vitrine humaine, le système
+fonctionne sans.
+
+1. Cloner ce repo (nouveau projet) ou copier `.claude/` + `vault-template/`
+   dans un projet existant.
+2. Ouvrir Claude Code dans le dossier et lancer l'initialisation — directement,
+   ou en demandant à Claude de le faire :
    ```bash
-   echo "/mnt/g/Mon Drive/<Section>/<MonVault>" > .claude/vault-path.local
+   bash .claude/scripts/vault-init.sh "/mnt/g/Mon Drive/<Section>/<MonVault>"
    ```
-   Ce fichier est **gitignoré** (chemin = donnée locale/sensible). Il peut être
-   édité depuis Windows : BOM/CRLF/espaces finaux sont nettoyés automatiquement.
-3. Autoriser Claude Code à écrire dans le vault — `.claude/settings.local.json`
-   (gitignoré lui aussi) :
-   ```json
-   {
-     "permissions": {
-       "additionalDirectories": ["/mnt/g/Mon Drive/<Section>/<MonVault>"]
-     }
-   }
-   ```
-4. Initialiser le vault : créer les dossiers et copier le template.
-   ```bash
-   vault="<chemin du vault>"
-   mkdir -p "$vault/inbox" "$vault/wiki/sources" "$vault/wiki/concepts" \
-            "$vault/wiki/entites" "$vault/wiki/syntheses" "$vault/.index"
-   cp vault-template/*.md "$vault/"
-   # puis remplacer la date [YYYY-MM-DD] de l'entrée init dans LOG.md
-   ```
-5. Vérifier : `bash .claude/scripts/vault-check.sh` doit imprimer le chemin du
-   vault avec le code retour 0.
-6. (Humain) Ouvrir le dossier comme coffre dans Obsidian.
+   Le script est **idempotent** (il ne remplace jamais un fichier existant) et
+   fait tout : config locale gitignorée (`vault-path.local` +
+   `settings.local.json` avec la permission d'écriture), arborescence du vault,
+   copie des fichiers du template, date de l'entrée `init` du LOG, puis
+   vérification finale par `vault-check.sh`.
+3. Relancer la session Claude Code (pour charger la permission
+   `additionalDirectories`) — les commandes `/doc-ingest`, `/doc-query` et
+   `/doc-lint` sont prêtes.
+4. (Facultatif, humain) Ouvrir le dossier du vault comme coffre dans Obsidian.
+
+Le chemin du vault ne vit que dans les deux fichiers locaux gitignorés — jamais
+dans un fichier versionné. `vault-path.local` peut être édité depuis Windows :
+BOM/CRLF/espaces finaux sont nettoyés automatiquement.
 
 ## Usage
 
