@@ -12,6 +12,27 @@ argument-hint: <question>
 2. Lire intégralement `$VAULT/INSTRUCTIONS-CLAUDE.md` et s'y conformer
    (conventions de notes et règles de maintenance pour la synthèse optionnelle).
 
+## Cible de recherche optionnelle (dossier voisin du vault)
+
+Si `$ARGUMENTS` contient un jeton `dans:<dossier>` (ex. `dans:marketing`) :
+
+1. Le retirer de la question. La cible devient le dossier voisin du vault :
+   `<parent de $VAULT>/<dossier>` (correspondance insensible à la casse parmi
+   les dossiers réellement présents ; introuvable → lister les dossiers voisins
+   disponibles et demander à l'utilisateur).
+2. Dans le prompt du sub-agent ci-dessous, remplacer `$VAULT` par la cible. La
+   cible n'est pas forcément un vault structuré : préciser au sub-agent que si
+   `INSTRUCTIONS-CLAUDE.md` ou `INDEX.md` y manquent, il explore par listing +
+   grep + lecture ciblée, sans ces étapes.
+3. **Aucune écriture dans la cible.** La sauvegarde en synthèse, si demandée,
+   va toujours dans `$VAULT/wiki/syntheses/` (ajouter `perimetre: <dossier>` au
+   frontmatter).
+
+Sans jeton `dans:`, la cible est `$VAULT` (comportement normal).
+
+Prérequis d'accès : la permission `additionalDirectories` doit couvrir le
+dossier parent (ex. autoriser `<parent>` plutôt que `<parent>/<vault>` seul).
+
 ## Recherche — TOUJOURS via sub-agent, jamais en contexte principal
 
 Lancer un agent (type Explore, en avant-plan) avec exactement ce prompt, en

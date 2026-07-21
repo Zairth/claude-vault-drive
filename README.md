@@ -69,7 +69,9 @@ BOM/CRLF/espaces finaux sont nettoyés automatiquement.
   enseignements clés, discute, puis écrit : note source immuable, pages
   concepts/entités, INDEX, LOG. Contradiction détectée → callout `> [!warning]`.
 - `/doc-query <question>` — sub-agent : INDEX → notes → wikilinks → grep ;
-  réponse citée ; option « sauvegarder en synthèse ».
+  réponse citée ; option « sauvegarder en synthèse ». Ajouter `dans:<dossier>`
+  pour cibler un dossier voisin du vault (ex. une section alimentée par des
+  tiers) : lecture seule, la synthèse reste dans le vault.
 - `/doc-lint` — rapport : contradictions en souffrance, pages orphelines, trous
   d'INDEX, fichiers de conflit Drive, inbox en attente ; corrections validées
   avec l'utilisateur.
