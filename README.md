@@ -94,7 +94,7 @@ vectoriels incompatibles). Le moteur n'est pas inclus dans ce repo : n'importe
 quelle CLI capable d'`index`/`search` sur un dossier markdown convient, appelée
 par le sub-agent de `/doc-query`, avec repli grep explicite si indisponible.
 
-Implémentation de référence : **agentic_ia** (projet de l'auteur — routeur LLM
+Implémentation de référence : **agentic-toolbox** (projet de l'auteur — routeur LLM
 multi-fournisseurs OpenAI-compatible + module `semantic_index` : chunking par
 section, embeddings `mistral-embed` épinglés, index JSONL dans le vault,
 réindexation incrémentale par hash). Exécuté en venv, appelé par un wrapper de
