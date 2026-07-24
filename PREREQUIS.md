@@ -1,0 +1,156 @@
+# Prérequis — de la machine nue au vault opérationnel
+
+Tout ce qu'il faut installer avant le plugin et `/vault-init`, dans l'ordre. Seules les
+sections 1 et 2 sont indispensables ; 3 et 4 ne concernent qu'un vault partagé
+via Google Drive ; 5 n'est nécessaire que pour la recherche sémantique et l'OCR
+(sans elle, tout fonctionne en repli grep) ; 6 est la vitrine humaine.
+
+## 1. Un terminal Linux — sous Windows : WSL
+
+Claude Code tourne dans un terminal (Linux, macOS, ou Windows via WSL). Les
+scripts de ce repo supposent un shell **bash**.
+
+Sous Windows, installer WSL (PowerShell **en administrateur**, puis redémarrer) :
+
+```powershell
+wsl --install
+```
+
+Ubuntu est installé par défaut. Tout ce qui suit s'exécute **dans le terminal
+WSL/Ubuntu**, pas dans PowerShell.
+Documentation : https://learn.microsoft.com/fr-fr/windows/wsl/install
+
+## 2. Claude Code
+
+Installation en une commande (installeur natif, recommandé) :
+
+```bash
+curl -fsSL https://claude.ai/install.sh | bash
+```
+
+Alternative via npm (requiert Node.js ≥ 18) :
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+Puis lancer `claude` dans un dossier : la première exécution ouvre la
+connexion au compte (abonnement Claude, ou clé API Claude Developer Platform).
+Documentation : https://code.claude.com/docs
+
+Vérification :
+
+```bash
+claude --version
+```
+
+## 3. Google Drive pour Desktop (vault partagé uniquement)
+
+Le vault n'est qu'un dossier de fichiers markdown : pour le partager entre
+plusieurs machines/personnes, il vit dans un dossier synchronisé par **Google
+Drive pour Desktop**, installé **côté Windows** (ou macOS) — pas dans WSL.
+
+- Télécharger et installer : https://support.google.com/a/users/answer/13022292
+- Se connecter au compte Google ; le lecteur apparaît (par défaut `G:` sous
+  Windows).
+- Un vault local sans partage n'a pas besoin de Drive : n'importe quel dossier
+  convient, passer à la section 5.
+
+## 4. Google Drive vu depuis WSL
+
+WSL n'expose pas automatiquement un lecteur apparu **après** son démarrage :
+`/mnt/g` peut être vide ou absent alors que `G:` existe côté Windows.
+
+```bash
+# une fois Google Drive lancé côté Windows :
+sudo mkdir -p /mnt/g
+sudo mount -t drvfs G: /mnt/g
+ls "/mnt/g/Mon Drive"   # doit lister le contenu du Drive
+```
+
+À refaire après chaque redémarrage de WSL, ou automatiser via `/etc/fstab` :
+
+```
+G: /mnt/g drvfs defaults 0 0
+```
+
+(Le montage fstab échoue silencieusement si Drive n'est pas encore lancé —
+relancer `sudo mount -a` dans ce cas.)
+Dépannage détaillé : https://superuser.com/questions/1781174/google-drive-in-wsl
+
+C'est exactement l'échec que `vault-check.sh` détecte : « vault introuvable —
+le lecteur du vault est-il monté ? ».
+
+## 5. agentic-toolbox (recherche sémantique + OCR — facultatif)
+
+Le moteur sémantique appelé par `vault-index.sh`/`vault-search.sh` est
+**[agentic-toolbox](https://github.com/Zairth/agentic-toolbox)** : recherche
+sémantique sur dossier markdown (embeddings `mistral-embed` épinglés, index
+JSONL dans le vault), OCR de PDF/scans, routeur LLM multi-fournisseurs.
+Sans lui, `/doc-query` dégrade vers grep avec un avertissement explicite.
+
+Prérequis : Python ≥ 3.10 (3.12 recommandé) ; sous Ubuntu/Debian le module
+venv est packagé à part :
+
+```bash
+sudo apt install python3-venv
+```
+
+Installation (emplacement par défaut attendu par les wrappers :
+`~/projects/agentic-toolbox`) :
+
+```bash
+git clone https://github.com/Zairth/agentic-toolbox ~/projects/agentic-toolbox
+cd ~/projects/agentic-toolbox
+cp .env.example .env         # puis remplir les clés API
+python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+.venv/bin/python -m providers.cli_parser check   # état de la chaîne (zéro réseau)
+```
+
+Clés API (tiers gratuits, chacune optionnelle — un fournisseur sans clé est
+ignoré) : **`MISTRAL_API_KEY` est la seule requise ici** — embeddings et OCR
+sont épinglés sur Mistral, sans fallback (espaces vectoriels incompatibles).
+
+- Mistral : https://console.mistral.ai/?profile_dialog=api-keys
+
+Cloné ailleurs que `~/projects/agentic-toolbox` ? Écrire son chemin (une seule
+ligne) dans le `.claude/toolbox-path.local` **du projet** — fichier gitignoré,
+jamais versionné.
+
+> **Version minimale** : commit `97b2dac` (« logs CLI sur stderr, stdout
+> réservé au JSON »). Depuis ce commit, stdout des CLI est du JSON pur,
+> parsable strictement — aucune parade de filtrage (`sed`) n'est nécessaire.
+> Un clone à jour de `main` suffit.
+
+## 6. Obsidian (vitrine humaine — facultatif)
+
+Le système fonctionne entièrement sans Obsidian : le vault n'est que des
+fichiers markdown, Claude Code y accède directement. Obsidian est la vitrine
+**humaine** — graphe, wikilinks cliquables, lecture confortable.
+
+- Télécharger : https://obsidian.md/download — s'installe **côté Windows**
+  (ou macOS), là où le lecteur Drive est visible, pas dans WSL.
+- Après `/vault-init` : « Ouvrir un coffre » → choisir le dossier du vault
+  (ex. `G:\Mon Drive\<Section>\<MonVault>`).
+- Les écritures faites par Claude hors d'Obsidian peuvent mettre un moment à
+  apparaître — Ctrl+R recharge ; `/doc-lint` fait foi.
+
+## Récapitulatif
+
+| # | Brique | Obligatoire ? | Vérification |
+|---|--------|---------------|--------------|
+| 1 | Terminal bash (WSL sous Windows) | oui | `bash --version` |
+| 2 | Claude Code | oui | `claude --version` |
+| 3 | Google Drive pour Desktop | vault partagé seulement | lecteur `G:` visible côté Windows |
+| 4 | Montage Drive dans WSL | vault partagé sous WSL | `ls "/mnt/g/Mon Drive"` |
+| 5 | agentic-toolbox + `MISTRAL_API_KEY` | recherche sémantique/OCR seulement | `providers.cli_parser check` |
+| 6 | Obsidian | non (vitrine humaine) | ouvrir le vault comme coffre |
+
+Ensuite, dans Claude Code ([README](README.md#installation)) :
+
+```
+/plugin marketplace add Zairth/claude-vault-drive
+/plugin install claude-vault-drive@claude-vault-drive
+```
+
+puis, dans chaque projet : `/vault-init "/mnt/g/Mon Drive/<Section>/<MonVault>"`.
