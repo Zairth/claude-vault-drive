@@ -2,3 +2,4 @@
 # Fichiers locaux à la machine — chemins sensibles et permissions, jamais versionnés.
 .claude/settings.local.json
 .claude/vault-path.local
+.claude/toolbox-path.local
