@@ -1,0 +1,13 @@
+{
+  "name": "claude-vault-drive",
+  "owner": {
+    "name": "Zairth"
+  },
+  "plugins": [
+    {
+      "name": "claude-vault-drive",
+      "source": "./",
+      "description": "Vault Obsidian partagé (Google Drive ou dossier synchronisé), consultable et maintenu par Claude Code : /doc-ingest, /doc-query, /doc-lint — recherche sémantique optionnelle, repli grep explicite."
+    }
+  ]
+}

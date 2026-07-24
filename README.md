@@ -1,26 +1,45 @@
 # claude-vault-drive
 
 Un vault Obsidian partagé (Google Drive ou tout dossier synchronisé), consultable
-et maintenu par Claude Code — **sans MCP, sans plugin, sans service qui tourne**.
-Le vault n'est que des fichiers markdown dans un dossier : Obsidian est la
-vitrine humaine (graphe, wikilinks), Claude Code y accède directement.
+et maintenu par Claude Code — distribué comme **plugin Claude Code** : s'installe
+en deux commandes dans n'importe quel projet, **sans MCP, sans service qui
+tourne**. Le vault n'est que des fichiers markdown dans un dossier : Obsidian est
+la vitrine humaine (graphe, wikilinks), Claude Code y accède directement.
 
 ## Ce que contient ce repo
 
+Le repo est à la fois le plugin et son propre marketplace :
+
 ```
 claude-vault-drive/
-├── .claude/
-│   ├── commands/
-│   │   ├── doc-ingest.md    # /doc-ingest — ingérer une source (validation conversationnelle)
-│   │   ├── doc-query.md     # /doc-query — interroger le vault (sub-agent, réponse citée)
-│   │   └── doc-lint.md      # /doc-lint — maintenance (orphelins, INDEX, conflits Drive)
-│   └── scripts/
-│       └── vault-check.sh   # portier : vérifie l'accès au vault, imprime son chemin
-└── vault-template/          # fichiers à copier à la racine d'un nouveau vault
+├── .claude-plugin/
+│   ├── plugin.json          # manifeste du plugin
+│   └── marketplace.json     # le repo est son propre marketplace (source "./")
+├── PREREQUIS.md             # de la machine nue au vault : WSL, Claude Code, Drive, toolbox
+├── commands/
+│   ├── vault-init.md        # /vault-init — initialiser le vault du projet courant
+│   ├── doc-ingest.md        # /doc-ingest — ingérer une source (validation conversationnelle)
+│   ├── doc-query.md         # /doc-query — interroger le vault (sub-agent, réponse citée)
+│   └── doc-lint.md          # /doc-lint — maintenance (orphelins, INDEX, conflits Drive, vecteurs)
+├── skills/
+│   └── agentic-toolbox/
+│       └── SKILL.md         # mode d'emploi du moteur sémantique/OCR/LLM (commandes exactes, pièges)
+├── scripts/
+│   ├── vault-check.sh       # portier : vérifie l'accès au vault, imprime son chemin
+│   ├── vault-init.sh        # initialisation du vault en une commande, idempotente
+│   ├── toolbox-env.sh       # résolution du moteur sémantique (dossier + venv)
+│   ├── vault-index.sh       # indexation sémantique incrémentale du vault
+│   └── vault-search.sh      # recherche sémantique dans un dossier indexé
+└── vault-template/          # fichiers copiés à la racine d'un nouveau vault
     ├── INSTRUCTIONS-CLAUDE.md   # le schéma du vault — toute commande le lit d'abord
     ├── INDEX.md                 # carte du vault, point d'entrée des recherches
     └── LOG.md                   # journal append-only
 ```
+
+Le code (commandes, scripts, template) vit dans le plugin, partagé entre tous
+les projets ; la config vit dans chaque projet (`.claude/vault-path.local`,
+`settings.local.json`, `toolbox-path.local` — gitignorés) : **un plugin, un
+vault par projet**.
 
 ## Principes
 
@@ -39,42 +58,62 @@ claude-vault-drive/
 
 **Prérequis** : [Claude Code](https://claude.com/claude-code) ; Google Drive
 pour Desktop si le vault doit être partagé (sinon n'importe quel dossier local
-convient) ; Obsidian est **facultatif** — c'est la vitrine humaine, le système
-fonctionne sans.
+convient) ; [agentic-toolbox](https://github.com/Zairth/agentic-toolbox) pour
+la recherche sémantique (facultatif — repli grep sinon) ; Obsidian est
+**facultatif** — c'est la vitrine humaine, le système fonctionne sans.
+**Guide pas à pas** (commandes d'installation, WSL, montage Drive, clés API) :
+[PREREQUIS.md](PREREQUIS.md).
 
-1. Cloner ce repo (nouveau projet) ou copier `.claude/` + `vault-template/`
-   dans un projet existant.
-2. Ouvrir Claude Code dans le dossier et lancer l'initialisation — directement,
-   ou en demandant à Claude de le faire :
-   ```bash
-   bash .claude/scripts/vault-init.sh "/mnt/g/Mon Drive/<Section>/<MonVault>"
-   ```
-   Le script est **idempotent** (il ne remplace jamais un fichier existant) et
-   fait tout : config locale gitignorée (`vault-path.local` +
-   `settings.local.json` avec la permission d'écriture), arborescence du vault,
-   copie des fichiers du template, date de l'entrée `init` du LOG, puis
-   vérification finale par `vault-check.sh`.
-3. Relancer la session Claude Code (pour charger la permission
+Dans Claude Code (une fois, valable pour tous les projets) :
+
+```
+/plugin marketplace add Zairth/claude-vault-drive
+/plugin install claude-vault-drive@claude-vault-drive
+```
+
+**Pas besoin de cloner ce repo** : Claude Code le récupère et le met en cache
+lui-même depuis GitHub.
+
+Puis dans chaque projet qui doit avoir son vault :
+
+1. `/vault-init "/mnt/g/Mon Drive/<Section>/<MonVault>"` — idempotent (ne
+   remplace jamais un fichier existant) et complet : config locale gitignorée
+   dans le `.claude/` du projet (`vault-path.local` + `settings.local.json`
+   avec la permission d'écriture), `.gitignore` complété, arborescence du
+   vault, copie du template, date de l'entrée `init` du LOG, vérification
+   finale par `vault-check.sh`.
+2. Relancer la session Claude Code (pour charger la permission
    `additionalDirectories`) — les commandes `/doc-ingest`, `/doc-query` et
    `/doc-lint` sont prêtes.
-4. (Facultatif, humain) Ouvrir le dossier du vault comme coffre dans Obsidian.
+3. (Facultatif, humain) Ouvrir le dossier du vault comme coffre dans Obsidian.
 
-Le chemin du vault ne vit que dans les deux fichiers locaux gitignorés — jamais
-dans un fichier versionné. `vault-path.local` peut être édité depuis Windows :
-BOM/CRLF/espaces finaux sont nettoyés automatiquement.
+Mise à jour : automatique en arrière-plan, ou manuelle en une seule étape —
+`/plugin marketplace update claude-vault-drive` (récupère le dernier commit
+directement depuis GitHub, aucun `git pull` local).
+
+Développement du plugin uniquement (tester des modifs avant de pousser) :
+`/plugin marketplace add /chemin/du/clone` ou `claude --plugin-dir /chemin/du/clone`.
+
+Le chemin du vault ne vit que dans les fichiers locaux gitignorés du projet —
+jamais dans un fichier versionné. `vault-path.local` peut être édité depuis
+Windows : BOM/CRLF/espaces finaux sont nettoyés automatiquement.
 
 ## Usage
 
 - `/doc-ingest <texte | fichier | URL | élément de inbox/>` — propose 2-5
   enseignements clés, discute, puis écrit : note source immuable, pages
   concepts/entités, INDEX, LOG. Contradiction détectée → callout `> [!warning]`.
-- `/doc-query <question>` — sub-agent : INDEX → notes → wikilinks → grep ;
-  réponse citée ; option « sauvegarder en synthèse ». Ajouter `dans:<dossier>`
-  pour cibler un dossier voisin du vault (ex. une section alimentée par des
-  tiers) : lecture seule, la synthèse reste dans le vault.
+- `/doc-query <question>` — réindexation incrémentale + recherche sémantique
+  (pistes injectées dans le sub-agent), puis sub-agent : INDEX → notes →
+  wikilinks → grep ; réponse citée ; option « sauvegarder en synthèse ».
+  Ajouter `dans:<dossier>` pour cibler un dossier voisin du vault (ex. une
+  section alimentée par des tiers) : lecture seule, la synthèse reste dans le
+  vault. Ajouter `--no-index` pour interroger sans réindexer. Moteur
+  sémantique indisponible → repli grep **explicite** (⚠ affiché), jamais
+  d'échec silencieux.
 - `/doc-lint` — rapport : contradictions en souffrance, pages orphelines, trous
-  d'INDEX, fichiers de conflit Drive, inbox en attente ; corrections validées
-  avec l'utilisateur.
+  d'INDEX, fichiers de conflit Drive, inbox en attente, cohérence de l'index
+  vectoriel (`.index/`) ; corrections validées avec l'utilisateur.
 
 ## Notes d'environnement
 
@@ -85,18 +124,25 @@ BOM/CRLF/espaces finaux sont nettoyés automatiquement.
 - **Édition simultanée** : les fichiers de conflit créés par Drive (`* (1).md`)
   sont détectés par `/doc-lint` ; règle sociale simple — un écrivain à la fois.
 
-## Extension possible : recherche sémantique
+## Recherche sémantique (facultative, repli grep sinon)
 
-La structure réserve `<vault>/.index/` pour un index d'embeddings partagé
-(mapping `hash(chunk) → vecteur` en JSONL, modèle épinglé, réindexation
-incrémentale — jamais de fallback d'embeddings entre modèles : espaces
-vectoriels incompatibles). Le moteur n'est pas inclus dans ce repo : n'importe
-quelle CLI capable d'`index`/`search` sur un dossier markdown convient, appelée
-par le sub-agent de `/doc-query`, avec repli grep explicite si indisponible.
+L'index d'embeddings vit dans `<vault>/.index/embeddings.jsonl` — un mapping
+`hash(chunk) → vecteur` partagé via Drive, fournisseur/modèle épinglés en
+ligne 1, réindexation incrémentale par hash (jamais de fallback d'embeddings
+entre modèles : espaces vectoriels incompatibles). Il est **dérivé et
+reconstructible** : le supprimer ne perd rien.
 
-Implémentation de référence : **agentic-toolbox** (projet de l'auteur — routeur LLM
-multi-fournisseurs OpenAI-compatible + module `semantic_index` : chunking par
-section, embeddings `mistral-embed` épinglés, index JSONL dans le vault,
-réindexation incrémentale par hash). Exécuté en venv, appelé par un wrapper de
-quelques lignes dans `.claude/scripts/` — aucun service qui tourne. Tout moteur
-respectant le même contrat s'y substitue sans toucher aux commandes.
+Le moteur n'est pas inclus dans ce repo — les wrappers `scripts/vault-index.sh`
+et `vault-search.sh` du plugin appellent l'implémentation de référence :
+**[agentic-toolbox](https://github.com/Zairth/agentic-toolbox)** (projet de l'auteur —
+routeur LLM multi-fournisseurs + module `semantic_index` : chunking par
+section, embeddings `mistral-embed` épinglés, index JSONL dans le vault).
+Exécuté depuis son venv, aucun service qui tourne. Résolution du chemin :
+`.claude/toolbox-path.local` du projet (une ligne, gitignoré), à défaut
+`~/projects/agentic-toolbox`. Tout moteur respectant le même contrat CLI
+(`index <dossier>` / `search "question" --dir <dossier>`, JSON sur stdout)
+s'y substitue en éditant les deux wrappers, sans toucher aux commandes.
+
+Sans moteur, tout fonctionne : `/doc-query` dégrade vers grep avec un
+avertissement explicite, `/doc-ingest` note l'indexation « à rattraper ».
+Installation du moteur (clone, venv, clé Mistral) : [PREREQUIS.md](PREREQUIS.md).

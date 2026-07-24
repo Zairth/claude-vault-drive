@@ -1,0 +1,12 @@
+{
+  "name": "claude-vault-drive",
+  "displayName": "Claude Vault Drive",
+  "description": "Vault Obsidian partagé (Google Drive ou dossier synchronisé), consultable et maintenu par Claude Code : /doc-ingest, /doc-query, /doc-lint — recherche sémantique optionnelle, repli grep explicite.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Zairth"
+  },
+  "repository": "https://github.com/Zairth/claude-vault-drive",
+  "license": "MIT",
+  "keywords": ["obsidian", "vault", "google-drive", "knowledge-base", "rag"]
+}
