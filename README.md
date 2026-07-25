@@ -83,7 +83,7 @@ Dans Claude Code (une fois, valable pour tous les projets) :
 
 ```
 /plugin marketplace add Zairth/claude-vault-drive
-/plugin install claude-vault-drive@claude-vault-drive
+/plugin install claude-vault-drive@zairth
 ```
 
 **Pas besoin de cloner ce repo** : Claude Code le récupère et le met en cache
@@ -103,7 +103,7 @@ Puis dans chaque projet qui doit avoir son vault :
 3. (Facultatif, humain) Ouvrir le dossier du vault comme coffre dans Obsidian.
 
 Mise à jour : automatique en arrière-plan, ou manuelle en une seule étape —
-`/plugin marketplace update claude-vault-drive` (récupère le dernier commit
+`/plugin marketplace update zairth` (récupère le dernier commit
 directement depuis GitHub, aucun `git pull` local).
 
 Développement du plugin uniquement (tester des modifs avant de pousser) :

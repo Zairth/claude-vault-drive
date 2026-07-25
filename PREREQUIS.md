@@ -150,7 +150,7 @@ Ensuite, dans Claude Code ([README](README.md#installation)) :
 
 ```
 /plugin marketplace add Zairth/claude-vault-drive
-/plugin install claude-vault-drive@claude-vault-drive
+/plugin install claude-vault-drive@zairth
 ```
 
 puis, dans chaque projet : `/vault-init "/mnt/g/Mon Drive/<Section>/<MonVault>"`.
