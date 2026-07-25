@@ -9,6 +9,15 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.4.2] — 2026-07-25
+
+**Raison de l'update** : README aligné sur l'en-tête du changelog — installer une mise à jour = update **puis** `/reload-plugins`, cache invalidé seulement si la version change.
+
+### Corrigé
+- `README.md` : « manuelle en une seule étape » → la séquence complète
+  (`/plugin marketplace update zairth_store` puis `/reload-plugins`), avec la
+  condition d'invalidation du cache.
+
 ## [1.4.1] — 2026-07-25
 
 **Raison de l'update** : description du plugin réécrite — l'optimisation agentique (`context: fork`) mise en avant, alignée avec l'About du repo GitHub.

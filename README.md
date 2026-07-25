@@ -106,9 +106,10 @@ Puis dans chaque projet qui doit avoir son vault :
    `/doc-lint` sont prêtes.
 3. (Facultatif, humain) Ouvrir le dossier du vault comme coffre dans Obsidian.
 
-Mise à jour : automatique en arrière-plan, ou manuelle en une seule étape —
-`/plugin marketplace update zairth_store` (récupère le dernier commit
-directement depuis GitHub, aucun `git pull` local). Ce qui a changé et
+Installer une mise à jour : automatique en arrière-plan, ou manuelle —
+`/plugin marketplace update zairth_store` puis `/reload-plugins` (récupère le
+dernier commit directement depuis GitHub, aucun `git pull` local ; le cache
+n'est invalidé que si la version du plugin a changé). Ce qui a changé et
 pourquoi mettre à jour : [CHANGELOG.md](CHANGELOG.md).
 
 Développement du plugin uniquement (tester des modifs avant de pousser) :
