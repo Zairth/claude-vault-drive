@@ -9,6 +9,15 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.5.2] — 2026-07-25
+
+**Raison de l'update** : le README ne disait pas par où commencer une fois le plugin installé — la section « Usage » ouvre maintenant sur `/vault-init` et le redémarrage de session obligatoire.
+
+### Ajouté
+- `README.md` : rappel en tête de « Usage » — première commande
+  `/vault-init "/chemin/du/vault"`, puis relance de la session Claude Code
+  (chargement de la permission `additionalDirectories`) avant les `/doc-*`.
+
 ## [1.5.1] — 2026-07-25
 
 **Raison de l'update** : les synthèses apparaissaient déconnectées dans le graphe Obsidian — leurs références étaient des chemins bruts, qui ne créent pas de liens.

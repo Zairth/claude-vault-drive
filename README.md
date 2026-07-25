@@ -137,6 +137,12 @@ Windows : BOM/CRLF/espaces finaux sont nettoyés automatiquement.
 
 ## Usage
 
+Première commande à taper dans un projet, une fois le plugin installé :
+`/vault-init "/chemin/du/vault"` (le chemin en argument, sinon la commande le
+demande et s'arrête), puis **relancer la session Claude Code** — c'est ce
+redémarrage qui charge la permission `additionalDirectories` et rend les
+commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
+
 - `/doc-ingest <texte | fichier | URL | élément de inbox/>` — propose 2-5
   enseignements clés, discute, puis écrit : note source immuable, pages
   concepts/entités, INDEX, LOG. Contradiction détectée → callout `> [!warning]`.
