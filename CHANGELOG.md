@@ -9,6 +9,14 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.4.1] — 2026-07-25
+
+**Raison de l'update** : description du plugin réécrite — l'optimisation agentique (`context: fork`) mise en avant, alignée avec l'About du repo GitHub.
+
+### Modifié
+- `plugin.json` : la description mentionne l'exécution de `/doc-query` et
+  `/doc-lint` en sub-agent isolé (zéro pollution du contexte principal).
+
 ## [1.4.0] — 2026-07-25
 
 **Raison de l'update** : `/doc-query` et `/doc-lint` s'exécutent désormais entièrement dans un sub-agent (`context: fork`) — zéro pollution du contexte principal, préambule et notes compris.
