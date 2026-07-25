@@ -6,6 +6,21 @@ en deux commandes dans n'importe quel projet, **sans MCP, sans service qui
 tourne**. Le vault n'est que des fichiers markdown dans un dossier : Obsidian est
 la vitrine humaine (graphe, wikilinks), Claude Code y accède directement.
 
+## Objectif
+
+Combiné à [agentic-toolbox](https://github.com/Zairth/agentic-toolbox), ce
+plugin fait naître le fameux **deuxième cerveau de Claude** : une mémoire
+externe durable et partagée, optimisée par **orchestration agentique**
+(sub-agents qui explorent le vault sans jamais saturer le contexte principal)
+et par des **skills** pour la recherche sémantique et l'OCR.
+
+Le cas d'usage type : brancher un projet sur son dossier Drive — Claude le
+**consomme** (`/doc-query` répond en citant les notes) et l'**alimente en
+retour** (`/doc-ingest`, synthèses persistées) au fur et à mesure des
+itérations de sessions sur ce projet. Le savoir s'accumule d'une session à
+l'autre au lieu de disparaître avec le contexte, et reste lisible par les
+humains dans Obsidian.
+
 ## Ce que contient ce repo
 
 Le repo est à la fois le plugin et son propre marketplace :
