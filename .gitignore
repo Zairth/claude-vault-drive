@@ -2,3 +2,4 @@
 # Config locale à la machine (règles de dev, permissions, chemins sensibles) —
 # jamais versionnée. Le plugin lui-même vit à la racine (commands/, scripts/…).
 .claude/
+/CLAUDE.md
