@@ -9,6 +9,15 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.4.3] — 2026-07-25
+
+**Raison de l'update** : le rôle d'`archives/` documenté dans le README — principe « vault auto-porteur ».
+
+### Ajouté
+- `README.md`, section Principes : `inbox/` = sas, fichier ingéré déplacé vers
+  `archives/` (immuable, hors index sémantique via renommage `.md.txt`, jamais
+  supprimé), avertissement données sensibles avant partage.
+
 ## [1.4.2] — 2026-07-25
 
 **Raison de l'update** : README aligné sur l'en-tête du changelog — installer une mise à jour = update **puis** `/reload-plugins`, cache invalidé seulement si la version change.

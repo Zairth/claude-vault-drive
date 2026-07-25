@@ -67,6 +67,13 @@ vault par projet**.
 - **Trois couches de savoir** : `wiki/sources/` (immuable, une note par source),
   `wiki/concepts/` + `wiki/entites/` (vivantes, reliées par wikilinks),
   `wiki/syntheses/` (réponses transversales persistées).
+- **Vault auto-porteur** : `inbox/` est un sas, pas un stockage — un fichier
+  ingéré est déplacé vers `archives/`, jamais supprimé. Le condensé vit dans
+  `wiki/sources/`, la pièce d'origine reste vérifiable dans le vault, qui
+  voyage d'un bloc. `archives/` est immuable et **hors index sémantique**
+  (les `.md` y sont renommés `.md.txt` : zéro coût, zéro bruit) ; attention
+  avant de partager le vault, les archives peuvent contenir des données
+  sensibles que les notes condensées ont volontairement écartées.
 - **Échecs explicites** : Drive non monté, vault non initialisé → message clair,
   jamais de vault vide silencieux.
 
