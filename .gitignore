@@ -1,5 +1,4 @@
 # claude-vault-drive/.gitignore
-# Fichiers locaux à la machine — chemins sensibles et permissions, jamais versionnés.
-.claude/settings.local.json
-.claude/vault-path.local
-.claude/toolbox-path.local
+# Config locale à la machine (règles de dev, permissions, chemins sensibles) —
+# jamais versionnée. Le plugin lui-même vit à la racine (commands/, scripts/…).
+.claude/
