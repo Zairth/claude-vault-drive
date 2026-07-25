@@ -27,6 +27,10 @@ if [[ ! -d "$vault_path" ]]; then
     exit 1
 fi
 
+# Toujours imprimer un chemin ABSOLU : les consommateurs (wrappers sémantiques)
+# changent de dossier avant de s'en servir — un chemin relatif les casserait.
+vault_path="$(cd "$vault_path" && pwd)"
+
 if [[ ! -f "$vault_path/INSTRUCTIONS-CLAUDE.md" ]]; then
     echo "ERREUR : vault non initialisé : $vault_path ne contient pas INSTRUCTIONS-CLAUDE.md (lancer vault-init.sh, ou synchronisation incomplète)." >&2
     exit 1

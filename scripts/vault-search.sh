@@ -10,6 +10,12 @@ source "$script_directory/toolbox-env.sh"
 
 question="${1:?Usage : vault-search.sh \"question\" [dossier] [top_k]}"
 target_directory="${2:-$(bash "$script_directory/vault-check.sh")}"
+if [[ ! -d "$target_directory" ]]; then
+    echo "ERREUR : dossier de recherche introuvable : $target_directory" >&2
+    exit 1
+fi
+# Chemin absolu obligatoire : on change de dossier juste après.
+target_directory="$(cd "$target_directory" && pwd)"
 top_k="${3:-5}"
 
 cd "$toolbox_directory"
