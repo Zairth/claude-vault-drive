@@ -52,7 +52,11 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
   Optionnel partout : `tags`, et toute propriété utile au cas particulier
   (ex. `image`, `capture_precedente`/`capture_suivante` pour des captures OCR
   en série) — enrichir librement, ne jamais retirer une propriété obligatoire.
-- Wikilinks `[[...]]` libéraux vers les concepts et entités.
+- Wikilinks `[[...]]` libéraux vers les concepts et entités. Toute référence
+  à une autre note du vault s'écrit en wikilink, **jamais en chemin brut** :
+  seuls les wikilinks créent des liens (graphe Obsidian, backlinks, détection
+  d'orphelines par `/doc-lint`). Exceptions : les propriétés `origine`/
+  `original` (pointent vers `archives/` ou hors vault — hors graphe, voulu).
 - Citations verbatim ≤ 125 caractères ; au-delà, paraphraser — le verbatim long
   reste dans `wiki/sources/`.
 - Contradiction entre une nouvelle information et l'existant : poser un callout

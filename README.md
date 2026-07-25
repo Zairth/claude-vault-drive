@@ -116,6 +116,11 @@ Puis dans chaque projet qui doit avoir son vault :
    `additionalDirectories`) — les commandes `/doc-ingest`, `/doc-query` et
    `/doc-lint` sont prêtes.
 3. (Facultatif, humain) Ouvrir le dossier du vault comme coffre dans Obsidian.
+   Astuce vue graphique : les arêtes du graphe ne viennent que des wikilinks
+   `[[...]]` (les chemins bruts et propriétés `origine`/`original` n'en créent
+   pas) ; pour colorer les nœuds par type, créer un groupe par dossier dans
+   les paramètres du graphe — `path:wiki/concepts`, `path:wiki/entites`,
+   `path:wiki/sources`, `path:wiki/syntheses`.
 
 Installer une mise à jour : automatique en arrière-plan, ou manuelle —
 `/plugin marketplace update zairth_store` puis `/reload-plugins` (récupère le

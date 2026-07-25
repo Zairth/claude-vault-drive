@@ -9,6 +9,21 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.5.1] — 2026-07-25
+
+**Raison de l'update** : les synthèses apparaissaient déconnectées dans le graphe Obsidian — leurs références étaient des chemins bruts, qui ne créent pas de liens.
+
+### Corrigé
+- `/doc-query` : la section `## Références` des synthèses utilise des
+  wikilinks `[[<slug>]]`, plus des chemins bruts.
+- `vault-template/INSTRUCTIONS-CLAUDE.md` : règle explicite — toute référence
+  inter-notes en wikilink, jamais en chemin brut (exceptions : `origine`/
+  `original`, hors graphe voulu).
+
+### Ajouté
+- `README.md` : astuce vue graphique — colorer les nœuds par type via un
+  groupe par dossier (`path:wiki/concepts`, etc.).
+
 ## [1.5.0] — 2026-07-25
 
 **Raison de l'update** : modèle de note à frontmatter obligatoire — `type`, `date`, `auteur`, `origine` (sources), `question` (synthèses) — appliqué par `/doc-ingest`, vérifié par `/doc-lint`.

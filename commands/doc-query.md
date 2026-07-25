@@ -104,7 +104,10 @@ Exactement ces blocs, dans cet ordre :
      (`type: synthese`, `date`, `auteur` — repérable dans les notes existantes
      du vault, sinon le demander —, `question`, plus `perimetre: <dossier>` si
      la recherche visait une cible `dans:`), corps = la réponse, section
-     `## Références` = les chemins des sources ; ajouter la note dans
+     `## Références` = un wikilink `[[<slug>]]` par note utilisée (jamais de
+     chemin brut — seuls les wikilinks créent des liens dans le graphe
+     Obsidian ; une source hors vault, cible `dans:`, reste en chemin brut) ;
+     ajouter la note dans
      `$VAULT/INDEX.md`, section Synthèses ; ajouter en fin de `$VAULT/LOG.md` :
      `## [YYYY-MM-DD] synthese | <slug>` — le tout en respectant les
      conventions de `$VAULT/INSTRUCTIONS-CLAUDE.md`.
