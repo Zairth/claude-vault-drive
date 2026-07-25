@@ -83,18 +83,43 @@ le lecteur du vault est-il monté ? ».
 
 ## 5. agentic-toolbox (recherche sémantique + OCR — facultatif)
 
-Le moteur sémantique appelé par `vault-index.sh`/`vault-search.sh` est
+Le moteur sémantique et OCR des commandes `/doc-*` est
 **[agentic-toolbox](https://github.com/Zairth/agentic-toolbox)** : recherche
 sémantique sur dossier markdown (embeddings `mistral-embed` épinglés, index
 JSONL dans le vault), OCR de PDF/scans, routeur LLM multi-fournisseurs.
 Sans lui, `/doc-query` dégrade vers grep avec un avertissement explicite.
 
-> La toolbox existe aussi en plugin Claude Code autonome (serveur MCP, sans
-> clone) — mais les wrappers `vault-index.sh`/`vault-search.sh` de ce plugin-ci
-> passent par son CLI : le clone + venv ci-dessous restent nécessaires ici.
+Clé API (tier gratuit) : **`MISTRAL_API_KEY` est la seule requise ici** —
+embeddings et OCR sont épinglés sur Mistral, sans fallback (espaces vectoriels
+incompatibles). Création : https://console.mistral.ai/?profile_dialog=api-keys
 
-Prérequis : Python ≥ 3.10 (3.12 recommandé) ; sous Ubuntu/Debian le module
-venv est packagé à part :
+### Voie nominale : le plugin (zéro clone)
+
+La toolbox existe en plugin Claude Code avec **serveur MCP intégré** — les
+commandes `/doc-*` utilisent ses outils en priorité. Seul prérequis :
+[uv](https://docs.astral.sh/uv/), qui gère Python et les dépendances tout seul :
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Puis dans Claude Code :
+
+```
+/plugin install agentic-toolbox@zairth_store
+```
+
+Les clés API sont demandées à l'installation (stockage sécurisé Claude Code) :
+remplir `MISTRAL_API_KEY`, le reste peut rester vide. Le champ « Dossier
+markdown par défaut » (`VAULT_PATH`) aussi : les commandes `/doc-*` passent
+toujours le vault du projet explicitement.
+
+### Alternative : le clone + venv (wrappers CLI)
+
+Utile sans `uv`, ou pour développer le moteur — les wrappers
+`vault-index.sh`/`vault-search.sh` du plugin l'utilisent en repli quand les
+outils MCP sont absents. Prérequis : Python ≥ 3.10 (3.12 recommandé) ; sous
+Ubuntu/Debian le module venv est packagé à part :
 
 ```bash
 sudo apt install python3-venv
@@ -106,16 +131,10 @@ Installation (emplacement par défaut attendu par les wrappers :
 ```bash
 git clone https://github.com/Zairth/agentic-toolbox ~/projects/agentic-toolbox
 cd ~/projects/agentic-toolbox
-cp .env.example .env         # puis remplir les clés API
+cp .env.example .env         # puis remplir les clés API (MISTRAL_API_KEY)
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python -m providers.cli_parser check   # état de la chaîne (zéro réseau)
 ```
-
-Clés API (tiers gratuits, chacune optionnelle — un fournisseur sans clé est
-ignoré) : **`MISTRAL_API_KEY` est la seule requise ici** — embeddings et OCR
-sont épinglés sur Mistral, sans fallback (espaces vectoriels incompatibles).
-
-- Mistral : https://console.mistral.ai/?profile_dialog=api-keys
 
 Cloné ailleurs que `~/projects/agentic-toolbox` ? Écrire son chemin (une seule
 ligne) dans le `.claude/toolbox-path.local` **du projet** — fichier gitignoré,
@@ -153,7 +172,7 @@ fichiers markdown, Claude Code y accède directement. Obsidian est la vitrine
 | 2 | Claude Code | oui | `claude --version` |
 | 3 | Google Drive pour Desktop | vault partagé seulement | lecteur `G:` visible côté Windows |
 | 4 | Montage Drive dans WSL | vault partagé sous WSL | `ls "/mnt/g/Mon Drive"` |
-| 5 | agentic-toolbox + `MISTRAL_API_KEY` | recherche sémantique/OCR seulement | `providers.cli_parser check` |
+| 5 | agentic-toolbox (plugin + `uv`, ou clone) + `MISTRAL_API_KEY` | recherche sémantique/OCR seulement | outil MCP `llm_check` (plugin) ou `providers.cli_parser check` (clone) |
 | 6 | Obsidian | non (vitrine humaine) | ouvrir le vault comme coffre |
 
 Ensuite, dans Claude Code ([README](README.md#installation)) :
@@ -161,6 +180,7 @@ Ensuite, dans Claude Code ([README](README.md#installation)) :
 ```
 /plugin marketplace add https://github.com/Zairth/marketplace
 /plugin install claude-vault-drive@zairth_store
+/plugin install agentic-toolbox@zairth_store   # facultatif : recherche sémantique + OCR
 ```
 
 puis, dans chaque projet : `/vault-init "/mnt/g/Mon Drive/<Section>/<MonVault>"`.

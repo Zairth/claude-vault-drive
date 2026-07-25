@@ -19,9 +19,11 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
 - Nom d'un fichier présent dans `$VAULT/inbox/` ou chemin de fichier → le lire.
 - URL → récupérer le contenu (WebFetch).
 - PDF → ne pas l'ingérer tel quel : proposer de le convertir d'abord en
-  markdown propre par OCR externe (implémentation de référence : l'OCR
-  Mistral Document AI d'agentic-toolbox, clé API dans son `.env`), déposer le
-  markdown obtenu dans `$VAULT/inbox/`, puis reprendre ce circuit normalement.
+  markdown propre par OCR (moteur : agentic-toolbox — outil MCP
+  `mcp__plugin_agentic-toolbox_toolbox__ocr_convert` si disponible dans la
+  session, sinon son CLI `services.document_ocr.cli_parser convert` depuis le
+  clone local), déposer le markdown obtenu dans `$VAULT/inbox/`, puis
+  reprendre ce circuit normalement.
 - Argument vide ou ambigu → demander à l'utilisateur ce qu'il veut ingérer
   (lister le contenu de `$VAULT/inbox/` s'il n'est pas vide).
 
@@ -51,7 +53,11 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
    la pièce d'origine reste dans le vault). Un fichier `.md` est renommé en
    `.md.txt` à l'archivage (hors index sémantique). Renseigner `origine:` de
    la note source avec ce chemin archivé, relatif au vault.
-6. Indexation sémantique : exécuter `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"`.
+6. Indexation sémantique — outil MCP
+   `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` avec
+   `directory: $VAULT` **explicite** (jamais son défaut `VAULT_PATH`, global)
+   si le plugin agentic-toolbox est installé, sinon
+   `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"` (clone + venv).
    Incrémental — seuls les chunks des notes créées/modifiées coûtent un appel
    API. **Échec = non bloquant** : l'ingestion reste valide ; noter que
    l'indexation se rattrapera au prochain `/doc-query`.

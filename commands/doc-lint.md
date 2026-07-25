@@ -34,9 +34,11 @@ principal après) :
 6. **Cohérence vectorielle** (exécutée en contexte principal, PAS par le
    sub-agent) :
    - `.index/embeddings.jsonl` absent → « index sémantique jamais construit »
-     (information ; remède : `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"`).
-   - Présent → lire ses métadonnées (ligne 1 du fichier : provider, modèle,
-     dimension, version) et les reporter. Diagnostic de suivi : comparer le
+     (information ; remède : la réindexation décrite dans les corrections).
+   - Présent → lire ses métadonnées (outil MCP
+     `mcp__plugin_agentic-toolbox_toolbox__semantic_info` avec
+     `directory: $VAULT` — purement local, zéro quota — sinon ligne 1 du
+     fichier : provider, modèle, dimension, version) et les reporter. Diagnostic de suivi : comparer le
      `created_at` le plus récent du mapping aux dernières entrées `ingest` de
      `LOG.md` — des ingests postérieurs aux vecteurs = indexation non suivie
      (le verdict définitif reste le hash, jamais les dates).
@@ -47,7 +49,11 @@ principal après) :
 2. Proposer les corrections : compléter `INDEX.md`, relier ou supprimer les
    orphelines, résoudre les conflits Drive (comparer les versions, garder la
    bonne, supprimer l'autre), rappeler les `> [!warning]` à trancher.
-   Pour la cohérence vectorielle : proposer `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"`
+   Pour la cohérence vectorielle : proposer la réindexation — outil MCP
+   `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` avec
+   `directory: $VAULT` **explicite** (jamais son défaut `VAULT_PATH`, global)
+   si le plugin agentic-toolbox est installé, sinon
+   `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"` (clone + venv)
    (coût API : uniquement les chunks au hash inconnu) — le rapport JSON fait foi :
    `embedded_chunks > 0` = vecteurs manquants/périmés qui viennent d'être
    réparés (notes éditées hors circuit) ; la réécriture complète purge par
@@ -56,10 +62,10 @@ principal après) :
    fichiers est identique, fusion mécanique — union des lignes de chunks,
    dédoublonnage par `hash` (deux lignes de même hash sont identiques par
    construction), réécriture atomique, suppression du fichier de conflit ;
-   sinon, garder `embeddings.jsonl`, supprimer le conflit, relancer
-   `vault-index.sh`.
+   sinon, garder `embeddings.jsonl`, supprimer le conflit, relancer la
+   réindexation.
    N'appliquer QUE ce que l'utilisateur valide.
 3. Ajouter en fin de `$VAULT/LOG.md` :
    `## [YYYY-MM-DD] lint | <n> problème(s) détecté(s), <m> corrigé(s)`
-   suivi, si `vault-index.sh` a tourné, d'une ligne
+   suivi, si la réindexation a tourné, d'une ligne
    `vecteurs : <embedded_chunks> recalculés, <reused_chunks> réutilisés`.

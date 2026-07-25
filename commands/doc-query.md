@@ -37,14 +37,26 @@ dossier parent (ex. autoriser `<parent>` plutôt que `<parent>/<vault>` seul).
 
 1. Si `$ARGUMENTS` contient le jeton `--no-index`, le retirer de la question et
    sauter l'étape 2 (échappatoire : interroger sans réindexer).
-2. Exécuter `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"` — toujours sur `$VAULT`, même
-   quand la cible est un dossier voisin `dans:` (un voisin est en lecture seule :
-   on ne l'indexe JAMAIS, son équipe s'en charge). Indexation incrémentale :
-   seuls les chunks nouveaux/modifiés coûtent un appel API.
-3. Exécuter `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-search.sh" "<question>" "<cible>"`
-   (le 2e argument ne sert que pour une cible `dans:` ; l'omettre sinon).
-4. Repli grep explicite : si l'étape 2 ou 3 échoue (moteur indisponible, index
-   absent — cas normal d'un voisin `dans:` jamais indexé), continuer SANS
+2. Indexer — toujours `$VAULT`, même quand la cible est un dossier voisin
+   `dans:` (un voisin est en lecture seule : on ne l'indexe JAMAIS, son équipe
+   s'en charge). Indexation incrémentale : seuls les chunks nouveaux/modifiés
+   coûtent un appel API. Deux portes d'entrée vers le moteur, dans cet ordre :
+   - **MCP** (plugin agentic-toolbox installé) : outil
+     `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build`, en passant
+     `directory: $VAULT` **explicitement** — ne jamais compter sur son défaut
+     `VAULT_PATH` (config globale du plugin, alors qu'ici le vault est celui
+     du projet) ;
+   - **wrapper** sinon : `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"`
+     (clone local + venv du moteur).
+3. Chercher — même cascade :
+   - **MCP** : outil `mcp__plugin_agentic-toolbox_toolbox__semantic_search`
+     (`question`, `directory: <cible>` explicite) ;
+   - **wrapper** sinon :
+     `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-search.sh" "<question>" "<cible>"`
+     (le 2e argument ne sert que pour une cible `dans:` ; l'omettre sinon).
+4. Repli grep explicite : si l'étape 2 ou 3 échoue (moteur indisponible — ni
+   outils MCP dans la session ni clone local —, index absent — cas normal d'un
+   voisin `dans:` jamais indexé), continuer SANS
    résultats sémantiques et ajouter à la réponse finale : « ⚠ recherche
    sémantique indisponible (<raison en quelques mots>), résultats par mots-clés
    uniquement ». Jamais d'échec silencieux, jamais d'autre fournisseur

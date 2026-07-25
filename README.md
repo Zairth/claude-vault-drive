@@ -2,7 +2,7 @@
 
 Un vault Obsidian partagé (Google Drive ou tout dossier synchronisé), consultable
 et maintenu par Claude Code — distribué comme **plugin Claude Code** : s'installe
-en deux commandes dans n'importe quel projet, **sans MCP, sans service qui
+en deux commandes dans n'importe quel projet, **sans clone, sans service qui
 tourne**. Le vault n'est que des fichiers markdown dans un dossier : Obsidian est
 la vitrine humaine (graphe, wikilinks), Claude Code y accède directement.
 
@@ -40,8 +40,8 @@ claude-vault-drive/
 │   ├── vault-check.sh       # portier : vérifie l'accès au vault, imprime son chemin
 │   ├── vault-init.sh        # initialisation du vault en une commande, idempotente
 │   ├── toolbox-env.sh       # résolution du moteur sémantique (dossier + venv)
-│   ├── vault-index.sh       # indexation sémantique incrémentale du vault
-│   └── vault-search.sh      # recherche sémantique dans un dossier indexé
+│   ├── vault-index.sh       # indexation sémantique incrémentale (repli CLI, sans plugin toolbox)
+│   └── vault-search.sh      # recherche sémantique dans un dossier indexé (repli CLI)
 └── vault-template/          # fichiers copiés à la racine d'un nouveau vault
     ├── INSTRUCTIONS-CLAUDE.md   # le schéma du vault — toute commande le lit d'abord
     ├── INDEX.md                 # carte du vault, point d'entrée des recherches
@@ -70,8 +70,8 @@ vault par projet**.
 
 **Prérequis** : [Claude Code](https://claude.com/claude-code) ; Google Drive
 pour Desktop si le vault doit être partagé (sinon n'importe quel dossier local
-convient) ; [agentic-toolbox](https://github.com/Zairth/agentic-toolbox) pour
-la recherche sémantique (facultatif — repli grep sinon) ; Obsidian est
+convient) ; le plugin [agentic-toolbox](https://github.com/Zairth/agentic-toolbox)
+pour la recherche sémantique et l'OCR (facultatif — repli grep sinon) ; Obsidian est
 **facultatif** — c'est la vitrine humaine, le système fonctionne sans.
 **Guide pas à pas** (commandes d'installation, WSL, montage Drive, clés API) :
 [PREREQUIS.md](PREREQUIS.md).
@@ -84,8 +84,10 @@ Dans Claude Code (une fois, valable pour tous les projets) :
 /plugin install agentic-toolbox@zairth_store   # facultatif : la toolbox en plugin autonome (outils MCP + skill)
 ```
 
-**Pas besoin de cloner ce repo** : Claude Code le récupère et le met en cache
-lui-même depuis GitHub.
+**Aucun clone nulle part** : Claude Code récupère et met en cache les deux
+plugins lui-même depuis GitHub. Le plugin agentic-toolbox embarque son serveur
+MCP (lancé à la demande via `uv`, clés API saisies à l'installation) — les
+commandes `/doc-*` utilisent ses outils en priorité.
 
 Puis dans chaque projet qui doit avoir son vault :
 
@@ -153,19 +155,27 @@ ligne 1, réindexation incrémentale par hash (jamais de fallback d'embeddings
 entre modèles : espaces vectoriels incompatibles). Il est **dérivé et
 reconstructible** : le supprimer ne perd rien.
 
-Le moteur n'est pas inclus dans ce repo — les wrappers `scripts/vault-index.sh`
-et `vault-search.sh` du plugin appellent l'implémentation de référence :
-**[agentic-toolbox](https://github.com/Zairth/agentic-toolbox)** (projet de l'auteur —
-routeur LLM multi-fournisseurs + module `semantic_index` : chunking par
-section, embeddings `mistral-embed` épinglés, index JSONL dans le vault).
-Exécuté depuis son venv, aucun service qui tourne. Résolution du chemin :
-`.claude/toolbox-path.local` du projet (une ligne, gitignoré), à défaut
-`~/projects/agentic-toolbox`. Tout moteur respectant le même contrat CLI
-(`index <dossier>` / `search "question" --dir <dossier>`, JSON sur stdout)
-s'y substitue en éditant les deux wrappers, sans toucher aux commandes.
+Le moteur n'est pas inclus dans ce repo : c'est
+**[agentic-toolbox](https://github.com/Zairth/agentic-toolbox)** (projet de
+l'auteur — routeur LLM multi-fournisseurs + module `semantic_index` : chunking
+par section, embeddings `mistral-embed` épinglés, index JSONL dans le vault).
+Les commandes `/doc-*` l'atteignent par deux portes, dans cet ordre :
 
-Sans moteur, tout fonctionne : `/doc-query` dégrade vers grep avec un
-avertissement explicite, `/doc-ingest` note l'indexation « à rattraper ».
-Installation du moteur (clone, venv, clé Mistral) : [PREREQUIS.md](PREREQUIS.md).
-(La toolbox existe aussi en **plugin Claude Code autonome** — serveur MCP, sans
-clone ; les wrappers de CE plugin passent, eux, par le clone + venv ci-dessus.)
+1. **Outils MCP du plugin agentic-toolbox** (voie nominale, zéro clone) —
+   `semantic_index_build`, `semantic_search`, `semantic_info`, `ocr_convert`…
+   Serveur lancé à la demande par Claude Code via `uv`, clés API gérées par le
+   plugin. Les commandes passent toujours le dossier du vault **explicitement**
+   (celui du projet, via `vault-check.sh`) — jamais le `VAULT_PATH` global du
+   plugin : un vault par projet, garanti.
+2. **Wrappers `scripts/vault-index.sh` / `vault-search.sh`** (repli : plugin
+   agentic-toolbox absent, mais clone local présent) — exécutés depuis le venv
+   du clone, aucun service qui tourne. Résolution du chemin :
+   `.claude/toolbox-path.local` du projet (une ligne, gitignoré), à défaut
+   `~/projects/agentic-toolbox`. Tout moteur respectant le même contrat CLI
+   (`index <dossier>` / `search "question" --dir <dossier>`, JSON sur stdout)
+   s'y substitue en éditant les deux wrappers, sans toucher aux commandes.
+
+Sans moteur (ni plugin ni clone), tout fonctionne : `/doc-query` dégrade vers
+grep avec un avertissement explicite, `/doc-ingest` note l'indexation « à
+rattraper ». Installation du moteur (plugin, ou clone + venv + clé Mistral) :
+[PREREQUIS.md](PREREQUIS.md).
