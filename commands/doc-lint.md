@@ -20,7 +20,7 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
 2. Lire intégralement `$VAULT/INSTRUCTIONS-CLAUDE.md` et s'y conformer
    (règles de maintenance : sources immuables, LOG append-only, INDEX à jour).
 
-## Vérifications (les six)
+## Vérifications (les sept)
 
 1. **Contradictions en souffrance** : chercher `> [!warning]` dans `wiki/` →
    lister fichier + extrait du callout.
@@ -35,7 +35,11 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
    doublons du mapping vectoriel (`embeddings (1).jsonl`, `*conflit*`) → lister
    séparément (résolution spécifique, voir corrections).
 5. **inbox/ en attente** : lister les fichiers non ingérés (information, pas erreur).
-6. **Cohérence vectorielle** :
+6. **Frontmatter obligatoire** (modèle de note d'`INSTRUCTIONS-CLAUDE.md`) :
+   pour chaque note de `wiki/`, vérifier la présence de `type` + `date` +
+   `auteur`, plus `origine` pour les sources et `question` pour les synthèses
+   → lister les notes non conformes avec leurs propriétés manquantes.
+7. **Cohérence vectorielle** :
    - `.index/embeddings.jsonl` absent → « index sémantique jamais construit »
      (information ; remède : la réindexation décrite dans les corrections).
    - Présent → lire ses métadonnées (outil MCP
@@ -57,6 +61,9 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
    - compléter `INDEX.md`, relier ou supprimer les orphelines, résoudre les
      conflits Drive (comparer les versions, garder la bonne, supprimer
      l'autre), rappeler les `> [!warning]` à trancher.
+   - Pour les frontmatters non conformes : proposer une valeur déduite du
+     contenu de la note ou de `LOG.md` (`date` : à défaut, la première mention
+     de la note dans le LOG) — jamais de valeur inventée sans le signaler.
    - Pour la cohérence vectorielle : proposer la réindexation — outil MCP
      `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` avec
      `directory: $VAULT` **explicite** (jamais son défaut `VAULT_PATH`, global)

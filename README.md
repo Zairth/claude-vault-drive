@@ -67,6 +67,10 @@ vault par projet**.
 - **Trois couches de savoir** : `wiki/sources/` (immuable, une note par source),
   `wiki/concepts/` + `wiki/entites/` (vivantes, reliées par wikilinks),
   `wiki/syntheses/` (réponses transversales persistées).
+- **Modèle de note** : frontmatter obligatoire sur chaque note — `type`,
+  `date` (création), `auteur`, plus `origine`/`original` (sources) et
+  `question` (synthèses) ; défini dans l'`INSTRUCTIONS-CLAUDE.md` du vault,
+  appliqué par `/doc-ingest`, vérifié par `/doc-lint`.
 - **Vault auto-porteur** : `inbox/` est un sas, pas un stockage — un fichier
   ingéré est déplacé vers `archives/`, jamais supprimé. Le condensé vit dans
   `wiki/sources/`, la pièce d'origine reste vérifiable dans le vault, qui
@@ -144,8 +148,9 @@ Windows : BOM/CRLF/espaces finaux sont nettoyés automatiquement.
   d'échec silencieux.
 - `/doc-lint` — rapport produit en fork isolé : contradictions en souffrance,
   pages orphelines, trous d'INDEX, fichiers de conflit Drive, inbox en
-  attente, cohérence de l'index vectoriel (`.index/`) ; corrections validées
-  avec l'utilisateur puis appliquées en contexte principal.
+  attente, frontmatters obligatoires manquants, cohérence de l'index vectoriel
+  (`.index/`) ; corrections validées avec l'utilisateur puis appliquées en
+  contexte principal.
 
 ## Notes d'environnement
 

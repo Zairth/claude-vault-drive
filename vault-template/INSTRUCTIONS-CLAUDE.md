@@ -35,8 +35,23 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
 - **Français.** Notes courtes et denses : une idée par note, aucun remplissage,
   aucun distracteur.
 - Nommage : `kebab-case.md` ; sources préfixées `YYYY-MM-DD-`.
-- Frontmatter minimal : `type` (source | concept | entite | synthese), `date`,
-  `tags` seulement si utile.
+- **Modèle de note — frontmatter obligatoire** (une note sans ces propriétés
+  n'est pas conforme ; `/doc-lint` les vérifie) :
+  - toutes les notes : `type` (source | concept | entite | synthese),
+    `date` (date de création `YYYY-MM-DD`, jamais modifiée ensuite) et
+    `auteur` (qui a créé la note : la personne pilotant la session — la
+    demander une fois si inconnue, puis réutiliser — ou le nom de l'équipe
+    tierce pour une note importée) ;
+  - `type: source` : `origine` — provenance de la note : chemin archivé
+    relatif au vault (pièce dans `archives/`), URL, ou mention libre
+    (« conversation », …) ; si la pièce d'origine vit aussi hors du vault,
+    ajouter `original` (chemin externe) ;
+  - `type: synthese` : `question` — la question posée ; `perimetre` si la
+    recherche visait un dossier voisin du vault.
+
+  Optionnel partout : `tags`, et toute propriété utile au cas particulier
+  (ex. `image`, `capture_precedente`/`capture_suivante` pour des captures OCR
+  en série) — enrichir librement, ne jamais retirer une propriété obligatoire.
 - Wikilinks `[[...]]` libéraux vers les concepts et entités.
 - Citations verbatim ≤ 125 caractères ; au-delà, paraphraser — le verbatim long
   reste dans `wiki/sources/`.

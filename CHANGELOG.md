@@ -9,6 +9,27 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.5.0] — 2026-07-25
+
+**Raison de l'update** : modèle de note à frontmatter obligatoire — `type`, `date`, `auteur`, `origine` (sources), `question` (synthèses) — appliqué par `/doc-ingest`, vérifié par `/doc-lint`.
+
+### Ajouté
+- `vault-template/INSTRUCTIONS-CLAUDE.md` : section « Modèle de note » —
+  propriétés obligatoires communes (`type`, `date` de création, `auteur`) et
+  par type (`origine` + `original` optionnel pour les sources, `question` +
+  `perimetre` optionnel pour les synthèses) ; propriétés libres autorisées en
+  plus (ex. `image`, `capture_precedente`/`capture_suivante`), jamais en moins.
+- `/doc-lint` : 7e vérification — notes de `wiki/` non conformes au modèle,
+  avec proposition de valeurs déduites du contenu ou du LOG (jamais inventées
+  sans le signaler).
+
+### Modifié
+- `/doc-ingest` et `/doc-query` (synthèses) : frontmatter aligné sur le modèle,
+  `auteur` repéré dans les notes existantes ou demandé une fois.
+- **Vaults existants** : le template ne s'applique qu'aux nouveaux vaults —
+  reporter la section « Modèle de note » dans l'`INSTRUCTIONS-CLAUDE.md` de
+  votre vault, puis `/doc-lint` mettra les notes en conformité.
+
 ## [1.4.3] — 2026-07-25
 
 **Raison de l'update** : le rôle d'`archives/` documenté dans le README — principe « vault auto-porteur ».

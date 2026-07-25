@@ -101,8 +101,9 @@ Exactement ces blocs, dans cet ordre :
    - présenter la réponse et ses sources à l'utilisateur, puis proposer :
      « Sauvegarder cette réponse en synthèse dans le vault ? » ;
    - si oui : écrire `$VAULT/wiki/syntheses/<slug>.md` — frontmatter
-     (`type: synthese`, `date`, `question`, plus `perimetre: <dossier>` si la
-     recherche visait une cible `dans:`), corps = la réponse, section
+     (`type: synthese`, `date`, `auteur` — repérable dans les notes existantes
+     du vault, sinon le demander —, `question`, plus `perimetre: <dossier>` si
+     la recherche visait une cible `dans:`), corps = la réponse, section
      `## Références` = les chemins des sources ; ajouter la note dans
      `$VAULT/INDEX.md`, section Synthèses ; ajouter en fin de `$VAULT/LOG.md` :
      `## [YYYY-MM-DD] synthese | <slug>` — le tout en respectant les
