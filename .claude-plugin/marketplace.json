@@ -12,8 +12,8 @@
     {
       "name": "agentic-toolbox",
       "source": {
-        "source": "github",
-        "repo": "Zairth/agentic-toolbox"
+        "source": "url",
+        "url": "https://github.com/Zairth/agentic-toolbox.git"
       },
       "description": "Moteur sémantique/OCR/LLM en CLI : recherche sémantique (embeddings), OCR PDF/images, routeur LLM multi-fournisseurs. Le skill donne aux agents les commandes exactes sans réexplorer le dépôt."
     }
