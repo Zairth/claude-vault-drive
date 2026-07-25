@@ -23,22 +23,19 @@ humains dans Obsidian.
 
 ## Ce que contient ce repo
 
-Le repo est à la fois le plugin et son propre marketplace :
+Le repo est un plugin Claude Code, distribué via le marketplace
+[Zairth/marketplace](https://github.com/Zairth/marketplace) :
 
 ```
 claude-vault-drive/
 ├── .claude-plugin/
-│   ├── plugin.json          # manifeste du plugin
-│   └── marketplace.json     # le repo est son propre marketplace (source "./")
+│   └── plugin.json          # manifeste du plugin
 ├── PREREQUIS.md             # de la machine nue au vault : WSL, Claude Code, Drive, toolbox
 ├── commands/
 │   ├── vault-init.md        # /vault-init — initialiser le vault du projet courant
 │   ├── doc-ingest.md        # /doc-ingest — ingérer une source (validation conversationnelle)
 │   ├── doc-query.md         # /doc-query — interroger le vault (sub-agent, réponse citée)
 │   └── doc-lint.md          # /doc-lint — maintenance (orphelins, INDEX, conflits Drive, vecteurs)
-├── skills/
-│   └── agentic-toolbox/
-│       └── SKILL.md         # mode d'emploi du moteur sémantique/OCR/LLM (commandes exactes, pièges)
 ├── scripts/
 │   ├── vault-check.sh       # portier : vérifie l'accès au vault, imprime son chemin
 │   ├── vault-init.sh        # initialisation du vault en une commande, idempotente
@@ -82,8 +79,9 @@ la recherche sémantique (facultatif — repli grep sinon) ; Obsidian est
 Dans Claude Code (une fois, valable pour tous les projets) :
 
 ```
-/plugin marketplace add Zairth/claude-vault-drive
-/plugin install claude-vault-drive@zairth
+/plugin marketplace add https://github.com/Zairth/marketplace
+/plugin install claude-vault-drive@zairth_store
+/plugin install agentic-toolbox@zairth_store   # facultatif : le skill de la toolbox (si elle est installée)
 ```
 
 **Pas besoin de cloner ce repo** : Claude Code le récupère et le met en cache
@@ -103,7 +101,7 @@ Puis dans chaque projet qui doit avoir son vault :
 3. (Facultatif, humain) Ouvrir le dossier du vault comme coffre dans Obsidian.
 
 Mise à jour : automatique en arrière-plan, ou manuelle en une seule étape —
-`/plugin marketplace update zairth` (récupère le dernier commit
+`/plugin marketplace update zairth_store` (récupère le dernier commit
 directement depuis GitHub, aucun `git pull` local).
 
 Développement du plugin uniquement (tester des modifs avant de pousser) :

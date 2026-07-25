@@ -155,8 +155,8 @@ fichiers markdown, Claude Code y accède directement. Obsidian est la vitrine
 Ensuite, dans Claude Code ([README](README.md#installation)) :
 
 ```
-/plugin marketplace add Zairth/claude-vault-drive
-/plugin install claude-vault-drive@zairth
+/plugin marketplace add https://github.com/Zairth/marketplace
+/plugin install claude-vault-drive@zairth_store
 ```
 
 puis, dans chaque projet : `/vault-init "/mnt/g/Mon Drive/<Section>/<MonVault>"`.
