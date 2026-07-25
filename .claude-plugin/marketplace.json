@@ -8,6 +8,14 @@
       "name": "claude-vault-drive",
       "source": "./",
       "description": "Vault Obsidian partagé (Google Drive ou dossier synchronisé), consultable et maintenu par Claude Code : /doc-ingest, /doc-query, /doc-lint — recherche sémantique optionnelle, repli grep explicite."
+    },
+    {
+      "name": "agentic-toolbox",
+      "source": {
+        "source": "github",
+        "repo": "Zairth/agentic-toolbox"
+      },
+      "description": "Moteur sémantique/OCR/LLM en CLI : recherche sémantique (embeddings), OCR PDF/images, routeur LLM multi-fournisseurs. Le skill donne aux agents les commandes exactes sans réexplorer le dépôt."
     }
   ]
 }
