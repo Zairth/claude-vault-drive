@@ -89,6 +89,10 @@ sémantique sur dossier markdown (embeddings `mistral-embed` épinglés, index
 JSONL dans le vault), OCR de PDF/scans, routeur LLM multi-fournisseurs.
 Sans lui, `/doc-query` dégrade vers grep avec un avertissement explicite.
 
+> La toolbox existe aussi en plugin Claude Code autonome (serveur MCP, sans
+> clone) — mais les wrappers `vault-index.sh`/`vault-search.sh` de ce plugin-ci
+> passent par son CLI : le clone + venv ci-dessous restent nécessaires ici.
+
 Prérequis : Python ≥ 3.10 (3.12 recommandé) ; sous Ubuntu/Debian le module
 venv est packagé à part :
 

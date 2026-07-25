@@ -81,7 +81,7 @@ Dans Claude Code (une fois, valable pour tous les projets) :
 ```
 /plugin marketplace add https://github.com/Zairth/marketplace
 /plugin install claude-vault-drive@zairth_store
-/plugin install agentic-toolbox@zairth_store   # facultatif : le skill de la toolbox (si elle est installée)
+/plugin install agentic-toolbox@zairth_store   # facultatif : la toolbox en plugin autonome (outils MCP + skill)
 ```
 
 **Pas besoin de cloner ce repo** : Claude Code le récupère et le met en cache
@@ -167,3 +167,5 @@ s'y substitue en éditant les deux wrappers, sans toucher aux commandes.
 Sans moteur, tout fonctionne : `/doc-query` dégrade vers grep avec un
 avertissement explicite, `/doc-ingest` note l'indexation « à rattraper ».
 Installation du moteur (clone, venv, clé Mistral) : [PREREQUIS.md](PREREQUIS.md).
+(La toolbox existe aussi en **plugin Claude Code autonome** — serveur MCP, sans
+clone ; les wrappers de CE plugin passent, eux, par le clone + venv ci-dessus.)
