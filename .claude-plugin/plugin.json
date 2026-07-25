@@ -2,7 +2,7 @@
   "name": "claude-vault-drive",
   "displayName": "Claude Vault Drive",
   "description": "Vault Obsidian partagé (Google Drive ou dossier synchronisé), consultable et maintenu par Claude Code : /doc-ingest, /doc-query, /doc-lint — recherche sémantique et OCR optionnels via le plugin agentic-toolbox (outils MCP, zéro clone) ou son clone local, repli grep explicite.",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "author": {
     "name": "Zairth"
   },

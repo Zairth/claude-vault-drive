@@ -31,6 +31,7 @@ claude-vault-drive/
 ├── .claude-plugin/
 │   └── plugin.json          # manifeste du plugin
 ├── PREREQUIS.md             # de la machine nue au vault : WSL, Claude Code, Drive, toolbox
+├── CHANGELOG.md             # pourquoi mettre à jour — une entrée par version
 ├── commands/
 │   ├── vault-init.md        # /vault-init — initialiser le vault du projet courant
 │   ├── doc-ingest.md        # /doc-ingest — ingérer une source (validation conversationnelle)
@@ -104,7 +105,8 @@ Puis dans chaque projet qui doit avoir son vault :
 
 Mise à jour : automatique en arrière-plan, ou manuelle en une seule étape —
 `/plugin marketplace update zairth_store` (récupère le dernier commit
-directement depuis GitHub, aucun `git pull` local).
+directement depuis GitHub, aucun `git pull` local). Ce qui a changé et
+pourquoi mettre à jour : [CHANGELOG.md](CHANGELOG.md).
 
 Développement du plugin uniquement (tester des modifs avant de pousser) :
 `/plugin marketplace add /chemin/du/clone` ou `claude --plugin-dir /chemin/du/clone`.
