@@ -1,12 +1,21 @@
 # Changelog — claude-vault-drive
 
-Pourquoi mettre à jour ? Chaque version du plugin est décrite ici : la raison
-de l'update en une ligne, puis le détail des changements. Format inspiré de
+Ce que contient chaque mise à jour du plugin : la raison en une ligne, puis le
+détail des changements — de quoi savoir si elle vaut le coup avant de
+l'installer. Format inspiré de
 [Keep a Changelog](https://keepachangelog.com/fr/), versions en
 [semver](https://semver.org/lang/fr/) (patch = fix/docs, minor = feature).
 
-Mise à jour côté consommateur : `/plugin marketplace update zairth_store`
-puis `/reload-plugins` — le cache n'est invalidé que si la version change.
+Installer une mise à jour : `/plugin marketplace update zairth_store` puis
+`/reload-plugins` (le cache n'est invalidé que si la version change).
+
+## [1.3.2] — 2026-07-25
+
+**Raison de l'update** : en-tête du changelog clarifié — il aide à décider d'*installer* une mise à jour, il n'invite pas à modifier le repo.
+
+### Corrigé
+- « Mise à jour côté consommateur » → « Installer une mise à jour » (même
+  clarification dans le changelog d'agentic-toolbox).
 
 ## [1.3.1] — 2026-07-25
 
