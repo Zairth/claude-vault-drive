@@ -132,6 +132,12 @@ fichiers markdown, Claude Code y accède directement. Obsidian est la vitrine
   (ou macOS), là où le lecteur Drive est visible, pas dans WSL.
 - Après `/vault-init` : « Ouvrir un coffre » → choisir le dossier du vault
   (ex. `G:\Mon Drive\<Section>\<MonVault>`).
+- **Piège WSL** : le vault doit vivre côté Windows (`/mnt/<lettre>/...` vu de
+  WSL). Un vault créé dans le disque WSL (`~/...`) fait planter Obsidian à
+  l'ouverture (`EISDIR ... watch '\\wsl.localhost\...'`) — il ne sait pas
+  surveiller un chemin réseau UNC. Le cas échéant : déplacer le vault vers
+  `/mnt/...` et repointer `.claude/vault-path.local` + `settings.local.json`
+  du projet.
 - Les écritures faites par Claude hors d'Obsidian peuvent mettre un moment à
   apparaître — Ctrl+R recharge ; `/doc-lint` fait foi.
 

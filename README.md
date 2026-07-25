@@ -132,6 +132,12 @@ Windows : BOM/CRLF/espaces finaux sont nettoyés automatiquement.
 
 ## Notes d'environnement
 
+- **Le vault vit côté Windows, pas dans WSL** : un vault créé dans le disque
+  WSL (`~/...`) fait planter l'Obsidian Windows à l'ouverture (`EISDIR ...
+  watch '\\wsl.localhost\...'` — Obsidian ne sait pas surveiller un chemin
+  réseau UNC). Toujours donner à `/vault-init` un chemin `/mnt/<lettre>/...`
+  (Drive ou dossier Windows) et ouvrir le coffre Obsidian via son chemin
+  Windows natif (`G:\...`, `C:\...`).
 - **WSL + Google Drive** : si le lecteur apparaît après le démarrage de WSL,
   `/mnt/<lettre>` peut être vide → `sudo mount -t drvfs <lettre>: /mnt/<lettre>`.
 - **Vue Obsidian en retard** : les écritures faites hors d'Obsidian (par Claude)
