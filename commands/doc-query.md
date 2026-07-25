@@ -50,7 +50,7 @@ dossier parent (ex. autoriser `<parent>` plutôt que `<parent>/<vault>` seul).
    uniquement ». Jamais d'échec silencieux, jamais d'autre fournisseur
    d'embeddings.
 5. Filtrer les résultats venant de `LOG.md`, `INDEX.md`,
-   `INSTRUCTIONS-CLAUDE.md` ou `inbox/` (bruit d'indexation). Les résultats
+   `INSTRUCTIONS-CLAUDE.md`, `inbox/` ou `archives/` (bruit d'indexation). Les résultats
    restants (`relative_path`, `section`, `score`, `excerpt`) constituent les
    « pistes sémantiques ». Formater chaque piste en une ligne unique au format :
    `chemin#section (score) — extrait`. Construire la liste complète sous la forme

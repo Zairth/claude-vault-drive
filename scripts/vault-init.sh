@@ -58,8 +58,9 @@ for ignore_line in ".claude/settings.local.json" ".claude/vault-path.local" ".cl
 done
 
 # Structure du vault.
-mkdir -p "$vault_path/inbox" "$vault_path/wiki/sources" "$vault_path/wiki/concepts" \
-         "$vault_path/wiki/entites" "$vault_path/wiki/syntheses" "$vault_path/.index"
+mkdir -p "$vault_path/inbox" "$vault_path/archives" "$vault_path/wiki/sources" \
+         "$vault_path/wiki/concepts" "$vault_path/wiki/entites" \
+         "$vault_path/wiki/syntheses" "$vault_path/.index"
 echo "OK : arborescence du vault en place."
 
 # Fichiers racine — jamais écrasés (un vault déjà vivant n'est pas touché).

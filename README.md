@@ -118,6 +118,8 @@ Windows : BOM/CRLF/espaces finaux sont nettoyés automatiquement.
 - `/doc-ingest <texte | fichier | URL | élément de inbox/>` — propose 2-5
   enseignements clés, discute, puis écrit : note source immuable, pages
   concepts/entités, INDEX, LOG. Contradiction détectée → callout `> [!warning]`.
+  Le brut venu d'`inbox/` est **archivé dans `archives/`**, jamais supprimé —
+  le vault reste auto-porteur (condensé + pièces d'origine).
 - `/doc-query <question>` — réindexation incrémentale + recherche sémantique
   (pistes injectées dans le sub-agent), puis sub-agent : INDEX → notes →
   wikilinks → grep ; réponse citée ; option « sauvegarder en synthèse ».

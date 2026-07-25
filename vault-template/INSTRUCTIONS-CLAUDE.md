@@ -20,7 +20,8 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
 ├── INSTRUCTIONS-CLAUDE.md   ← ce fichier
 ├── INDEX.md                 ← carte du vault, point d'entrée de toute recherche
 ├── LOG.md                   ← journal append-only des opérations
-├── inbox/                   ← dépôts bruts en attente d'ingestion
+├── inbox/                   ← sas : dépôts bruts en attente d'ingestion
+├── archives/                ← pièces d'origine conservées après ingestion (hors index)
 ├── wiki/
 │   ├── sources/             ← couche IMMUABLE : une note par source, jamais réécrite
 │   ├── concepts/            ← couche vivante : pages de concepts
@@ -51,8 +52,16 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
 - `LOG.md` est **append-only** : `## [YYYY-MM-DD] <action> | <titre>` (actions :
   `init`, `ingest`, `lint`, `synthese`), suivi d'une ligne de détail. Ne jamais
   modifier une entrée existante.
-- `inbox/` : un fichier ingéré avec succès est **supprimé** de l'inbox — son
-  contenu condensé vit désormais dans `wiki/sources/`.
+- `inbox/` est un **sas**, pas un stockage : un fichier ingéré avec succès est
+  **déplacé vers `archives/`** (jamais supprimé) — le condensé vit dans
+  `wiki/sources/`, la pièce d'origine reste vérifiable dans le vault, qui
+  voyage ainsi d'un bloc (auto-porteur).
+- `archives/` est immuable comme `wiki/sources/`. Un fichier `.md` y est
+  renommé en `.md.txt` au moment de l'archivage : le moteur sémantique
+  n'indexe que les `.md`, les archives restent donc hors index (zéro coût,
+  zéro bruit). Attention avant de partager le vault : les archives peuvent
+  contenir des données sensibles que les notes condensées ont volontairement
+  écartées.
 
 ## Règles de recherche (pour les sub-agents)
 

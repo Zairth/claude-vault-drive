@@ -46,7 +46,11 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
    section, sous forme `- [[<slug>]] — <description en quelques mots>`.
 4. Ajouter en fin de `$VAULT/LOG.md` : `## [YYYY-MM-DD] ingest | <titre de la source>`
    suivi d'une ligne listant les fichiers créés/modifiés.
-5. Si la source venait de `$VAULT/inbox/` : supprimer le fichier ingéré.
+5. Si la source venait de `$VAULT/inbox/` : la **déplacer vers
+   `$VAULT/archives/`** (jamais de suppression — le condensé vit dans `wiki/`,
+   la pièce d'origine reste dans le vault). Un fichier `.md` est renommé en
+   `.md.txt` à l'archivage (hors index sémantique). Renseigner `origine:` de
+   la note source avec ce chemin archivé, relatif au vault.
 6. Indexation sémantique : exécuter `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"`.
    Incrémental — seuls les chunks des notes créées/modifiées coûtent un appel
    API. **Échec = non bloquant** : l'ingestion reste valide ; noter que
