@@ -11,8 +11,9 @@ la vitrine humaine (graphe, wikilinks), Claude Code y accède directement.
 Combiné à [agentic-toolbox](https://github.com/Zairth/agentic-toolbox), ce
 plugin fait naître le fameux **deuxième cerveau de Claude** : une mémoire
 externe durable et partagée, optimisée par **orchestration agentique**
-(sub-agents qui explorent le vault sans jamais saturer le contexte principal)
-et par des **skills** pour la recherche sémantique et l'OCR.
+(`/doc-query` et `/doc-lint` s'exécutent entièrement dans un sub-agent via
+`context: fork` — le contexte principal n'est jamais saturé) et par des
+**skills** pour la recherche sémantique et l'OCR.
 
 Le cas d'usage type : brancher un projet sur son dossier Drive — Claude le
 **consomme** (`/doc-query` répond en citant les notes) et l'**alimente en
@@ -35,8 +36,8 @@ claude-vault-drive/
 ├── commands/
 │   ├── vault-init.md        # /vault-init — initialiser le vault du projet courant
 │   ├── doc-ingest.md        # /doc-ingest — ingérer une source (validation conversationnelle)
-│   ├── doc-query.md         # /doc-query — interroger le vault (sub-agent, réponse citée)
-│   └── doc-lint.md          # /doc-lint — maintenance (orphelins, INDEX, conflits Drive, vecteurs)
+│   ├── doc-query.md         # /doc-query — interroger le vault (fork isolé, réponse citée)
+│   └── doc-lint.md          # /doc-lint — maintenance (fork isolé : orphelins, INDEX, conflits Drive, vecteurs)
 ├── scripts/
 │   ├── vault-check.sh       # portier : vérifie l'accès au vault, imprime son chemin
 │   ├── vault-init.sh        # initialisation du vault en une commande, idempotente
@@ -58,9 +59,11 @@ vault par projet**.
 
 - **Source de vérité = les `.md` du vault.** Tout le reste (index de recherche,
   caches) est un dérivé jetable et reconstructible.
-- **Recherche via sub-agents uniquement** : le contexte principal de Claude ne
-  voit jamais les notes brutes (anti-saturation, anti-distracteurs) — seule la
-  réponse citée remonte.
+- **Recherche isolée du contexte principal** : `/doc-query` et `/doc-lint`
+  s'exécutent entièrement dans un sub-agent (`context: fork` dans le
+  frontmatter de la commande) — le contexte principal de Claude ne voit jamais
+  les notes brutes ni même les instructions de la commande (anti-saturation,
+  anti-distracteurs) ; seuls la réponse citée ou le rapport remontent.
 - **Trois couches de savoir** : `wiki/sources/` (immuable, une note par source),
   `wiki/concepts/` + `wiki/entites/` (vivantes, reliées par wikilinks),
   `wiki/syntheses/` (réponses transversales persistées).
@@ -122,17 +125,19 @@ Windows : BOM/CRLF/espaces finaux sont nettoyés automatiquement.
   concepts/entités, INDEX, LOG. Contradiction détectée → callout `> [!warning]`.
   Le brut venu d'`inbox/` est **archivé dans `archives/`**, jamais supprimé —
   le vault reste auto-porteur (condensé + pièces d'origine).
-- `/doc-query <question>` — réindexation incrémentale + recherche sémantique
-  (pistes injectées dans le sub-agent), puis sub-agent : INDEX → notes →
-  wikilinks → grep ; réponse citée ; option « sauvegarder en synthèse ».
+- `/doc-query <question>` — le tout en fork isolé : réindexation incrémentale
+  + recherche sémantique, puis INDEX → notes → wikilinks → grep ; réponse
+  citée ; option « sauvegarder en synthèse » (appliquée en contexte principal
+  après accord).
   Ajouter `dans:<dossier>` pour cibler un dossier voisin du vault (ex. une
   section alimentée par des tiers) : lecture seule, la synthèse reste dans le
   vault. Ajouter `--no-index` pour interroger sans réindexer. Moteur
   sémantique indisponible → repli grep **explicite** (⚠ affiché), jamais
   d'échec silencieux.
-- `/doc-lint` — rapport : contradictions en souffrance, pages orphelines, trous
-  d'INDEX, fichiers de conflit Drive, inbox en attente, cohérence de l'index
-  vectoriel (`.index/`) ; corrections validées avec l'utilisateur.
+- `/doc-lint` — rapport produit en fork isolé : contradictions en souffrance,
+  pages orphelines, trous d'INDEX, fichiers de conflit Drive, inbox en
+  attente, cohérence de l'index vectoriel (`.index/`) ; corrections validées
+  avec l'utilisateur puis appliquées en contexte principal.
 
 ## Notes d'environnement
 

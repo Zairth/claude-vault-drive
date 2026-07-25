@@ -9,6 +9,26 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.4.0] — 2026-07-25
+
+**Raison de l'update** : `/doc-query` et `/doc-lint` s'exécutent désormais entièrement dans un sub-agent (`context: fork`) — zéro pollution du contexte principal, préambule et notes compris.
+
+### Modifié
+- `/doc-query`, `/doc-lint` : frontmatter `context: fork` + `agent: Explore` +
+  `background: false` — toute la commande (vault-check, lecture
+  d'`INSTRUCTIONS-CLAUDE.md`, indexation, recherche, vérifications) tourne
+  dans un sub-agent isolé ; seul le rapport final remonte. L'instruction
+  « lancer un sub-agent » dans le corps des commandes devient inutile et
+  disparaît.
+- Les étapes interactives (proposer la sauvegarde en synthèse, valider les
+  corrections de lint) restent en contexte principal : le rapport du fork se
+  termine par un bloc « Pour l'agent principal » avec le chemin du vault
+  résolu et les recettes exactes à appliquer après accord de l'utilisateur —
+  un fork ne peut pas dialoguer.
+- `/doc-ingest` inchangé : sa validation conversationnelle exige le contexte
+  principal, un fork ne peut pas dialoguer avec l'utilisateur.
+- `README.md` : principes et usage mis à jour (fork isolé).
+
 ## [1.3.2] — 2026-07-25
 
 **Raison de l'update** : en-tête du changelog clarifié — il aide à décider d'*installer* une mise à jour, il n'invite pas à modifier le repo.
