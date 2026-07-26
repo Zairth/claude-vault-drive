@@ -46,20 +46,23 @@ dossier parent (ex. autoriser `<parent>` plutôt que `<parent>/<vault>` seul).
 
 1. Si `$ARGUMENTS` contient le jeton `--no-index`, le retirer de la question et
    sauter l'étape 2 (échappatoire : interroger sans réindexer).
-2. Indexer — toujours `$VAULT`, même quand la cible est un dossier voisin
-   `dans:` (un voisin est en lecture seule : on ne l'indexe JAMAIS, son équipe
-   s'en charge). Indexation incrémentale : seuls les chunks nouveaux/modifiés
-   coûtent un appel API. Deux portes d'entrée vers le moteur, dans cet ordre :
+2. Indexer — toujours `$VAULT/wiki` (l'index ne couvre que `wiki/` : ni
+   `archives/`, ni `inbox/`, ni les fichiers racine), même quand la cible est
+   un dossier voisin `dans:` (un voisin est en lecture seule : on ne l'indexe
+   JAMAIS, son équipe s'en charge). Indexation incrémentale : seuls les chunks
+   nouveaux/modifiés coûtent un appel API. Deux portes d'entrée vers le
+   moteur, dans cet ordre :
    - **MCP** (plugin agentic-toolbox installé) : outil
      `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build`, en passant
-     `directory: $VAULT` **explicitement** — ne jamais compter sur son défaut
-     `VAULT_PATH` (config globale du plugin, alors qu'ici le vault est celui
-     du projet) ;
+     `directory: $VAULT/wiki` **explicitement** — ne jamais compter sur son
+     défaut `VAULT_PATH` (config globale du plugin, alors qu'ici le vault est
+     celui du projet) ;
    - **wrapper** sinon : `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"`
      (clone local + venv du moteur).
-3. Chercher — même cascade :
+3. Chercher — même cascade, dans le dossier indexé (`$VAULT/wiki` en cible
+   normale, le dossier voisin pour `dans:`) :
    - **MCP** : outil `mcp__plugin_agentic-toolbox_toolbox__semantic_search`
-     (`question`, `directory: <cible>` explicite) ;
+     (`question`, `directory` explicite) ;
    - **wrapper** sinon :
      `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-search.sh" "<question>" "<cible>"`
      (le 2e argument ne sert que pour une cible `dans:` ; l'omettre sinon).
@@ -69,10 +72,12 @@ dossier parent (ex. autoriser `<parent>` plutôt que `<parent>/<vault>` seul).
    ouvrir le rapport final par : « ⚠ recherche sémantique indisponible
    (<raison en quelques mots>), résultats par mots-clés uniquement ». Jamais
    d'échec silencieux, jamais d'autre fournisseur d'embeddings.
-5. Filtrer les résultats venant de `LOG.md`, `INDEX.md`,
-   `INSTRUCTIONS-CLAUDE.md`, `inbox/` ou `archives/` (bruit d'indexation).
-   Les résultats restants (`relative_path`, `section`, `score`, `excerpt`)
-   constituent les « pistes sémantiques » de la recherche ci-dessous.
+5. Les résultats (`relative_path`, `section`, `score`, `excerpt`) constituent
+   les « pistes sémantiques » de la recherche ci-dessous. En cible normale,
+   `relative_path` est relatif à `wiki/` — préfixer par `wiki/` pour ouvrir
+   et citer les notes. (Index d'une version ≤ 1.5.3 encore en place : des
+   résultats `LOG.md`, `INDEX.md`, `inbox/`, `archives/` peuvent apparaître —
+   les ignorer.)
 
 ## Recherche
 

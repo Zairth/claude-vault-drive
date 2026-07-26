@@ -6,4 +6,4 @@ modifier une entrée existante.
 ## [YYYY-MM-DD] init | création du vault
 
 Structure initiale : INSTRUCTIONS-CLAUDE.md, INDEX.md, LOG.md, inbox/,
-wiki/{sources,concepts,entites,syntheses}/, .index/.
+wiki/{sources,concepts,entites,syntheses}/, wiki/.index/.

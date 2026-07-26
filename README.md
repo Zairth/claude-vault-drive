@@ -75,7 +75,8 @@ vault par projet**.
   ingéré est déplacé vers `archives/`, jamais supprimé. Le condensé vit dans
   `wiki/sources/`, la pièce d'origine reste vérifiable dans le vault, qui
   voyage d'un bloc. `archives/` est immuable et **hors index sémantique**
-  (les `.md` y sont renommés `.md.txt` : zéro coût, zéro bruit) ; attention
+  (l'index ne couvre que `wiki/` : zéro coût, zéro bruit — les fichiers
+  archivés gardent leur nom et leur extension) ; attention
   avant de partager le vault, les archives peuvent contenir des données
   sensibles que les notes condensées ont volontairement écartées.
 - **Échecs explicites** : Drive non monté, vault non initialisé → message clair,
@@ -180,7 +181,8 @@ commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
 
 ## Recherche sémantique (facultative, repli grep sinon)
 
-L'index d'embeddings vit dans `<vault>/.index/embeddings.jsonl` — un mapping
+L'index d'embeddings vit dans `<vault>/wiki/.index/embeddings.jsonl` (seul
+`wiki/` est indexé — ni `archives/`, ni `inbox/`, ni les fichiers racine) — un mapping
 `hash(chunk) → vecteur` partagé via Drive, fournisseur/modèle épinglés en
 ligne 1, réindexation incrémentale par hash (jamais de fallback d'embeddings
 entre modèles : espaces vectoriels incompatibles). Il est **dérivé et

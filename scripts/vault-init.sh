@@ -60,7 +60,7 @@ done
 # Structure du vault.
 mkdir -p "$vault_path/inbox" "$vault_path/archives" "$vault_path/wiki/sources" \
          "$vault_path/wiki/concepts" "$vault_path/wiki/entites" \
-         "$vault_path/wiki/syntheses" "$vault_path/.index"
+         "$vault_path/wiki/syntheses" "$vault_path/wiki/.index"
 echo "OK : arborescence du vault en place."
 
 # Fichiers racine — jamais écrasés (un vault déjà vivant n'est pas touché).

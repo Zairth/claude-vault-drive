@@ -26,8 +26,8 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
 │   ├── sources/             ← couche IMMUABLE : une note par source, jamais réécrite
 │   ├── concepts/            ← couche vivante : pages de concepts
 │   ├── entites/             ← couche vivante : personnes, outils, projets
-│   └── syntheses/           ← réponses de /doc-query sauvegardées
-└── .index/                  ← index de recherche sémantique optionnel (ne pas toucher)
+│   ├── syntheses/           ← réponses de /doc-query sauvegardées
+│   └── .index/              ← index de recherche sémantique optionnel (ne pas toucher)
 ```
 
 ## Conventions de notes
@@ -82,10 +82,10 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
   n'est pas touché) — le condensé vit dans `wiki/sources/`, la pièce
   d'origine reste vérifiable dans le vault, qui voyage ainsi d'un bloc
   (auto-porteur).
-- `archives/` est immuable comme `wiki/sources/`. Un fichier `.md` y est
-  renommé en `.md.txt` au moment de l'archivage : le moteur sémantique
-  n'indexe que les `.md`, les archives restent donc hors index (zéro coût,
-  zéro bruit). Attention avant de partager le vault : les archives peuvent
+- `archives/` est immuable comme `wiki/sources/`. Les fichiers archivés
+  gardent leur nom et leur extension ; l'index sémantique ne couvre que
+  `wiki/`, les archives restent donc hors index (zéro coût, zéro bruit).
+  Attention avant de partager le vault : les archives peuvent
   contenir des données sensibles que les notes condensées ont volontairement
   écartées.
 

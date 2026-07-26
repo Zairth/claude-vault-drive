@@ -9,6 +9,23 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.5.4] — 2026-07-26
+
+**Raison de l'update** : fin du renommage `.md` → `.md.txt` à l'archivage — les archives gardent leurs extensions d'origine. L'exclusion de l'index se fait proprement : seul `wiki/` est indexé, et l'index vit dans `wiki/.index/`.
+
+### Modifié
+- Périmètre d'indexation : `$VAULT/wiki` au lieu de `$VAULT` — `archives/`,
+  `inbox/` et les fichiers racine (LOG, INDEX, INSTRUCTIONS) sortent de
+  l'index par construction ; le filtre « bruit d'indexation » de `/doc-query`
+  devient inutile (gardé en tolérance pour un index ≤ 1.5.3 pas encore
+  reconstruit). L'index vit dans `wiki/.index/` (voyage toujours avec le
+  vault) ; `vault-init.sh`, les wrappers CLI et les trois commandes `/doc-*`
+  sont alignés.
+- `/doc-ingest` : plus aucun renommage à l'archivage — un fichier archivé
+  garde son nom et son extension.
+- `/doc-lint` : un `.index/` à la racine du vault est signalé comme reliquat
+  ≤ 1.5.3 (suppression proposée — dérivé jetable).
+
 ## [1.5.3] — 2026-07-26
 
 **Raison de l'update** : `origine`/`original` pouvaient contenir un chemin absolu de la machine (`/home/...`) — mort avec la machine, vault plus auto-porteur. Toute pièce locale ingérée est désormais copiée dans `archives/` et référencée relativement au vault.

@@ -9,7 +9,7 @@ set -euo pipefail
 script_directory="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$script_directory/toolbox-env.sh"
 
-target_directory="${1:-$(bash "$script_directory/vault-check.sh")}"
+target_directory="${1:-$(bash "$script_directory/vault-check.sh")/wiki}"
 if [[ ! -d "$target_directory" ]]; then
     echo "ERREUR : dossier à indexer introuvable : $target_directory" >&2
     exit 1

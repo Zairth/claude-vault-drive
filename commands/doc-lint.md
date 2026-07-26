@@ -31,7 +31,7 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
    lister les absentes. Inversement, lister les entrées d'`INDEX.md` pointant
    vers des fichiers disparus.
 4. **Fichiers de conflit Drive** : chercher les motifs `* (1).md`, `* (2).md` et
-   `*conflit*` dans tout le vault → lister. Chercher aussi dans `.index/` les
+   `*conflit*` dans tout le vault → lister. Chercher aussi dans `wiki/.index/` les
    doublons du mapping vectoriel (`embeddings (1).jsonl`, `*conflit*`) → lister
    séparément (résolution spécifique, voir corrections).
 5. **inbox/ en attente** : lister les fichiers non ingérés (information, pas erreur).
@@ -40,11 +40,14 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
    `auteur`, plus `origine` pour les sources et `question` pour les synthèses
    → lister les notes non conformes avec leurs propriétés manquantes.
 7. **Cohérence vectorielle** :
-   - `.index/embeddings.jsonl` absent → « index sémantique jamais construit »
-     (information ; remède : la réindexation décrite dans les corrections).
+   - `wiki/.index/embeddings.jsonl` absent → « index sémantique jamais
+     construit » (information ; remède : la réindexation décrite dans les
+     corrections). Un `.index/` à la racine du vault est un reliquat des
+     versions ≤ 1.5.3 (l'index vit désormais dans `wiki/.index/`) → proposer
+     sa suppression (dérivé jetable).
    - Présent → lire ses métadonnées (outil MCP
      `mcp__plugin_agentic-toolbox_toolbox__semantic_info` avec
-     `directory: $VAULT` — purement local, zéro quota — sinon ligne 1 du
+     `directory: $VAULT/wiki` — purement local, zéro quota — sinon ligne 1 du
      fichier : provider, modèle, dimension, version) et les reporter.
      Diagnostic de suivi : comparer le `created_at` le plus récent du mapping
      aux dernières entrées `ingest` de `LOG.md` — des ingests postérieurs aux
@@ -66,14 +69,14 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      de la note dans le LOG) — jamais de valeur inventée sans le signaler.
    - Pour la cohérence vectorielle : proposer la réindexation — outil MCP
      `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` avec
-     `directory: $VAULT` **explicite** (jamais son défaut `VAULT_PATH`, global)
-     si le plugin agentic-toolbox est installé, sinon
+     `directory: $VAULT/wiki` **explicite** (jamais son défaut `VAULT_PATH`,
+     global) si le plugin agentic-toolbox est installé, sinon
      `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"` (clone + venv)
      (coût API : uniquement les chunks au hash inconnu) — le rapport JSON fait
      foi : `embedded_chunks > 0` = vecteurs manquants/périmés qui viennent
      d'être réparés (notes éditées hors circuit) ; la réécriture complète
      purge par construction les vecteurs orphelins.
-   - Pour un conflit Drive sur `.index/` : si la ligne 1 (métadonnées) des
+   - Pour un conflit Drive sur `wiki/.index/` : si la ligne 1 (métadonnées) des
      deux fichiers est identique, fusion mécanique — union des lignes de
      chunks, dédoublonnage par `hash` (deux lignes de même hash sont
      identiques par construction), réécriture atomique, suppression du fichier
