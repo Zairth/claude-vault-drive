@@ -9,6 +9,16 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.5.5] — 2026-07-26
+
+**Raison de l'update** : la validation de `/doc-ingest` pouvait être présentée via un outil de question dont les options contenaient les enseignements — l'utilisateur validait sans avoir pu les lire.
+
+### Corrigé
+- `/doc-ingest` (validation conversationnelle) : les 2-5 enseignements clés
+  doivent être écrits en clair dans le corps de la réponse avant toute demande
+  d'accord ; un outil de question (AskUserQuestion ou équivalent) ne peut que
+  recueillir l'accord, jamais porter le contenu.
+
 ## [1.5.4] — 2026-07-26
 
 **Raison de l'update** : fin du renommage `.md` → `.md.txt` à l'archivage — les archives gardent leurs extensions d'origine. L'exclusion de l'index se fait proprement : seul `wiki/` est indexé, et l'index vit dans `wiki/.index/`.

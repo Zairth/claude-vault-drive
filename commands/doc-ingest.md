@@ -29,7 +29,13 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
 
 ## Validation conversationnelle (OBLIGATOIRE avant toute écriture)
 
-1. Proposer 2 à 5 enseignements clés extraits de la source (une ligne chacun).
+1. Proposer 2 à 5 enseignements clés extraits de la source, **écrits en clair
+   dans le corps de la réponse** (liste numérotée, une ligne chacun).
+   INTERDIT de les reléguer dans les options ou descriptions d'un outil de
+   question (AskUserQuestion ou équivalent) : l'utilisateur doit avoir lu
+   chaque enseignement intégralement AVANT qu'on lui demande de se prononcer.
+   Un outil de question ne peut servir qu'à recueillir l'accord (valider /
+   modifier / abandonner) — jamais à porter le contenu.
 2. En discuter : l'utilisateur peut en retirer, corriger, reformuler, ajouter.
 3. N'écrire dans le vault QU'APRÈS son accord explicite.
 
