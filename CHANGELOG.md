@@ -9,6 +9,22 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.6.0] — 2026-07-26
+
+**Raison de l'update** : sur un gros volume, l'ingestion saturait le contexte principal (source brute lue en session). `/doc-ingest` lit désormais la source dans un sub-agent lecteur — le contexte principal ne voit que les enseignements.
+
+### Modifié
+- `/doc-ingest` : la lecture de la source (fichier, URL, OCR de PDF) se fait
+  dans un **sub-agent lecteur** qui ne retourne qu'un « dossier d'ingestion »
+  (enseignements, citations ≤ 125 car., concepts/entités candidats,
+  description INDEX) — jamais la source brute. Un texte bref passé en
+  argument reste ingéré sans sub-agent (déjà en contexte).
+- Validation conversationnelle : les retouches de fond sont relayées au même
+  sub-agent via SendMessage (contexte, source comprise, conservé sur tous les
+  allers-retours) ; sub-agent perdu → relance avec la source et le cumul des
+  retours. L'écriture (wiki, INDEX, LOG, archivage, indexation) reste en
+  contexte principal, à partir du seul dossier validé.
+
 ## [1.5.5] — 2026-07-26
 
 **Raison de l'update** : la validation de `/doc-ingest` pouvait être présentée via un outil de question dont les options contenaient les enseignements — l'utilisateur validait sans avoir pu les lire.

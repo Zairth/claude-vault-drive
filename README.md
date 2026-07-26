@@ -12,7 +12,8 @@ Combiné à [agentic-toolbox](https://github.com/Zairth/agentic-toolbox), ce
 plugin fait naître le fameux **deuxième cerveau de Claude** : une mémoire
 externe durable et partagée, optimisée par **orchestration agentique**
 (`/doc-query` et `/doc-lint` s'exécutent entièrement dans un sub-agent via
-`context: fork` — le contexte principal n'est jamais saturé) et par des
+`context: fork` ; `/doc-ingest` lit la source dans un sub-agent lecteur
+conversationnel — le contexte principal n'est jamais saturé) et par des
 **skills** pour la recherche sémantique et l'OCR.
 
 Le cas d'usage type : brancher un projet sur son dossier Drive — Claude le
@@ -144,9 +145,12 @@ demande et s'arrête), puis **relancer la session Claude Code** — c'est ce
 redémarrage qui charge la permission `additionalDirectories` et rend les
 commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
 
-- `/doc-ingest <texte | fichier | URL | élément de inbox/>` — propose 2-5
-  enseignements clés, discute, puis écrit : note source immuable, pages
-  concepts/entités, INDEX, LOG. Contradiction détectée → callout `> [!warning]`.
+- `/doc-ingest <texte | fichier | URL | élément de inbox/>` — un sub-agent
+  lecteur lit la source (le contexte principal ne la voit jamais) et propose
+  2-5 enseignements clés ; la discussion passe par ce même sub-agent (relais
+  SendMessage, contexte conservé) ; après validation, l'agent principal
+  écrit : note source immuable, pages concepts/entités, INDEX, LOG.
+  Contradiction détectée → callout `> [!warning]`.
   Le brut venu d'`inbox/` est **archivé dans `archives/`**, jamais supprimé —
   le vault reste auto-porteur (condensé + pièces d'origine).
 - `/doc-query <question>` — le tout en fork isolé : réindexation incrémentale

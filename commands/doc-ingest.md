@@ -13,19 +13,30 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
 2. Lire intégralement `$VAULT/INSTRUCTIONS-CLAUDE.md` et s'y conformer
    (conventions de notes, règles de maintenance).
 
-## Récupérer la source ($ARGUMENTS)
+## Récupérer et lire la source ($ARGUMENTS) — en sub-agent lecteur
 
-- Texte brut fourni directement → l'utiliser tel quel.
-- Nom d'un fichier présent dans `$VAULT/inbox/` ou chemin de fichier → le lire.
-- URL → récupérer le contenu (WebFetch).
-- PDF → ne pas l'ingérer tel quel : proposer de le convertir d'abord en
-  markdown propre par OCR (moteur : agentic-toolbox — outil MCP
-  `mcp__plugin_agentic-toolbox_toolbox__ocr_convert` si disponible dans la
-  session, sinon son CLI `services.document_ocr.cli_parser convert` depuis le
-  clone local), déposer le markdown obtenu dans `$VAULT/inbox/`, puis
-  reprendre ce circuit normalement.
 - Argument vide ou ambigu → demander à l'utilisateur ce qu'il veut ingérer
   (lister le contenu de `$VAULT/inbox/` s'il n'est pas vide).
+- Texte bref fourni directement dans `$ARGUMENTS` → il est déjà en contexte :
+  pas de sub-agent, passer directement à la validation.
+- Fichier local, élément d'`inbox/`, URL, PDF → **NE JAMAIS lire la source en
+  contexte principal** (anti-saturation : sur un gros volume, l'ingestion
+  ferait déborder la session). Lancer un **sub-agent lecteur** (outil Agent,
+  en avant-plan — `run_in_background: false`) avec pour mission :
+  1. lire la source — fichier local (chemin transmis), URL (WebFetch) ; PDF →
+     le convertir d'abord en markdown propre par OCR (outil MCP
+     `mcp__plugin_agentic-toolbox_toolbox__ocr_convert` si disponible, sinon
+     le CLI `services.document_ocr.cli_parser convert` depuis le clone local)
+     et déposer le markdown obtenu dans `$VAULT/inbox/` ;
+  2. rédiger le **dossier d'ingestion** : 2 à 5 enseignements clés (une ligne
+     chacun), pour chacun une citation verbatim ≤ 125 caractères, les
+     concepts/entités candidats (wikilinks), et une description en quelques
+     mots pour l'INDEX ;
+  3. ne retourner QUE ce dossier — jamais la source brute ni de longs
+     extraits.
+
+  Le sub-agent garde la source dans son contexte : le conserver pour toute la
+  phase de validation ci-dessous.
 
 ## Validation conversationnelle (OBLIGATOIRE avant toute écriture)
 
@@ -37,9 +48,19 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
    Un outil de question ne peut servir qu'à recueillir l'accord (valider /
    modifier / abandonner) — jamais à porter le contenu.
 2. En discuter : l'utilisateur peut en retirer, corriger, reformuler, ajouter.
-3. N'écrire dans le vault QU'APRÈS son accord explicite.
+   Retrait ou retouche de forme → se fait en contexte principal. Toute
+   demande qui exige de **retourner à la source** (reformuler sur le fond,
+   vérifier, ajouter un enseignement manqué) → la relayer au MÊME sub-agent
+   lecteur via SendMessage — son contexte, source comprise, est conservé —
+   puis présenter sa nouvelle version en clair. Autant d'allers-retours que
+   nécessaire. Sub-agent perdu ou SendMessage indisponible → relancer un
+   sub-agent lecteur avec la source ET le cumul des retours utilisateur déjà
+   exprimés.
+3. N'écrire dans le vault QU'APRÈS son accord explicite — l'écriture se fait
+   en contexte principal, à partir du seul dossier d'ingestion validé.
 
-## Écriture (dans cet ordre)
+## Écriture (dans cet ordre — à partir du dossier d'ingestion validé, sans
+jamais rouvrir la source en contexte principal)
 
 1. `$VAULT/wiki/sources/YYYY-MM-DD-<slug>.md` (date du jour, slug kebab-case) :
    frontmatter conforme au modèle de note d'`INSTRUCTIONS-CLAUDE.md`
