@@ -25,10 +25,6 @@ Installer une mise à jour : `/plugin marketplace update zairth_store` puis
   retours. L'écriture (wiki, INDEX, LOG, archivage, indexation) reste en
   contexte principal, à partir du seul dossier validé.
 
-## [1.5.5] — 2026-07-26
-
-**Raison de l'update** : la validation de `/doc-ingest` pouvait être présentée via un outil de question dont les options contenaient les enseignements — l'utilisateur validait sans avoir pu les lire.
-
 ### Corrigé
 - `/doc-ingest` (validation conversationnelle) : les 2-5 enseignements clés
   doivent être écrits en clair dans le corps de la réponse avant toute demande
