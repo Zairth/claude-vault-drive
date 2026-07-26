@@ -44,8 +44,13 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
     tierce pour une note importée) ;
   - `type: source` : `origine` — provenance de la note : chemin archivé
     relatif au vault (pièce dans `archives/`), URL, ou mention libre
-    (« conversation », …) ; si la pièce d'origine vit aussi hors du vault,
-    ajouter `original` (chemin externe) ;
+    (« conversation », …) ; `original` en plus, seulement si la pièce
+    d'origine diffère de la copie pointée par `origine` (ex. le PDF dont la
+    note vient par OCR) : chemin de sa copie dans `archives/`, ou emplacement
+    durable hors vault (URL, dossier partagé). **Jamais de chemin absolu de
+    la machine** (`/home/...`, `/mnt/...`, `C:\...`) dans `origine`/`original` :
+    un fichier local ingéré est copié dans `archives/` et référencé
+    relativement au vault ;
   - `type: synthese` : `question` — la question posée ; `perimetre` si la
     recherche visait un dossier voisin du vault.
 
@@ -72,9 +77,11 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
   `init`, `ingest`, `lint`, `synthese`), suivi d'une ligne de détail. Ne jamais
   modifier une entrée existante.
 - `inbox/` est un **sas**, pas un stockage : un fichier ingéré avec succès est
-  **déplacé vers `archives/`** (jamais supprimé) — le condensé vit dans
-  `wiki/sources/`, la pièce d'origine reste vérifiable dans le vault, qui
-  voyage ainsi d'un bloc (auto-porteur).
+  **déplacé vers `archives/`** (jamais supprimé) ; un fichier local ingéré
+  depuis l'extérieur du vault y est **copié** (l'original de l'utilisateur
+  n'est pas touché) — le condensé vit dans `wiki/sources/`, la pièce
+  d'origine reste vérifiable dans le vault, qui voyage ainsi d'un bloc
+  (auto-porteur).
 - `archives/` est immuable comme `wiki/sources/`. Un fichier `.md` y est
   renommé en `.md.txt` au moment de l'archivage : le moteur sémantique
   n'indexe que les `.md`, les archives restent donc hors index (zéro coût,

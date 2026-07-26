@@ -39,7 +39,10 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
    frontmatter conforme au modèle de note d'`INSTRUCTIONS-CLAUDE.md`
    (`type: source`, `date`, `auteur` — repérable dans les notes existantes du
    vault, sinon le demander —, `origine` = chemin archivé/URL/« conversation »,
-   `original` si la pièce d'origine vit aussi hors du vault),
+   `original` seulement si la pièce d'origine diffère de la copie pointée par
+   `origine` — ex. le PDF dont la note vient par OCR : chemin de sa copie dans
+   `archives/`, ou emplacement durable hors vault (URL, dossier partagé) —
+   **jamais un chemin absolu de la machine**),
    les enseignements validés, citations verbatim ≤ 125 caractères, wikilinks
    vers les concepts/entités concernés. Immuable une fois écrit.
 2. Pour chaque concept ou entité touché : créer ou mettre à jour la page dans
@@ -52,11 +55,16 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
    section, sous forme `- [[<slug>]] — <description en quelques mots>`.
 4. Ajouter en fin de `$VAULT/LOG.md` : `## [YYYY-MM-DD] ingest | <titre de la source>`
    suivi d'une ligne listant les fichiers créés/modifiés.
-5. Si la source venait de `$VAULT/inbox/` : la **déplacer vers
-   `$VAULT/archives/`** (jamais de suppression — le condensé vit dans `wiki/`,
-   la pièce d'origine reste dans le vault). Un fichier `.md` est renommé en
-   `.md.txt` à l'archivage (hors index sémantique). Renseigner `origine:` de
-   la note source avec ce chemin archivé, relatif au vault.
+5. Archiver la pièce d'origine — pour TOUTE source qui est un fichier local :
+   venue de `$VAULT/inbox/` → la **déplacer** vers `$VAULT/archives/` ; venue
+   d'ailleurs sur la machine → l'y **copier** (le fichier de l'utilisateur
+   n'est jamais déplacé ni supprimé). PDF passé par OCR : archiver les deux —
+   le markdown OCR et le PDF d'origine. Un fichier `.md` est renommé en
+   `.md.txt` à l'archivage (hors index sémantique). Renseigner `origine:`
+   (et `original:` le cas échéant) avec ces chemins archivés, relatifs au
+   vault — **jamais un chemin absolu de la machine** (`/home/...`,
+   `/mnt/...`, `C:\...`) : il meurt avec la machine, le vault doit rester
+   auto-porteur.
 6. Indexation sémantique — outil MCP
    `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` avec
    `directory: $VAULT` **explicite** (jamais son défaut `VAULT_PATH`, global)

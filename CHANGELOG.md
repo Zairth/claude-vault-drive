@@ -9,6 +9,21 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.5.3] — 2026-07-26
+
+**Raison de l'update** : `origine`/`original` pouvaient contenir un chemin absolu de la machine (`/home/...`) — mort avec la machine, vault plus auto-porteur. Toute pièce locale ingérée est désormais copiée dans `archives/` et référencée relativement au vault.
+
+### Corrigé
+- `/doc-ingest` (étape 5) : l'archivage vaut pour TOUT fichier local — venu
+  d'`inbox/` → déplacé, venu d'ailleurs sur la machine → **copié** (l'original
+  de l'utilisateur n'est jamais touché) ; PDF passé par OCR → le markdown OCR
+  ET le PDF d'origine sont archivés. `origine:`/`original:` reçoivent ces
+  chemins archivés relatifs au vault — jamais un chemin absolu de la machine.
+- `vault-template/INSTRUCTIONS-CLAUDE.md` : modèle de note — `original`
+  seulement si la pièce diffère de la copie pointée par `origine` (copie dans
+  `archives/` ou emplacement durable : URL, dossier partagé) ; interdiction
+  explicite des chemins absolus machine dans `origine`/`original`.
+
 ## [1.5.2] — 2026-07-25
 
 **Raison de l'update** : le README ne disait pas par où commencer une fois le plugin installé — la section « Usage » ouvre maintenant sur `/vault-init` et le redémarrage de session obligatoire.
