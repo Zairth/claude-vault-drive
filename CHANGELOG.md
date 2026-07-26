@@ -11,7 +11,7 @@ Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 
 ## [1.6.0] — 2026-07-26
 
-**Raison de l'update** : sur un gros volume, l'ingestion saturait le contexte principal (source brute lue en session). `/doc-ingest` lit désormais la source dans un sub-agent lecteur — le contexte principal ne voit que les enseignements.
+**Raison de l'update** : sur un gros volume, l'ingestion saturait le contexte principal (source brute lue en session). `/doc-ingest` lit désormais la source dans des sub-agents lecteurs, dimensionnés au volume mesuré — le contexte principal ne voit que les enseignements.
 
 ### Modifié
 - `/doc-ingest` : la lecture de la source (fichier, URL, OCR de PDF) se fait
@@ -19,6 +19,13 @@ Installer une mise à jour : `/plugin marketplace update zairth_store` puis
   (enseignements, citations ≤ 125 car., concepts/entités candidats,
   description INDEX) — jamais la source brute. Un texte bref passé en
   argument reste ingéré sans sub-agent (déjà en contexte).
+- Montage dimensionné au **volume mesuré avant lecture** (`wc -c`, markdown
+  OCR pour un PDF) : source ≤ ~150 Ko → un lecteur ; > ~150 Ko → découpe par
+  structure en tranches ≤ ~150 Ko, un lecteur par tranche (parallèle, ≤ 4) et
+  un **synthétiseur** qui fusionne les dossiers partiels et porte la
+  validation ; lot de fichiers → un lecteur par fichier, une note et un
+  accord par source. Un lecteur qui déborde retourne un plan de découpe au
+  lieu d'un dossier (bascule automatique).
 - Validation conversationnelle : les retouches de fond sont relayées au même
   sub-agent via SendMessage (contexte, source comprise, conservé sur tous les
   allers-retours) ; sub-agent perdu → relance avec la source et le cumul des

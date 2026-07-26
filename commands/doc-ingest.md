@@ -21,22 +21,46 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
   pas de sub-agent, passer directement à la validation.
 - Fichier local, élément d'`inbox/`, URL, PDF → **NE JAMAIS lire la source en
   contexte principal** (anti-saturation : sur un gros volume, l'ingestion
-  ferait déborder la session). Lancer un **sub-agent lecteur** (outil Agent,
-  en avant-plan — `run_in_background: false`) avec pour mission :
-  1. lire la source — fichier local (chemin transmis), URL (WebFetch) ; PDF →
-     le convertir d'abord en markdown propre par OCR (outil MCP
-     `mcp__plugin_agentic-toolbox_toolbox__ocr_convert` si disponible, sinon
-     le CLI `services.document_ocr.cli_parser convert` depuis le clone local)
-     et déposer le markdown obtenu dans `$VAULT/inbox/` ;
+  ferait déborder la session). **Mesurer d'abord le volume** sans lire le
+  contenu : `wc -c` par fichier ; PDF → conversion markdown par OCR d'abord
+  (outil MCP `mcp__plugin_agentic-toolbox_toolbox__ocr_convert` si
+  disponible, sinon le CLI `services.document_ocr.cli_parser convert` depuis
+  le clone local), dépôt dans `$VAULT/inbox/`, et mesure du markdown obtenu ;
+  URL → taille inconnue : partir du montage nominal, le lecteur signale s'il
+  déborde. Puis choisir le montage :
+
+  **Montage nominal — source unique ≤ ~150 Ko de texte** : un **sub-agent
+  lecteur** (outil Agent, en avant-plan — `run_in_background: false`) avec
+  pour mission :
+  1. lire la source — fichier local (chemin transmis), URL (WebFetch) ;
   2. rédiger le **dossier d'ingestion** : 2 à 5 enseignements clés (une ligne
      chacun), pour chacun une citation verbatim ≤ 125 caractères, les
      concepts/entités candidats (wikilinks), et une description en quelques
      mots pour l'INDEX ;
   3. ne retourner QUE ce dossier — jamais la source brute ni de longs
-     extraits.
+     extraits. S'il constate en lisant que la source dépasse ce qu'il peut
+     traiter proprement, il retourne un **plan de découpe** (structure et
+     bornes) au lieu d'un dossier — basculer alors sur le montage suivant.
 
-  Le sub-agent garde la source dans son contexte : le conserver pour toute la
-  phase de validation ci-dessous.
+  **Gros volume — source unique > ~150 Ko** : découper en tranches ≤ ~150 Ko
+  par la structure (sections markdown, chapitres, plages de pages — repérée
+  par grep/offsets, sans lire le contenu en contexte principal). **Un lecteur
+  par tranche**, lancés en parallèle (4 au plus à la fois), chacun rend un
+  dossier partiel. Puis un **sub-agent synthétiseur** reçoit les dossiers
+  partiels (jamais les sources) et les fusionne en un dossier d'ingestion
+  global de 2 à 5 enseignements. C'est lui l'interlocuteur de la validation.
+  Retouche exigeant un retour à la source → relancer un lecteur sur la
+  tranche concernée et transmettre sa réponse au synthétiseur.
+
+  **Lot de fichiers (plusieurs chemins, un dossier, inbox/ entier)** : le
+  modèle reste « une note par source » — un lecteur par fichier (parallèle,
+  4 au plus), puis validation présentée source par source (l'affichage peut
+  être groupé, l'accord est explicite par source) et écriture par source.
+  Un fichier du lot dépasse le seuil → lui appliquer le montage gros volume.
+
+  Dans tous les montages, l'interlocuteur de validation (lecteur, ou
+  synthétiseur en gros volume) garde son contexte : le conserver pour toute
+  la phase de validation ci-dessous.
 
 ## Validation conversationnelle (OBLIGATOIRE avant toute écriture)
 
@@ -50,12 +74,13 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
 2. En discuter : l'utilisateur peut en retirer, corriger, reformuler, ajouter.
    Retrait ou retouche de forme → se fait en contexte principal. Toute
    demande qui exige de **retourner à la source** (reformuler sur le fond,
-   vérifier, ajouter un enseignement manqué) → la relayer au MÊME sub-agent
-   lecteur via SendMessage — son contexte, source comprise, est conservé —
-   puis présenter sa nouvelle version en clair. Autant d'allers-retours que
-   nécessaire. Sub-agent perdu ou SendMessage indisponible → relancer un
-   sub-agent lecteur avec la source ET le cumul des retours utilisateur déjà
-   exprimés.
+   vérifier, ajouter un enseignement manqué) → la relayer via SendMessage à
+   l'interlocuteur de validation du montage (le lecteur — contexte, source
+   comprise, conservé ; en gros volume le synthétiseur, qui passe par un
+   lecteur de tranche relancé si la source est requise) — puis présenter sa
+   nouvelle version en clair. Autant d'allers-retours que nécessaire.
+   Interlocuteur perdu ou SendMessage indisponible → relancer le montage
+   concerné avec la source ET le cumul des retours utilisateur déjà exprimés.
 3. N'écrire dans le vault QU'APRÈS son accord explicite — l'écriture se fait
    en contexte principal, à partir du seul dossier d'ingestion validé.
 
