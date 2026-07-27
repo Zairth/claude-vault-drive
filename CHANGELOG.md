@@ -9,6 +9,15 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.11.1] — 2026-07-27
+
+**Raison de l'update** : supprime l'erreur « Duplicate hooks file detected » au chargement du plugin — `hooks/hooks.json` est chargé automatiquement par Claude Code (emplacement standard), la déclaration explicite `hooks` du manifeste faisait doublon ; elle est retirée. Les hooks fonctionnaient déjà, seule l'erreur affichée disparaît.
+
+### Corrigé
+- `plugin.json` : champ `hooks` retiré — l'emplacement standard
+  `hooks/hooks.json` suffit, le champ du manifeste ne doit référencer que des
+  fichiers de hooks *additionnels*.
+
 ## [1.11.0] — 2026-07-27
 
 **Raison de l'update** : la recherche devient mesurable — `/doc-bench` fige un banc de questions de référence propre au vault et produit un score mécanique comparable d'un run à l'autre : le prérequis pour juger les évolutions du moteur (fusion scorée, décroissance), qui n'entreront que si le banc les valide.
