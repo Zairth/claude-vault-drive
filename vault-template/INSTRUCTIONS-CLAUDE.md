@@ -108,6 +108,13 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
   n'est pas touché) — le condensé vit dans `wiki/sources/`, la pièce
   d'origine reste vérifiable dans le vault, qui voyage ainsi d'un bloc
   (auto-porteur).
+- Dépôts automatiques `inbox/session-*.md` (`type: session` : transcript de
+  session Claude Code déposé par le plugin avant compactage) : s'ingèrent
+  comme le reste du sas, avec une règle de densité — un transcript est verbeux
+  et peu dense, n'en extraire que les **décisions prises et les faits
+  durables**, jamais le déroulé ; le brut part en `archives/` comme toute
+  pièce ingérée. Un dépôt sans enseignement durable s'archive directement,
+  sans note source.
 - `archives/` est immuable comme `wiki/sources/`. Les fichiers archivés
   gardent leur nom et leur extension ; l'index sémantique ne couvre que
   `wiki/`, les archives restent donc hors index (zéro coût, zéro bruit).

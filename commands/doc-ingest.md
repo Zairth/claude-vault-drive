@@ -58,6 +58,13 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
   être groupé, l'accord est explicite par source) et écriture par source.
   Un fichier du lot dépasse le seuil → lui appliquer le montage gros volume.
 
+  Cas particulier — `inbox/session-*.md` (`type: session` : transcript de
+  session Claude Code déposé automatiquement avant compactage) : densité utile
+  faible — la mission du lecteur devient « extraire les décisions prises et
+  les faits durables, jamais le déroulé de la session ». Aucun enseignement
+  durable → proposer l'archivage direct (déplacement vers `archives/`), sans
+  note source.
+
   Dans tous les montages, l'interlocuteur de validation (lecteur, ou
   synthétiseur en gros volume) garde son contexte : le conserver pour toute
   la phase de validation ci-dessous.

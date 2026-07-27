@@ -39,12 +39,17 @@ claude-vault-drive/
 │   ├── doc-ingest.md        # /doc-ingest — ingérer une source (validation conversationnelle)
 │   ├── doc-query.md         # /doc-query — interroger le vault (fork isolé, réponse citée)
 │   └── doc-lint.md          # /doc-lint — maintenance (fork isolé : orphelins, INDEX, conflits Drive, vecteurs)
+├── hooks/
+│   └── hooks.json           # déclaration des trois hooks (SessionStart, UserPromptSubmit, PreCompact)
 ├── scripts/
 │   ├── vault-check.sh       # portier : vérifie l'accès au vault, imprime son chemin
 │   ├── vault-init.sh        # initialisation du vault en une commande, idempotente
 │   ├── toolbox-env.sh       # résolution du moteur sémantique (dossier + venv)
 │   ├── vault-index.sh       # indexation sémantique incrémentale (repli CLI, sans plugin toolbox)
-│   └── vault-search.sh      # recherche sémantique dans un dossier indexé (repli CLI)
+│   ├── vault-search.sh      # recherche sémantique dans un dossier indexé (repli CLI)
+│   ├── hook-session-start.sh    # hook : INDEX.md injecté à l'ouverture de session
+│   ├── hook-prompt-context.sh   # hook : pistes sémantiques sous chaque prompt
+│   └── hook-precompact-inbox.sh # hook : transcript déposé dans inbox/ avant compactage
 └── vault-template/          # fichiers copiés à la racine d'un nouveau vault
     ├── INSTRUCTIONS-CLAUDE.md   # le schéma du vault — toute commande le lit d'abord
     └── INDEX.md                 # carte du vault, point d'entrée des recherches (dérivé, régénérable)
@@ -175,6 +180,35 @@ commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
   attente, frontmatters obligatoires manquants, cohérence de l'index vectoriel
   (`.index/`) ; corrections validées avec l'utilisateur puis appliquées en
   contexte principal.
+
+## Hooks — le vault dans la session, sans commande
+
+Trois hooks accompagnent les commandes. Tous partagent la même garde : dans un
+projet sans `.claude/vault-path.local`, ils sortent immédiatement, silencieux —
+le plugin est invisible tant que `/vault-init` n'a pas été lancé. Aucune donnée
+du hook ne transite par argv ni par l'environnement ; tout champ servant à
+nommer un fichier est filtré et confiné au vault.
+
+- **SessionStart** — injecte `INDEX.md` (la carte du vault, tronquée à 16 Ko)
+  dans le contexte à l'ouverture de session : Claude sait d'emblée ce que le
+  vault contient. Vault configuré mais inaccessible → une seule ligne
+  d'avertissement (Drive pas monté ?).
+- **UserPromptSubmit** — recherche sémantique directe sur chaque prompt
+  (`vault-search.sh`, appel du moteur sans fork) : le top 3 est injecté comme
+  pistes — des extraits, pas une réponse, `/doc-query` reste la vraie
+  recherche. Jamais d'indexation ici (index jamais construit → silence).
+  Filtres : commandes slash/`!`/`#` et prompts de moins de 12 caractères
+  ignorés. Requiert le **clone local** d'agentic-toolbox (un hook est un
+  process shell : il ne peut pas appeler les outils MCP) — sans clone,
+  silence. À savoir : chaque prompt éligible est envoyé à l'API Mistral pour
+  être vectorisé, comme toute question `/doc-query`.
+- **PreCompact** — avant qu'un compactage n'écrase la conversation, dépose sa
+  partie textuelle (tours utilisateur/assistant, jamais les sorties d'outils
+  ni les rappels système) dans `inbox/session-YYYY-MM-DD-<id>.md`
+  (`type: session`) : le savoir de la session attend dans le sas, et
+  `/doc-ingest` en extraira à froid les décisions et faits durables — jamais
+  le déroulé — avant d'archiver le brut. Même session recompactée plusieurs
+  fois → même fichier, réécrit plus complet.
 
 ## Notes d'environnement
 

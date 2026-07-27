@@ -9,6 +9,40 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.10.0] — 2026-07-27
+
+**Raison de l'update** : le vault ne se déclenche plus seulement à la commande — trois hooks l'amènent dans la session : Claude connaît la carte du vault dès l'ouverture, reçoit des pistes sémantiques sous chaque prompt, et le savoir d'une conversation survit au compactage via le sas `inbox/`.
+
+### Ajouté
+- **Hooks plugin** (`hooks/hooks.json` + trois scripts), tous soumis à la même
+  garde : projet sans `.claude/vault-path.local` → sortie 0 immédiate et
+  silencieuse, le plugin reste invisible tant que `/vault-init` n'a pas tourné.
+  - **SessionStart** : injecte `INDEX.md` dans le contexte à l'ouverture de
+    session (tronqué à 16 Ko) ; vault configuré mais inaccessible → une ligne
+    d'avertissement (Drive pas monté ?).
+  - **UserPromptSubmit** : recherche sémantique directe sur le prompt
+    (`vault-search.sh`, pas de fork) — top 3 injecté comme pistes (des
+    extraits, pas une réponse : `/doc-query` reste la vraie recherche).
+    Jamais d'indexation ici ; filtres : commandes slash/`!`/`#` et prompts
+    < 12 caractères ignorés ; requiert le clone local d'agentic-toolbox (un
+    hook ne peut pas appeler les outils MCP). Chaque prompt éligible est
+    vectorisé via l'API Mistral, comme toute question `/doc-query`.
+  - **PreCompact** : dépose la partie textuelle de la conversation (tours
+    utilisateur/assistant — jamais les sorties d'outils ni les rappels
+    système) dans `inbox/session-YYYY-MM-DD-<id>.md` en `type: session` ;
+    même session recompactée → même fichier, réécrit plus complet.
+  - Sécurité des hooks : payload lu sur stdin uniquement (jamais via argv ni
+    l'environnement), champs filtrés avant usage en nom de fichier, écriture
+    confinée à `inbox/` (vérifiée), échec quelconque = silence sans effet.
+- **Règle d'ingestion des dépôts `type: session`**
+  (`INSTRUCTIONS-CLAUDE.md` du template + `/doc-ingest`) : un transcript est
+  verbeux et peu dense — n'en extraire que les décisions prises et les faits
+  durables, jamais le déroulé ; brut archivé comme toute pièce du sas ; aucun
+  enseignement durable → archivage direct, sans note source.
+- Migration des vaults existants : reporter la règle `type: session` dans leur
+  `INSTRUCTIONS-CLAUDE.md` (le template n'est copié qu'à l'init) ; les hooks
+  se chargent au prochain démarrage de session après la mise à jour.
+
 ## [1.9.0] — 2026-07-27
 
 **Raison de l'update** : les deux points de contention structurels de la synchro Drive disparaissent — le journal devient un fichier par jour (`LOG/`), et `INDEX.md` devient un dérivé entièrement régénérable depuis le frontmatter : un conflit sur un dérivé ne coûte rien, on régénère.
