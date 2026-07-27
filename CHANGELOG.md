@@ -9,6 +9,29 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.9.0] — 2026-07-27
+
+**Raison de l'update** : les deux points de contention structurels de la synchro Drive disparaissent — le journal devient un fichier par jour (`LOG/`), et `INDEX.md` devient un dérivé entièrement régénérable depuis le frontmatter : un conflit sur un dérivé ne coûte rien, on régénère.
+
+### Modifié
+- **Journal `LOG/`** : append-only, un fichier par jour
+  (`LOG/YYYY-MM-DD.md`, créé au besoin), format d'entrée inchangé. Un
+  `LOG.md` racine hérité est **gelé** : il se consulte (dates, diagnostics),
+  on n'y écrit plus. `vault-init.sh` crée `LOG/` et n'écrit l'entrée `init`
+  que dans un vault neuf (jamais dans un vault déjà vivant).
+- **`INDEX.md` = dérivé régénérable** : chaque entrée
+  (`- [[<slug>]] — <description>`) vient du frontmatter de sa note ;
+  `/doc-lint` régénère le fichier en entier au lieu de le rapiécer — trous
+  d'INDEX comme conflit Drive sur `INDEX.md` se résolvent par régénération.
+- **Modèle de note** : `description` (la note en quelques mots) devient
+  obligatoire — c'est elle qui alimente l'INDEX. `/doc-ingest` la renseigne
+  (celle du dossier d'ingestion), `/doc-query` aussi pour les synthèses,
+  `/doc-lint` la vérifie.
+- Migration des vaults existants, sans étape bloquante : le prochain
+  `/doc-lint` signale les `description` manquantes et propose de rapatrier
+  celle de l'entrée INDEX existante ; reporter les nouvelles conventions dans
+  l'`INSTRUCTIONS-CLAUDE.md` du vault (le template n'est copié qu'à l'init).
+
 ## [1.8.0] — 2026-07-27
 
 **Raison de l'update** : les doublons de pages vivantes étaient le seul défaut du vault qui empire tout seul (`Docker.md` + `conteneurisation-docker.md` : graphe fragmenté, recherches partielles, échec silencieux) — `/doc-lint` les détecte désormais et guide leur fusion ; et les contradictions tranchées deviennent de l'update-in-place avec historique.

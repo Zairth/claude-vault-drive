@@ -44,7 +44,8 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
 6. **inbox/ en attente** : lister les fichiers non ingérés (information, pas erreur).
 7. **Frontmatter obligatoire** (modèle de note d'`INSTRUCTIONS-CLAUDE.md`) :
    pour chaque note de `wiki/`, vérifier la présence de `type` + `date` +
-   `auteur`, plus `origine` pour les sources et `question` pour les synthèses
+   `auteur` + `description`, plus `origine` pour les sources et `question`
+   pour les synthèses
    → lister les notes non conformes avec leurs propriétés manquantes.
 8. **Cohérence vectorielle** :
    - `wiki/.index/embeddings.jsonl` absent → « index sémantique jamais
@@ -57,7 +58,8 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      `directory: $VAULT/wiki` — purement local, zéro quota — sinon ligne 1 du
      fichier : provider, modèle, dimension, version) et les reporter.
      Diagnostic de suivi : comparer le `created_at` le plus récent du mapping
-     aux dernières entrées `ingest` de `LOG.md` — des ingests postérieurs aux
+     aux dernières entrées `ingest` du journal (`LOG/*.md`, plus un `LOG.md`
+     racine hérité s'il existe) — des ingests postérieurs aux
      vecteurs = indexation non suivie (le verdict définitif reste le hash,
      jamais les dates).
 
@@ -87,9 +89,14 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
 3. Le rapport par catégorie (vide = le dire aussi : « rien à signaler »).
 4. Un bloc `Pour l'agent principal` — proposer les corrections à l'utilisateur
    et n'appliquer QUE ce qu'il valide :
-   - compléter `INDEX.md`, relier ou supprimer les orphelines, résoudre les
+   - trous d'INDEX → **régénérer `INDEX.md` en entier** plutôt que le
+     rapiécer (fichier dérivé : sections du template, une entrée
+     `- [[<slug>]] — <description du frontmatter>` par note de `wiki/`) ;
+     relier ou supprimer les orphelines ; résoudre les
      conflits Drive (comparer les versions, garder la bonne, supprimer
-     l'autre), rappeler les `> [!warning]` à trancher — un callout tranché se
+     l'autre — sauf sur `INDEX.md` : supprimer le fichier de conflit et
+     régénérer, un conflit sur un dérivé ne coûte rien) ;
+     rappeler les `> [!warning]` à trancher — un callout tranché se
      résout par la convention d'`INSTRUCTIONS-CLAUDE.md` : valeur courante
      mise à jour dans le corps, ancienne version poussée en `## Historique`,
      callout retiré.
@@ -111,8 +118,10 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      proposer sa création ou le délier (texte simple) — jamais de page coquille
      créée juste pour éteindre le compteur.
    - Pour les frontmatters non conformes : proposer une valeur déduite du
-     contenu de la note ou de `LOG.md` (`date` : à défaut, la première mention
-     de la note dans le LOG) — jamais de valeur inventée sans le signaler.
+     contenu de la note ou du journal (`date` : à défaut, la première mention
+     de la note dans `LOG/` ou un `LOG.md` racine hérité ; `description`
+     manquante : rapatrier celle de l'entrée `INDEX.md` existante, sinon la
+     déduire du contenu) — jamais de valeur inventée sans le signaler.
    - Pour la cohérence vectorielle : proposer la réindexation — outil MCP
      `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` avec
      `directory: $VAULT/wiki` **explicite** (jamais de dossier implicite)
@@ -128,7 +137,9 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      identiques par construction), réécriture atomique, suppression du fichier
      de conflit ; sinon, garder `embeddings.jsonl`, supprimer le conflit,
      relancer la réindexation.
-   - Une fois les corrections traitées, ajouter en fin de `$VAULT/LOG.md` :
+   - Une fois les corrections traitées, ajouter en fin de
+     `$VAULT/LOG/YYYY-MM-DD.md` (le fichier du jour — le créer au besoin ;
+     jamais dans un `LOG.md` racine hérité, gelé) :
      `## [YYYY-MM-DD] lint | <n> problème(s) détecté(s), <m> corrigé(s)`
      suivi, si la réindexation a tourné, d'une ligne
      `vecteurs : <embedded_chunks> recalculés, <reused_chunks> réutilisés`.

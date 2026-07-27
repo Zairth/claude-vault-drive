@@ -58,7 +58,8 @@ for ignore_line in ".claude/settings.local.json" ".claude/vault-path.local" ".cl
 done
 
 # Structure du vault.
-mkdir -p "$vault_path/inbox" "$vault_path/archives" "$vault_path/wiki/sources" \
+mkdir -p "$vault_path/inbox" "$vault_path/archives" "$vault_path/LOG" \
+         "$vault_path/wiki/sources" \
          "$vault_path/wiki/concepts" "$vault_path/wiki/entites" \
          "$vault_path/wiki/syntheses" "$vault_path/wiki/.index"
 echo "OK : arborescence du vault en place."
@@ -74,10 +75,13 @@ for template_file in "$template_directory"/*.md; do
     fi
 done
 
-# Date du jour dans l'entrée init du LOG, si le placeholder est encore là.
-log_file="$vault_path/LOG.md"
-if grep -q '\[YYYY-MM-DD\] init' "$log_file"; then
-    sed -i "s/\[YYYY-MM-DD\] init/[$(date +%F)] init/" "$log_file"
+# Journal : un fichier par jour dans LOG/. Entrée init écrite une seule fois,
+# jamais dans un vault déjà vivant (LOG/ non vide, ou LOG.md hérité — gelé).
+if [[ -z "$(ls -A "$vault_path/LOG")" && ! -f "$vault_path/LOG.md" ]]; then
+    today="$(date +%F)"
+    printf '## [%s] init | création du vault\n\nStructure initiale : INSTRUCTIONS-CLAUDE.md, INDEX.md, LOG/, inbox/, archives/,\nwiki/{sources,concepts,entites,syntheses}/, wiki/.index/.\n' \
+        "$today" > "$vault_path/LOG/$today.md"
+    echo "OK : LOG/$today.md créé (entrée init)."
 fi
 
 # Vérification finale par le portier officiel.

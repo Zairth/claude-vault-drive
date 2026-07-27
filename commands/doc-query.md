@@ -106,12 +106,15 @@ Exactement ces blocs, dans cet ordre :
      « Sauvegarder cette réponse en synthèse dans le vault ? » ;
    - si oui : écrire `$VAULT/wiki/syntheses/<slug>.md` — frontmatter
      (`type: synthese`, `date`, `auteur` — repérable dans les notes existantes
-     du vault, sinon le demander —, `question`, plus `perimetre: <dossier>` si
+     du vault, sinon le demander —, `description` — la réponse en quelques
+     mots —, `question`, plus `perimetre: <dossier>` si
      la recherche visait une cible `dans:`), corps = la réponse, section
      `## Références` = un wikilink `[[<slug>]]` par note utilisée (jamais de
      chemin brut — seuls les wikilinks créent des liens dans le graphe
      Obsidian ; une source hors vault, cible `dans:`, reste en chemin brut) ;
      ajouter la note dans
-     `$VAULT/INDEX.md`, section Synthèses ; ajouter en fin de `$VAULT/LOG.md` :
-     `## [YYYY-MM-DD] synthese | <slug>` — le tout en respectant les
-     conventions de `$VAULT/INSTRUCTIONS-CLAUDE.md`.
+     `$VAULT/INDEX.md`, section Synthèses (`- [[<slug>]] — <description>`,
+     celle du frontmatter) ; ajouter en fin de `$VAULT/LOG/YYYY-MM-DD.md` (le
+     fichier du jour — le créer au besoin ; jamais dans un `LOG.md` racine
+     hérité, gelé) : `## [YYYY-MM-DD] synthese | <slug>` — le tout en
+     respectant les conventions de `$VAULT/INSTRUCTIONS-CLAUDE.md`.

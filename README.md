@@ -47,8 +47,7 @@ claude-vault-drive/
 │   └── vault-search.sh      # recherche sémantique dans un dossier indexé (repli CLI)
 └── vault-template/          # fichiers copiés à la racine d'un nouveau vault
     ├── INSTRUCTIONS-CLAUDE.md   # le schéma du vault — toute commande le lit d'abord
-    ├── INDEX.md                 # carte du vault, point d'entrée des recherches
-    └── LOG.md                   # journal append-only
+    └── INDEX.md                 # carte du vault, point d'entrée des recherches (dérivé, régénérable)
 ```
 
 Le code (commandes, scripts, template) vit dans le plugin, partagé entre tous
@@ -58,8 +57,9 @@ vault par projet**.
 
 ## Principes
 
-- **Source de vérité = les `.md` du vault.** Tout le reste (index de recherche,
-  caches) est un dérivé jetable et reconstructible.
+- **Source de vérité = les `.md` du vault.** Tout le reste (`INDEX.md` —
+  régénéré depuis le frontmatter des notes —, index de recherche, caches) est
+  un dérivé jetable et reconstructible.
 - **Recherche isolée du contexte principal** : `/doc-query` et `/doc-lint`
   s'exécutent entièrement dans un sub-agent (`context: fork` dans le
   frontmatter de la commande) — le contexte principal de Claude ne voit jamais
@@ -69,7 +69,8 @@ vault par projet**.
   `wiki/concepts/` + `wiki/entites/` (vivantes, reliées par wikilinks),
   `wiki/syntheses/` (réponses transversales persistées).
 - **Modèle de note** : frontmatter obligatoire sur chaque note — `type`,
-  `date` (création), `auteur`, plus `origine`/`original` (sources) et
+  `date` (création), `auteur`, `description` (alimente l'INDEX), plus
+  `origine`/`original` (sources) et
   `question` (synthèses) ; défini dans l'`INSTRUCTIONS-CLAUDE.md` du vault,
   appliqué par `/doc-ingest`, vérifié par `/doc-lint`.
 - **Vault auto-porteur** : `inbox/` est un sas, pas un stockage — un fichier
@@ -112,8 +113,8 @@ Puis dans chaque projet qui doit avoir son vault :
    remplace jamais un fichier existant) et complet : config locale gitignorée
    dans le `.claude/` du projet (`vault-path.local` + `settings.local.json`
    avec la permission d'écriture), `.gitignore` complété, arborescence du
-   vault, copie du template, date de l'entrée `init` du LOG, vérification
-   finale par `vault-check.sh`.
+   vault, copie du template, entrée `init` du journal (`LOG/`, un fichier par
+   jour), vérification finale par `vault-check.sh`.
 2. Relancer la session Claude Code (pour charger la permission
    `additionalDirectories`) — les commandes `/doc-ingest`, `/doc-query` et
    `/doc-lint` sont prêtes.
@@ -189,6 +190,9 @@ commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
   peuvent mettre un moment à apparaître — Ctrl+R recharge ; `/doc-lint` fait foi.
 - **Édition simultanée** : les fichiers de conflit créés par Drive (`* (1).md`)
   sont détectés par `/doc-lint` ; règle sociale simple — un écrivain à la fois.
+  Les deux points chauds structurels sont neutralisés : le journal est un
+  fichier par jour (`LOG/`), et un conflit sur `INDEX.md` — un dérivé — se
+  résout en le régénérant.
 
 ## Recherche sémantique (facultative, repli grep sinon)
 

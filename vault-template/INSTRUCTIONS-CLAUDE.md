@@ -18,8 +18,8 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
 ```
 <vault>/
 ├── INSTRUCTIONS-CLAUDE.md   ← ce fichier
-├── INDEX.md                 ← carte du vault, point d'entrée de toute recherche
-├── LOG.md                   ← journal append-only des opérations
+├── INDEX.md                 ← carte du vault, point d'entrée de toute recherche — dérivé, régénérable
+├── LOG/                     ← journal append-only : un fichier par jour (YYYY-MM-DD.md)
 ├── inbox/                   ← sas : dépôts bruts en attente d'ingestion
 ├── archives/                ← pièces d'origine conservées après ingestion (hors index)
 ├── wiki/
@@ -38,10 +38,11 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
 - **Modèle de note — frontmatter obligatoire** (une note sans ces propriétés
   n'est pas conforme ; `/doc-lint` les vérifie) :
   - toutes les notes : `type` (source | concept | entite | synthese),
-    `date` (date de création `YYYY-MM-DD`, jamais modifiée ensuite) et
+    `date` (date de création `YYYY-MM-DD`, jamais modifiée ensuite),
     `auteur` (qui a créé la note : la personne pilotant la session — la
     demander une fois si inconnue, puis réutiliser — ou le nom de l'équipe
-    tierce pour une note importée) ;
+    tierce pour une note importée) et `description` (la note en quelques
+    mots — c'est elle qui alimente l'entrée `INDEX.md` de la note) ;
   - `type: source` : `origine` — provenance de la note : chemin archivé
     relatif au vault (pièce dans `archives/`), URL, ou mention libre
     (« conversation », …) ; `original` en plus, seulement si la pièce
@@ -91,9 +92,16 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
 - `wiki/sources/` est **immuable** : une note de source n'est jamais modifiée
   après son ingestion.
 - Toute écriture dans `wiki/` met à jour `INDEX.md` **dans la foulée**.
-- `LOG.md` est **append-only** : `## [YYYY-MM-DD] <action> | <titre>` (actions :
-  `init`, `ingest`, `lint`, `synthese`), suivi d'une ligne de détail. Ne jamais
-  modifier une entrée existante.
+  `INDEX.md` est un **dérivé** : chaque entrée vient du frontmatter de la note
+  (`- [[<slug>]] — <description>`) et `/doc-lint` sait le régénérer
+  entièrement — en cas de conflit de synchro ou de doute, régénérer plutôt
+  que réparer.
+- Le journal `LOG/` est **append-only, un fichier par jour**
+  (`LOG/YYYY-MM-DD.md`, créé au besoin — jamais de fichier unique partagé) :
+  entrées `## [YYYY-MM-DD] <action> | <titre>` (actions : `init`, `ingest`,
+  `lint`, `synthese`), suivies d'une ligne de détail. Ne jamais modifier une
+  entrée existante. Un `LOG.md` racine hérité d'une version antérieure est
+  **gelé** : il se consulte, on n'y écrit plus.
 - `inbox/` est un **sas**, pas un stockage : un fichier ingéré avec succès est
   **déplacé vers `archives/`** (jamais supprimé) ; un fichier local ingéré
   depuis l'extérieur du vault y est **copié** (l'original de l'utilisateur

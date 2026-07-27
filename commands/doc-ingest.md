@@ -90,7 +90,8 @@ jamais rouvrir la source en contexte principal)
 1. `$VAULT/wiki/sources/YYYY-MM-DD-<slug>.md` (date du jour, slug kebab-case) :
    frontmatter conforme au modèle de note d'`INSTRUCTIONS-CLAUDE.md`
    (`type: source`, `date`, `auteur` — repérable dans les notes existantes du
-   vault, sinon le demander —, `origine` = chemin archivé/URL/« conversation »,
+   vault, sinon le demander —, `description` — celle du dossier d'ingestion —,
+   `origine` = chemin archivé/URL/« conversation »,
    `original` seulement si la pièce d'origine diffère de la copie pointée par
    `origine` — ex. le PDF dont la note vient par OCR : chemin de sa copie dans
    `archives/`, ou emplacement durable hors vault (URL, dossier partagé) —
@@ -99,8 +100,8 @@ jamais rouvrir la source en contexte principal)
    vers les concepts/entités concernés. Immuable une fois écrit.
 2. Pour chaque concept ou entité touché : créer ou mettre à jour la page dans
    `$VAULT/wiki/concepts/` ou `$VAULT/wiki/entites/` (frontmatter `type: concept`
-   ou `type: entite` + `date` + `auteur` à la création, paraphrase, wikilink
-   retour vers la note source). **Avant de créer** : vérifier qu'aucune page
+   ou `type: entite` + `date` + `auteur` + `description` à la création,
+   paraphrase, wikilink retour vers la note source). **Avant de créer** : vérifier qu'aucune page
    vivante existante ne couvre déjà le sujet — nom normalisé (casse, accents,
    tirets), alias `aliases:`, libellé proche — et en cas de doute enrichir
    l'existante plutôt que créer un doublon.
@@ -110,8 +111,12 @@ jamais rouvrir la source en contexte principal)
    `## Historique` en fin de note ; impossible à trancher → callout
    `> [!warning]` décrivant les deux versions, signalé à l'utilisateur.
 3. Mettre à jour `$VAULT/INDEX.md` : ajouter chaque nouvelle note dans sa
-   section, sous forme `- [[<slug>]] — <description en quelques mots>`.
-4. Ajouter en fin de `$VAULT/LOG.md` : `## [YYYY-MM-DD] ingest | <titre de la source>`
+   section, sous forme `- [[<slug>]] — <description>` — la même `description`
+   que le frontmatter (INDEX est un dérivé du frontmatter, mêmes mots aux
+   deux endroits).
+4. Ajouter en fin de `$VAULT/LOG/YYYY-MM-DD.md` (le fichier du jour — le créer
+   au besoin ; jamais dans un `LOG.md` racine hérité, gelé) :
+   `## [YYYY-MM-DD] ingest | <titre de la source>`
    suivi d'une ligne listant les fichiers créés/modifiés.
 5. Archiver la pièce d'origine — pour TOUTE source qui est un fichier local :
    venue de `$VAULT/inbox/` → la **déplacer** vers `$VAULT/archives/` ; venue
