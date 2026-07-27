@@ -9,6 +9,40 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.8.0] — 2026-07-27
+
+**Raison de l'update** : les doublons de pages vivantes étaient le seul défaut du vault qui empire tout seul (`Docker.md` + `conteneurisation-docker.md` : graphe fragmenté, recherches partielles, échec silencieux) — `/doc-lint` les détecte désormais et guide leur fusion ; et les contradictions tranchées deviennent de l'update-in-place avec historique.
+
+### Ajouté
+- `/doc-lint` : 9e vérification — **doublons suspectés de pages vivantes**
+  (`concepts/` + `entites/` confondus) : collisions de noms normalisés
+  (casse, accents, tirets, pluriel) entre fichiers et alias, plus similarité
+  sémantique quand le moteur est disponible (le titre d'une page qui remonte
+  une autre page vivante en tête de recherche). Compteur ajouté à la ligne de
+  tête. Détection seulement — la **fusion assistée** est validée paire par
+  paire : contenu rapatrié dans la survivante, nom absorbé conservé en
+  `aliases:` (tout wikilink oublié continue de résoudre), wikilinks entrants
+  réécrits, liens pendants re-vérifiés, réindexation incrémentale enchaînée
+  (les vecteurs de la page absorbée sont purgés, la survivante enrichie
+  revectorisée).
+- Frontmatter : propriété optionnelle **`aliases`** (noms alternatifs d'une
+  page) — reconnue par la vérification des wikilinks pendants.
+- `/doc-ingest` : avant de créer une page vivante, chercher une existante qui
+  couvre déjà le sujet (nom normalisé, alias, libellé proche) — en cas de
+  doute, enrichir plutôt que dupliquer.
+
+### Modifié
+- **Contradictions — convention à deux issues** : tranchée avec l'utilisateur
+  → la note porte la valeur courante, l'ancienne descend dans une section
+  `## Historique` append-only en fin de note (une seule vérité lisible en
+  tête, l'historique conservé) ; non tranchable → callout `> [!warning]`,
+  comme avant. Règle de recherche associée : un passage trouvé sous
+  `## Historique` est périmé, jamais cité comme état courant.
+- Vaults existants : reporter les nouvelles conventions (`aliases`,
+  `## Historique`, anti-doublon) dans l'`INSTRUCTIONS-CLAUDE.md` du vault —
+  le template n'est copié qu'à l'initialisation, `/vault-init` ne remplace
+  jamais un fichier existant.
+
 ## [1.7.0] — 2026-07-27
 
 **Raison de l'update** : `/doc-lint` détecte les wikilinks pendants et ouvre son rapport par une ligne de compteurs — l'instrumentation préalable à la future fusion d'entités (qui réécrit des wikilinks : il faut un avant/après). Inclut aussi la synchronisation documentaire avec agentic-toolbox 3.0.0.

@@ -100,9 +100,15 @@ jamais rouvrir la source en contexte principal)
 2. Pour chaque concept ou entité touché : créer ou mettre à jour la page dans
    `$VAULT/wiki/concepts/` ou `$VAULT/wiki/entites/` (frontmatter `type: concept`
    ou `type: entite` + `date` + `auteur` à la création, paraphrase, wikilink
-   retour vers la note source).
-   Contradiction avec le contenu existant → callout `> [!warning]` décrivant les
-   deux versions, signalée à l'utilisateur pour résolution.
+   retour vers la note source). **Avant de créer** : vérifier qu'aucune page
+   vivante existante ne couvre déjà le sujet — nom normalisé (casse, accents,
+   tirets), alias `aliases:`, libellé proche — et en cas de doute enrichir
+   l'existante plutôt que créer un doublon.
+   Contradiction avec le contenu existant → convention
+   d'`INSTRUCTIONS-CLAUDE.md` : la trancher avec l'utilisateur (la validation
+   est le bon moment) → valeur courante mise à jour dans le corps + entrée
+   `## Historique` en fin de note ; impossible à trancher → callout
+   `> [!warning]` décrivant les deux versions, signalé à l'utilisateur.
 3. Mettre à jour `$VAULT/INDEX.md` : ajouter chaque nouvelle note dans sa
    section, sous forme `- [[<slug>]] — <description en quelques mots>`.
 4. Ajouter en fin de `$VAULT/LOG.md` : `## [YYYY-MM-DD] ingest | <titre de la source>`

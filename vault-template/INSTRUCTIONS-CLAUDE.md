@@ -54,9 +54,19 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
   - `type: synthese` : `question` — la question posée ; `perimetre` si la
     recherche visait un dossier voisin du vault.
 
-  Optionnel partout : `tags`, et toute propriété utile au cas particulier
+  Optionnel partout : `tags`, `aliases` (liste de noms alternatifs de la
+  page — après une fusion de doublons, le nom de la page absorbée vit ici :
+  les wikilinks `[[ancien-nom]]` continuent de résoudre dans Obsidian et
+  `/doc-lint` ne les compte pas comme pendants), et toute propriété utile au cas particulier
   (ex. `image`, `capture_precedente`/`capture_suivante` pour des captures OCR
   en série) — enrichir librement, ne jamais retirer une propriété obligatoire.
+- Avant de créer une page dans `concepts/` ou `entites/` : vérifier qu'aucune
+  page existante ne couvre déjà le sujet — nom normalisé (casse, accents,
+  tirets), alias `aliases:`, libellé proche. En cas de doute, **enrichir
+  l'existante** plutôt que créer un doublon : un savoir éclaté entre
+  `Docker.md` et `conteneurisation-docker.md` fragmente le graphe et fausse
+  les recherches (`/doc-lint` détecte les doublons suspectés, mais la
+  prévention se joue ici).
 - Wikilinks `[[...]]` libéraux vers les concepts et entités. Toute référence
   à une autre note du vault s'écrit en wikilink, **jamais en chemin brut** :
   seuls les wikilinks créent des liens (graphe Obsidian, backlinks, détection
@@ -64,9 +74,17 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
   `original` (pointent vers `archives/` ou hors vault — hors graphe, voulu).
 - Citations verbatim ≤ 125 caractères ; au-delà, paraphraser — le verbatim long
   reste dans `wiki/sources/`.
-- Contradiction entre une nouvelle information et l'existant : poser un callout
-  `> [!warning]` dans la page concernée décrivant les deux versions, et la
-  résoudre en conversation avec l'utilisateur — jamais silencieusement.
+- Contradiction entre une nouvelle information et l'existant — jamais résolue
+  silencieusement, deux issues :
+  - **tranchée** (l'utilisateur confirme que la nouvelle version fait foi) →
+    mettre à jour la valeur courante dans le corps de la note, et pousser
+    l'ancienne dans une section `## Historique` en fin de note (append-only) :
+    `- [YYYY-MM-DD] <ancienne affirmation> — remplacée par : <la nouvelle,
+    wikilink vers sa source>`. Une seule vérité lisible en tête de note,
+    l'historique conservé dessous ;
+  - **non tranchée** (impossible de savoir laquelle fait foi) → callout
+    `> [!warning]` décrivant les deux versions, à résoudre en conversation —
+    `/doc-lint` rappelle ceux en souffrance.
 
 ## Règles de maintenance
 
@@ -96,4 +114,6 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
   variantes françaises**.
 - Ne remonter au contexte principal **que** la réponse citée (avec les chemins
   des notes sources, relatifs au vault) — jamais le contenu brut des notes.
+- Un passage trouvé sous une section `## Historique` est une version périmée :
+  ne jamais le citer comme état courant — la vérité est en tête de note.
 - Rien de pertinent trouvé : le dire explicitement et lister ce qui s'en rapproche.

@@ -1,5 +1,5 @@
 ---
-description: Vérifier la cohérence du vault Obsidian — compteurs en tête, wikilinks pendants, contradictions, orphelins, INDEX, conflits Drive, inbox
+description: Vérifier la cohérence du vault Obsidian — compteurs en tête, wikilinks pendants, doublons suspectés, contradictions, orphelins, INDEX, conflits Drive, inbox
 context: fork
 agent: Explore
 background: false
@@ -20,7 +20,7 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
 2. Lire intégralement `$VAULT/INSTRUCTIONS-CLAUDE.md` et s'y conformer
    (règles de maintenance : sources immuables, LOG append-only, INDEX à jour).
 
-## Vérifications (les huit)
+## Vérifications (les neuf)
 
 1. **Contradictions en souffrance** : chercher `> [!warning]` dans `wiki/` →
    lister fichier + extrait du callout.
@@ -61,21 +61,51 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      vecteurs = indexation non suivie (le verdict définitif reste le hash,
      jamais les dates).
 
+9. **Doublons suspectés (pages vivantes)** : sur l'ensemble `wiki/concepts/`
+   + `wiki/entites/` — les doublons traversent les deux dossiers
+   (`Docker.md` dans l'un, `conteneurisation-docker.md` dans l'autre) :
+   - collision de **noms normalisés** (casse, accents, tirets/underscores,
+     pluriel final) entre noms de fichiers et alias `aliases:` ;
+   - moteur sémantique disponible → pour chaque page vivante, `semantic_search`
+     avec son titre + sa première phrase (`directory: $VAULT/wiki` explicite) :
+     une AUTRE page vivante en tête des résultats avec un score nettement
+     détaché du reste = paire suspectée. Moteur indisponible → le noter, la
+     normalisation des noms reste faite.
+   Lister chaque paire avec sa raison (nom / sémantique / les deux).
+   Détection seulement — aucune fusion sans validation (voir corrections).
+
 ## Rapport final (ton retour à l'agent principal)
 
 1. Le chemin `$VAULT` résolu, écrit en clair (l'agent principal ne connaît pas
    la sortie de vault-check).
 2. **La ligne de compteurs**, sur une seule ligne — l'état de santé du vault
    d'un coup d'œil, comparable d'un lint à l'autre :
-   `liens pendants: n · orphelines: n · trous d'INDEX: n · conflits Drive: n ·
-   inbox: n · frontmatters incomplets: n · notes: n (concepts n · entites n ·
+   `liens pendants: n · doublons suspectés: n · orphelines: n ·
+   trous d'INDEX: n · conflits Drive: n · inbox: n ·
+   frontmatters incomplets: n · notes: n (concepts n · entites n ·
    sources n · syntheses n)`.
 3. Le rapport par catégorie (vide = le dire aussi : « rien à signaler »).
 4. Un bloc `Pour l'agent principal` — proposer les corrections à l'utilisateur
    et n'appliquer QUE ce qu'il valide :
    - compléter `INDEX.md`, relier ou supprimer les orphelines, résoudre les
      conflits Drive (comparer les versions, garder la bonne, supprimer
-     l'autre), rappeler les `> [!warning]` à trancher.
+     l'autre), rappeler les `> [!warning]` à trancher — un callout tranché se
+     résout par la convention d'`INSTRUCTIONS-CLAUDE.md` : valeur courante
+     mise à jour dans le corps, ancienne version poussée en `## Historique`,
+     callout retiré.
+   - Pour chaque paire de doublons que l'utilisateur confirme — **fusion
+     assistée**, dans cet ordre : il choisit la page survivante ; rapatrier le
+     contenu utile de la page absorbée ; ajouter le nom de l'absorbée aux
+     `aliases:` de la survivante (filet : tout wikilink oublié continue de
+     résoudre dans Obsidian et n'est pas compté pendant) ; réécrire les
+     wikilinks entrants `[[absorbée]]` / `[[absorbée|texte]]` vers la
+     survivante (conserver le texte affiché) ; supprimer la page absorbée et
+     son entrée d'INDEX ; re-vérifier les liens pendants sur les fichiers
+     touchés ; enchaîner la **réindexation incrémentale** (mêmes outils que la
+     cohérence vectorielle ci-dessus) — la réécriture complète de l'index
+     purge les vecteurs de la page absorbée et vectorise la survivante
+     enrichie ; moteur indisponible → noter « indexation à rattraper » (le
+     prochain `/doc-query` la fera).
    - Pour chaque wikilink pendant : cible renommée ou mal orthographiée →
      corriger le lien vers la page existante ; page réellement manquante →
      proposer sa création ou le délier (texte simple) — jamais de page coquille

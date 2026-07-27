@@ -150,7 +150,9 @@ commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
   2-5 enseignements clés ; la discussion passe par ce même sub-agent (relais
   SendMessage, contexte conservé) ; après validation, l'agent principal
   écrit : note source immuable, pages concepts/entités, INDEX, LOG.
-  Contradiction détectée → callout `> [!warning]`.
+  Contradiction détectée → tranchée avec l'utilisateur : la note porte la
+  valeur courante, l'ancienne descend en `## Historique` (une seule vérité en
+  tête, l'historique conservé) ; non tranchable → callout `> [!warning]`.
   Le brut venu d'`inbox/` est **archivé dans `archives/`**, jamais supprimé —
   le vault reste auto-porteur (condensé + pièces d'origine).
 - `/doc-query <question>` — le tout en fork isolé : réindexation incrémentale
@@ -164,7 +166,10 @@ commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
   d'échec silencieux.
 - `/doc-lint` — rapport produit en fork isolé, ouvert par une ligne de
   compteurs (l'état de santé du vault d'un coup d'œil, comparable d'un lint à
-  l'autre) : wikilinks pendants, contradictions en souffrance,
+  l'autre) : wikilinks pendants, doublons suspectés de pages vivantes (noms
+  normalisés + similarité sémantique ; fusion assistée après validation —
+  wikilinks entrants réécrits, ancien nom conservé en alias),
+  contradictions en souffrance,
   pages orphelines, trous d'INDEX, fichiers de conflit Drive, inbox en
   attente, frontmatters obligatoires manquants, cohérence de l'index vectoriel
   (`.index/`) ; corrections validées avec l'utilisateur puis appliquées en
