@@ -19,6 +19,7 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
 <vault>/
 ├── INSTRUCTIONS-CLAUDE.md   ← ce fichier
 ├── INDEX.md                 ← carte du vault, point d'entrée de toute recherche — dérivé, régénérable
+├── BENCH.md                 ← banc de questions de référence (/doc-bench) — optionnel, hors index
 ├── LOG/                     ← journal append-only : un fichier par jour (YYYY-MM-DD.md)
 ├── inbox/                   ← sas : dépôts bruts en attente d'ingestion
 ├── archives/                ← pièces d'origine conservées après ingestion (hors index)
@@ -99,7 +100,7 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
 - Le journal `LOG/` est **append-only, un fichier par jour**
   (`LOG/YYYY-MM-DD.md`, créé au besoin — jamais de fichier unique partagé) :
   entrées `## [YYYY-MM-DD] <action> | <titre>` (actions : `init`, `ingest`,
-  `lint`, `synthese`), suivies d'une ligne de détail. Ne jamais modifier une
+  `lint`, `synthese`, `bench`), suivies d'une ligne de détail. Ne jamais modifier une
   entrée existante. Un `LOG.md` racine hérité d'une version antérieure est
   **gelé** : il se consulte, on n'y écrit plus.
 - `inbox/` est un **sas**, pas un stockage : un fichier ingéré avec succès est

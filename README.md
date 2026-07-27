@@ -38,7 +38,8 @@ claude-vault-drive/
 │   ├── vault-init.md        # /vault-init — initialiser le vault du projet courant
 │   ├── doc-ingest.md        # /doc-ingest — ingérer une source (validation conversationnelle)
 │   ├── doc-query.md         # /doc-query — interroger le vault (fork isolé, réponse citée)
-│   └── doc-lint.md          # /doc-lint — maintenance (fork isolé : orphelins, INDEX, conflits Drive, vecteurs)
+│   ├── doc-lint.md          # /doc-lint — maintenance (fork isolé : orphelins, INDEX, conflits Drive, vecteurs)
+│   └── doc-bench.md         # /doc-bench — banc de questions de référence, score de recherche comparable
 ├── hooks/
 │   └── hooks.json           # déclaration des trois hooks (SessionStart, UserPromptSubmit, PreCompact)
 ├── scripts/
@@ -180,6 +181,16 @@ commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
   attente, frontmatters obligatoires manquants, cohérence de l'index vectoriel
   (`.index/`) ; corrections validées avec l'utilisateur puis appliquées en
   contexte principal.
+- `/doc-bench` — le mètre étalon de la recherche. Premier lancement (ou
+  `creer`) : propose ~20 questions de référence tirées du contenu du vault,
+  chacune avec ses notes attendues — validées puis figées dans `BENCH.md`
+  (racine du vault, hors index). Lancements suivants : run de mesure
+  **mécanique** (réindexation, puis top 5 sémantique + grep par question,
+  aucun jugement dans le score) → ligne de score comparable d'un run à
+  l'autre (`sémantique@5 · grep · couverture`), détail des échecs avec ce que
+  la recherche a renvoyé à la place, entrée `bench` au journal. C'est le juge
+  des évolutions du moteur : une fusion scorée ou une décroissance n'entrera
+  que si le banc prouve qu'elle fait mieux.
 
 ## Hooks — le vault dans la session, sans commande
 

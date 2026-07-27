@@ -9,6 +9,30 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.11.0] — 2026-07-27
+
+**Raison de l'update** : la recherche devient mesurable — `/doc-bench` fige un banc de questions de référence propre au vault et produit un score mécanique comparable d'un run à l'autre : le prérequis pour juger les évolutions du moteur (fusion scorée, décroissance), qui n'entreront que si le banc les valide.
+
+### Ajouté
+- **`/doc-bench`** (fork isolé, comme `/doc-query` et `/doc-lint`) :
+  - **mode création** (premier lancement, ou argument `creer`) : propose ~20
+    questions tirées du contenu du vault — factuelles, transversales,
+    centrées concepts/entités, et plusieurs formulées en synonymes (jamais
+    les mots exacts des notes : ce sont elles qui départagent la sémantique
+    de grep) — chacune avec ses 1-3 notes attendues ; validées avec
+    l'utilisateur puis figées dans `BENCH.md` (racine du vault, hors index
+    sémantique par construction) ;
+  - **mode mesure** (lancements suivants) : réindexation incrémentale, puis
+    pour chaque question — mécaniquement, sans jugement — top 5 sémantique et
+    grep sur les mots pleins ; score
+    `sémantique@5 x/n (rang moyen) · grep x/n · couverture x/n`, détail par
+    question avec, pour les échecs, ce que la recherche a renvoyé à la
+    place ; entrée `bench` au journal. Un run ne modifie jamais `BENCH.md` ;
+    une attendue disparue est signalée « banc à mettre à jour » et exclue du
+    score. Coût : une vectorisation API par question.
+- Action `bench` ajoutée au journal et `BENCH.md` à la structure du template
+  (`INSTRUCTIONS-CLAUDE.md`).
+
 ## [1.10.0] — 2026-07-27
 
 **Raison de l'update** : le vault ne se déclenche plus seulement à la commande — trois hooks l'amènent dans la session : Claude connaît la carte du vault dès l'ouverture, reçoit des pistes sémantiques sous chaque prompt, et le savoir d'une conversation survit au compactage via le sas `inbox/`.
