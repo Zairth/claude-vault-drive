@@ -202,8 +202,8 @@ Les commandes `/doc-*` l'atteignent par deux portes, dans cet ordre :
    `semantic_index_build`, `semantic_search`, `semantic_info`, `ocr_convert`…
    Serveur lancé à la demande par Claude Code via `uv`, clés API gérées par le
    plugin. Les commandes passent toujours le dossier du vault **explicitement**
-   (celui du projet, via `vault-check.sh`) — jamais le `VAULT_PATH` global du
-   plugin : un vault par projet, garanti.
+   (celui du projet, via `vault-check.sh`) — jamais de dossier implicite :
+   un vault par projet, garanti.
 2. **Wrappers `scripts/vault-index.sh` / `vault-search.sh`** (repli : plugin
    agentic-toolbox absent, mais clone local présent) — exécutés depuis le venv
    du clone, aucun service qui tourne. Résolution du chemin :

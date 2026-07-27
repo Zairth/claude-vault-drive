@@ -110,9 +110,9 @@ Puis dans Claude Code :
 ```
 
 Les clés API sont demandées à l'installation (stockage sécurisé Claude Code) :
-remplir `MISTRAL_API_KEY`, le reste peut rester vide. Le champ « Dossier
-markdown par défaut » (`VAULT_PATH`) aussi : les commandes `/doc-*` passent
-toujours le vault du projet explicitement.
+remplir `MISTRAL_API_KEY`, le reste peut rester vide. Chaque outil reçoit son
+dossier en argument — les commandes `/doc-*` passent toujours le vault du
+projet explicitement.
 
 ### Alternative : le clone + venv (wrappers CLI)
 

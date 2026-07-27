@@ -69,8 +69,8 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      de la note dans le LOG) — jamais de valeur inventée sans le signaler.
    - Pour la cohérence vectorielle : proposer la réindexation — outil MCP
      `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` avec
-     `directory: $VAULT/wiki` **explicite** (jamais son défaut `VAULT_PATH`,
-     global) si le plugin agentic-toolbox est installé, sinon
+     `directory: $VAULT/wiki` **explicite** (jamais de dossier implicite)
+     si le plugin agentic-toolbox est installé, sinon
      `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"` (clone + venv)
      (coût API : uniquement les chunks au hash inconnu) — le rapport JSON fait
      foi : `embedded_chunks > 0` = vecteurs manquants/périmés qui viennent

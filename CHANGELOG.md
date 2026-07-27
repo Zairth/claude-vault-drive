@@ -9,6 +9,18 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.6.1] — 2026-07-27
+
+**Raison de l'update** : synchronisation documentaire avec agentic-toolbox 3.0.0, qui a supprimé son dossier par défaut global (`VAULT_PATH`) — `directory` est désormais un argument obligatoire de ses outils sémantiques.
+
+### Modifié
+- Docs uniquement, aucun changement de comportement : les commandes passaient
+  déjà le dossier du vault explicitement partout. Les mentions du défaut
+  `VAULT_PATH` disparaissent (README, PREREQUIS, `/doc-ingest`, `/doc-query`,
+  `/doc-lint`) ; la règle reste « jamais de dossier implicite ». PREREQUIS :
+  l'activation du plugin toolbox se réduit à la clé `MISTRAL_API_KEY` (plus de
+  champ « dossier par défaut » à laisser vide).
+
 ## [1.6.0] — 2026-07-26
 
 **Raison de l'update** : sur un gros volume, l'ingestion saturait le contexte principal (source brute lue en session). `/doc-ingest` lit désormais la source dans des sub-agents lecteurs, dimensionnés au volume mesuré — le contexte principal ne voit que les enseignements.

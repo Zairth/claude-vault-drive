@@ -120,8 +120,8 @@ jamais rouvrir la source en contexte principal)
    auto-porteur.
 6. Indexation sémantique — outil MCP
    `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` avec
-   `directory: $VAULT/wiki` **explicite** (jamais son défaut `VAULT_PATH`,
-   global ; `wiki` seul : `archives/` et `inbox/` restent hors index)
+   `directory: $VAULT/wiki` **explicite** (`wiki` seul : `archives/` et
+   `inbox/` restent hors index)
    si le plugin agentic-toolbox est installé, sinon
    `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"` (clone + venv).
    Incrémental — seuls les chunks des notes créées/modifiées coûtent un appel

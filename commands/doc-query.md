@@ -54,9 +54,8 @@ dossier parent (ex. autoriser `<parent>` plutôt que `<parent>/<vault>` seul).
    moteur, dans cet ordre :
    - **MCP** (plugin agentic-toolbox installé) : outil
      `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build`, en passant
-     `directory: $VAULT/wiki` **explicitement** — ne jamais compter sur son
-     défaut `VAULT_PATH` (config globale du plugin, alors qu'ici le vault est
-     celui du projet) ;
+     `directory: $VAULT/wiki` **explicitement** — jamais de dossier
+     implicite ;
    - **wrapper** sinon : `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"`
      (clone local + venv du moteur).
 3. Chercher — même cascade, dans le dossier indexé (`$VAULT/wiki` en cible
