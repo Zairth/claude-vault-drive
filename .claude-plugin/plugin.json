@@ -2,7 +2,7 @@
   "name": "claude-vault-drive",
   "displayName": "Claude Vault Drive",
   "description": "Vault compatible Obsidian, partagé (Google Drive ou dossier local), consulté et alimenté par Claude Code — /doc-ingest, /doc-query, /doc-lint. Optimisation agentique : /doc-query et /doc-lint s'exécutent entièrement en sub-agent isolé (context: fork), /doc-ingest lit la source dans un sub-agent lecteur conversationnel — zéro pollution du contexte principal. Recherche sémantique et OCR via agentic-toolbox (outils MCP, repli CLI si clone local), dégradation grep explicite.",
-  "version": "1.6.1",
+  "version": "1.7.0",
   "author": {
     "name": "Zairth"
   },

@@ -162,7 +162,9 @@ commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
   vault. Ajouter `--no-index` pour interroger sans réindexer. Moteur
   sémantique indisponible → repli grep **explicite** (⚠ affiché), jamais
   d'échec silencieux.
-- `/doc-lint` — rapport produit en fork isolé : contradictions en souffrance,
+- `/doc-lint` — rapport produit en fork isolé, ouvert par une ligne de
+  compteurs (l'état de santé du vault d'un coup d'œil, comparable d'un lint à
+  l'autre) : wikilinks pendants, contradictions en souffrance,
   pages orphelines, trous d'INDEX, fichiers de conflit Drive, inbox en
   attente, frontmatters obligatoires manquants, cohérence de l'index vectoriel
   (`.index/`) ; corrections validées avec l'utilisateur puis appliquées en

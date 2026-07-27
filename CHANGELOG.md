@@ -9,17 +9,30 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
-## [1.6.1] — 2026-07-27
+## [1.7.0] — 2026-07-27
 
-**Raison de l'update** : synchronisation documentaire avec agentic-toolbox 3.0.0, qui a supprimé son dossier par défaut global (`VAULT_PATH`) — `directory` est désormais un argument obligatoire de ses outils sémantiques.
+**Raison de l'update** : `/doc-lint` détecte les wikilinks pendants et ouvre son rapport par une ligne de compteurs — l'instrumentation préalable à la future fusion d'entités (qui réécrit des wikilinks : il faut un avant/après). Inclut aussi la synchronisation documentaire avec agentic-toolbox 3.0.0.
+
+### Ajouté
+- `/doc-lint` : 8e vérification — **wikilinks pendants** (une cible `[[...]]`,
+  extraite avant `|` et `#`, qui ne correspond à aucun fichier du vault ni à
+  aucun alias `aliases:` de frontmatter). Miroir de la vérification
+  « orphelines » : l'orpheline n'est pas pointée, le lien pendant pointe dans
+  le vide. Correction proposée : corriger la cible, créer la page, ou délier —
+  jamais de page coquille.
+- `/doc-lint` : le rapport s'ouvre sur une **ligne de compteurs** (liens
+  pendants, orphelines, trous d'INDEX, conflits Drive, inbox, frontmatters
+  incomplets, notes par dossier) — l'état de santé du vault d'un coup d'œil,
+  comparable d'un lint à l'autre.
 
 ### Modifié
-- Docs uniquement, aucun changement de comportement : les commandes passaient
-  déjà le dossier du vault explicitement partout. Les mentions du défaut
-  `VAULT_PATH` disparaissent (README, PREREQUIS, `/doc-ingest`, `/doc-query`,
-  `/doc-lint`) ; la règle reste « jamais de dossier implicite ». PREREQUIS :
-  l'activation du plugin toolbox se réduit à la clé `MISTRAL_API_KEY` (plus de
-  champ « dossier par défaut » à laisser vide).
+- Synchronisation avec agentic-toolbox 3.0.0 (docs uniquement, aucun
+  changement de comportement : les commandes passaient déjà le dossier du
+  vault explicitement partout). Les mentions du défaut `VAULT_PATH` disparaissent
+  (README, PREREQUIS, `/doc-ingest`, `/doc-query`, `/doc-lint`) ; la règle
+  reste « jamais de dossier implicite ». PREREQUIS : l'activation du plugin
+  toolbox se réduit à la clé `MISTRAL_API_KEY` (plus de champ « dossier par
+  défaut » à laisser vide).
 
 ## [1.6.0] — 2026-07-26
 

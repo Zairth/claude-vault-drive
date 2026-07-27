@@ -1,5 +1,5 @@
 ---
-description: Vérifier la cohérence du vault Obsidian — contradictions, orphelins, INDEX, conflits Drive, inbox
+description: Vérifier la cohérence du vault Obsidian — compteurs en tête, wikilinks pendants, contradictions, orphelins, INDEX, conflits Drive, inbox
 context: fork
 agent: Explore
 background: false
@@ -20,26 +20,33 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
 2. Lire intégralement `$VAULT/INSTRUCTIONS-CLAUDE.md` et s'y conformer
    (règles de maintenance : sources immuables, LOG append-only, INDEX à jour).
 
-## Vérifications (les sept)
+## Vérifications (les huit)
 
 1. **Contradictions en souffrance** : chercher `> [!warning]` dans `wiki/` →
    lister fichier + extrait du callout.
 2. **Pages orphelines** : pour chaque note de `wiki/concepts/` et `wiki/entites/`,
    chercher `[[<nom-du-fichier-sans-extension>` dans tout le vault (hors la note
    elle-même). Aucune occurrence = orpheline.
-3. **Trous d'INDEX** : chaque note de `wiki/` doit apparaître dans `INDEX.md` —
+3. **Wikilinks pendants** : recenser les cibles de tous les `[[...]]` des
+   notes de `wiki/` — la cible est ce qui précède un éventuel `|` (texte
+   affiché) ou `#` (section). Une cible qui ne correspond à aucun fichier du
+   vault (nom sans extension) ni à aucun alias déclaré dans un frontmatter
+   `aliases:` est pendante → lister note + lien. C'est le miroir de la
+   vérification 2 : l'orpheline n'est pas pointée, le lien pendant pointe
+   dans le vide.
+4. **Trous d'INDEX** : chaque note de `wiki/` doit apparaître dans `INDEX.md` —
    lister les absentes. Inversement, lister les entrées d'`INDEX.md` pointant
    vers des fichiers disparus.
-4. **Fichiers de conflit Drive** : chercher les motifs `* (1).md`, `* (2).md` et
+5. **Fichiers de conflit Drive** : chercher les motifs `* (1).md`, `* (2).md` et
    `*conflit*` dans tout le vault → lister. Chercher aussi dans `wiki/.index/` les
    doublons du mapping vectoriel (`embeddings (1).jsonl`, `*conflit*`) → lister
    séparément (résolution spécifique, voir corrections).
-5. **inbox/ en attente** : lister les fichiers non ingérés (information, pas erreur).
-6. **Frontmatter obligatoire** (modèle de note d'`INSTRUCTIONS-CLAUDE.md`) :
+6. **inbox/ en attente** : lister les fichiers non ingérés (information, pas erreur).
+7. **Frontmatter obligatoire** (modèle de note d'`INSTRUCTIONS-CLAUDE.md`) :
    pour chaque note de `wiki/`, vérifier la présence de `type` + `date` +
    `auteur`, plus `origine` pour les sources et `question` pour les synthèses
    → lister les notes non conformes avec leurs propriétés manquantes.
-7. **Cohérence vectorielle** :
+8. **Cohérence vectorielle** :
    - `wiki/.index/embeddings.jsonl` absent → « index sémantique jamais
      construit » (information ; remède : la réindexation décrite dans les
      corrections). Un `.index/` à la racine du vault est un reliquat des
@@ -58,12 +65,21 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
 
 1. Le chemin `$VAULT` résolu, écrit en clair (l'agent principal ne connaît pas
    la sortie de vault-check).
-2. Le rapport par catégorie (vide = le dire aussi : « rien à signaler »).
-3. Un bloc `Pour l'agent principal` — proposer les corrections à l'utilisateur
+2. **La ligne de compteurs**, sur une seule ligne — l'état de santé du vault
+   d'un coup d'œil, comparable d'un lint à l'autre :
+   `liens pendants: n · orphelines: n · trous d'INDEX: n · conflits Drive: n ·
+   inbox: n · frontmatters incomplets: n · notes: n (concepts n · entites n ·
+   sources n · syntheses n)`.
+3. Le rapport par catégorie (vide = le dire aussi : « rien à signaler »).
+4. Un bloc `Pour l'agent principal` — proposer les corrections à l'utilisateur
    et n'appliquer QUE ce qu'il valide :
    - compléter `INDEX.md`, relier ou supprimer les orphelines, résoudre les
      conflits Drive (comparer les versions, garder la bonne, supprimer
      l'autre), rappeler les `> [!warning]` à trancher.
+   - Pour chaque wikilink pendant : cible renommée ou mal orthographiée →
+     corriger le lien vers la page existante ; page réellement manquante →
+     proposer sa création ou le délier (texte simple) — jamais de page coquille
+     créée juste pour éteindre le compteur.
    - Pour les frontmatters non conformes : proposer une valeur déduite du
      contenu de la note ou de `LOG.md` (`date` : à défaut, la première mention
      de la note dans le LOG) — jamais de valeur inventée sans le signaler.
