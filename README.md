@@ -291,3 +291,10 @@ Sans moteur (ni plugin ni clone), tout fonctionne : `/doc-query` dégrade vers
 grep avec un avertissement explicite, `/doc-ingest` note l'indexation « à
 rattraper ». Installation du moteur (plugin, ou clone + venv + clé Mistral) :
 [PREREQUIS.md](PREREQUIS.md).
+
+**Ce qui sort du vault** : indexer envoie le texte de `wiki/` au fournisseur
+d'embeddings, et chaque `/doc-query` y envoie la question. Sur le palier
+gratuit de Mistral, ces appels alimentent l'entraînement des modèles **par
+défaut** — l'opt-out est gratuit mais doit être coché avant la première
+indexation (console → Administration → Confidentialité). Détail et procédure :
+[PREREQUIS.md](PREREQUIS.md#5-agentic-toolbox-recherche-sémantique--ocr--facultatif).

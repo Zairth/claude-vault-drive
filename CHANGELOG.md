@@ -38,6 +38,15 @@ Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 - `PREREQUIS.md` : section 7 — `python3` (livré par défaut sur WSL/Linux/macOS)
   déclaré comme dépendance douce, avec ce qui s'en sert et ce qui se passe
   s'il manque (dégradation silencieuse, jamais d'erreur).
+- **Avertissement de confidentialité** (`PREREQUIS.md` et `README.md`) : ce qui
+  sort du vault (le texte de `wiki/` à l'indexation, la question à chaque
+  `/doc-query`, les pièces à l'OCR) et le fait que le palier gratuit de Mistral
+  autorise **par défaut** l'usage de ces appels pour entraîner ses modèles.
+  Procédure d'opt-out (console → Administration → Confidentialité), à faire
+  avant la première indexation puisqu'elle ne vaut que pour les interactions
+  futures ; « modèles Labs » à laisser désactivé (ils autorisent
+  l'entraînement quel que soit l'opt-out). Manquait entièrement — un vault
+  peut contenir des données personnelles ou des pièces confidentielles.
 
 ## [1.13.0] — 2026-07-28
 

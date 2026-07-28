@@ -93,6 +93,19 @@ Clé API (tier gratuit) : **`MISTRAL_API_KEY` est la seule requise ici** —
 embeddings et OCR sont épinglés sur Mistral, sans fallback (espaces vectoriels
 incompatibles). Création : https://console.mistral.ai/?profile_dialog=api-keys
 
+> ⚠️ **Ce qui sort du vault, et ce que le fournisseur en fait.** Indexer, c'est
+> envoyer le texte de `wiki/` chez Mistral ; chaque `/doc-query` y envoie aussi
+> la question ; l'OCR y envoie les pièces converties. Or le **palier gratuit
+> « Experiment » autorise par défaut l'usage de ces appels pour entraîner les
+> modèles** — l'opt-out existe, gratuit, mais il faut aller le cocher :
+> console Mistral → Administration → **Confidentialité** → désactiver
+> « Autoriser l'utilisation de vos appels API pour entraîner les modèles ».
+> Le faire **avant la première indexation** : la désactivation ne vaut que pour
+> les interactions futures. Laisser aussi « modèles Labs » désactivé — activés,
+> ils autorisent l'entraînement quel que soit l'opt-out. Les offres payantes
+> sont exclues par défaut. Un vault contenant des données personnelles, des
+> pièces confidentielles ou un dossier en cours : vérifier ce réglage d'abord.
+
 ### Voie nominale : le plugin (zéro clone)
 
 La toolbox existe en plugin Claude Code avec **serveur MCP intégré** — les
