@@ -9,6 +9,35 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.13.0] — 2026-07-28
+
+**Raison de l'update** : le banc ne mesurait qu'un proxy — la couche de récupération isolée — alors que ce qui compte est ce que `/doc-query` cite vraiment. Le mode `reel` mesure la chose elle-même, et le mode mécanique reprend son rôle propre : départager deux versions du moteur, là où un run réel est trop bruité pour ça.
+
+### Ajouté
+- **`/doc-bench reel`** : rejoue les questions de `BENCH.md` en faisant
+  exécuter la cascade complète de `/doc-query` par un sub-agent lecteur par
+  question (vagues de 4), qui ne remonte que les notes qu'il citerait — le
+  contexte principal ne voit aucun contenu de note. Le lecteur lit la
+  procédure de recherche **dans `doc-query.md` lui-même** : la mesure suit la
+  commande sans copie à maintenir. Score
+  `réel x/n · citations complètes x/n · à vide x/n`, confrontation qualitative
+  au dernier run mécanique (quelle question la cascade rattrape, laquelle elle
+  gâche), entrée `bench-reel` au journal. Coût annoncé et accord demandé avant
+  de lancer ; sous-ensemble possible (`/doc-bench reel Q3 Q7 Q17`) ; une seule
+  indexation pour tout le run.
+- Règle posée en tête de la commande : **un score réel ne se compare qu'à un
+  autre score réel**. Le mode mécanique reste gratuit et reproductible (il
+  détecte un gain de +1 entre deux versions du moteur) ; le mode réel est plus
+  proche du vécu mais non déterministe.
+
+### Modifié
+- `/doc-bench` n'est plus une commande en fork : elle **délègue** désormais
+  chaque mode à des sub-agents (un pour la création, un pour la mesure
+  mécanique, un lecteur par question en mode réel) — l'isolation du contexte
+  principal est identique, mais la commande peut enfin porter le mode réel,
+  qui a besoin de lancer des sub-agents. Les trois modes vivent ainsi dans un
+  seul fichier, avec la règle de non-comparabilité des scores au même endroit.
+
 ## [1.12.0] — 2026-07-28
 
 **Raison de l'update** : le premier banc réel a montré que le score ne mesurait pas ce que `/doc-query` fait vraiment — la cascade suit les wikilinks des notes remontées, et plusieurs « échecs » du banc sont en fait rattrapés par le graphe. La colonne `+1 saut` chiffre ce rattrapage, et décide ainsi sur mesure si une expansion par backlinks vaut la peine d'être construite.

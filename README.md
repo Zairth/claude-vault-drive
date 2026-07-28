@@ -39,7 +39,7 @@ claude-vault-drive/
 │   ├── doc-ingest.md        # /doc-ingest — ingérer une source (validation conversationnelle)
 │   ├── doc-query.md         # /doc-query — interroger le vault (fork isolé, réponse citée)
 │   ├── doc-lint.md          # /doc-lint — maintenance (fork isolé : orphelins, INDEX, conflits Drive, vecteurs)
-│   └── doc-bench.md         # /doc-bench — banc de questions de référence, score de recherche comparable
+│   └── doc-bench.md         # /doc-bench — banc de questions de référence (mesure mécanique, ou réelle via /doc-query)
 ├── hooks/
 │   └── hooks.json           # déclaration des trois hooks (SessionStart, UserPromptSubmit, PreCompact)
 ├── scripts/
@@ -181,17 +181,23 @@ commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
   attente, frontmatters obligatoires manquants, cohérence de l'index vectoriel
   (`.index/`) ; corrections validées avec l'utilisateur puis appliquées en
   contexte principal.
-- `/doc-bench` — le mètre étalon de la recherche. Premier lancement (ou
-  `creer`) : propose ~20 questions de référence tirées du contenu du vault,
-  chacune avec ses notes attendues — validées puis figées dans `BENCH.md`
-  (racine du vault, hors index). Lancements suivants : run de mesure
-  **mécanique** (réindexation, puis top 5 sémantique, wikilinks de ce top 5,
-  et grep par question — aucun jugement dans le score) → ligne de score
-  comparable d'un run à l'autre
-  (`sémantique@5 · +1 saut · grep · couverture`), détail des échecs avec ce
-  que la recherche a renvoyé à la place, entrée `bench` au journal. L'écart
-  entre `sémantique@5` et `+1 saut` chiffre ce que le graphe de wikilinks
-  rattrape déjà tout seul. C'est le juge
+- `/doc-bench` — le mètre étalon de la recherche, en trois modes. `creer`
+  (ou premier lancement) : propose ~20 questions de référence tirées du
+  contenu du vault, chacune avec ses notes attendues — validées puis figées
+  dans `BENCH.md` (racine du vault, hors index). Sans argument : run
+  **mécanique** — réindexation, puis top 5 sémantique, wikilinks de ce top 5
+  et grep par question, aucun jugement dans le score →
+  `sémantique@5 · +1 saut · grep · couverture`, détail des échecs avec ce que
+  la recherche a renvoyé à la place. L'écart entre `sémantique@5` et
+  `+1 saut` chiffre ce que le graphe de wikilinks rattrape déjà tout seul.
+  Avec `reel` : la même question posée à `/doc-query` lui-même — un sub-agent
+  lecteur par question exécute la cascade complète (il lit la procédure dans
+  `doc-query.md`, la mesure ne peut donc pas se désynchroniser) et ne remonte
+  que les notes qu'il citerait → `réel · citations complètes · à vide`.
+  Le mécanique est gratuit et reproductible : il détecte un gain de +1 entre
+  deux versions du moteur. Le réel dit si le vault répond vraiment, mais il
+  est coûteux et non déterministe — **un score réel ne se compare qu'à un
+  autre score réel**. Entrée `bench` ou `bench-reel` au journal. C'est le juge
   des évolutions du moteur : une fusion scorée ou une décroissance n'entrera
   que si le banc prouve qu'elle fait mieux.
 
