@@ -9,6 +9,24 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.14.0] — 2026-07-28
+
+**Raison de l'update** : toutes les vérifications de `/doc-lint` regardaient `wiki/` — un `.md` parasite à la racine du vault n'était examiné par rien. Et « `archives/` est hors index » n'était vrai que de l'index sémantique : Obsidian, lui, indexe tout le vault, si bien que les markdown OCR archivés injectent des nœuds fantômes dans le graphe humain, dont un simple clic crée une note vide à la racine.
+
+### Ajouté
+- `/doc-lint` : 9ᵉ vérification — **parasites hors `wiki/`** : `.md`
+  inattendu à la racine du vault (tout sauf `INDEX.md`,
+  `INSTRUCTIONS-CLAUDE.md`, `BENCH.md` et un `LOG.md` hérité), notes vides
+  (0 octet ou frontmatter seul) n'importe où, et cibles introuvables
+  référencées par les markdown OCR d'`archives/` — celles qui apparaissent en
+  nœuds fantômes dans le graphe Obsidian. Compteur `parasites` ajouté à la
+  ligne de tête. Correction proposée : suppression du parasite, et surtout le
+  remède durable, qui n'est pas dans le vault mais dans Obsidian — exclure
+  `archives/` (Paramètres → Fichiers et liens → Filtres d'exclusion). Les
+  fichiers d'`archives/` ne sont jamais modifiés : la couche reste immuable.
+- Règle correspondante dans l'`INSTRUCTIONS-CLAUDE.md` du template et dans le
+  pas-à-pas Obsidian du README.
+
 ## [1.13.0] — 2026-07-28
 
 **Raison de l'update** : le banc ne mesurait qu'un proxy — la couche de récupération isolée — alors que ce qui compte est ce que `/doc-query` cite vraiment. Le mode `reel` mesure la chose elle-même, et le mode mécanique reprend son rôle propre : départager deux versions du moteur, là où un run réel est trop bruité pour ça.

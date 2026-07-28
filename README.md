@@ -129,7 +129,11 @@ Puis dans chaque projet qui doit avoir son vault :
    `[[...]]` (les chemins bruts et propriétés `origine`/`original` n'en créent
    pas) ; pour colorer les nœuds par type, créer un groupe par dossier dans
    les paramètres du graphe — `path:wiki/concepts`, `path:wiki/entites`,
-   `path:wiki/sources`, `path:wiki/syntheses`.
+   `path:wiki/sources`, `path:wiki/syntheses`. **Exclure `archives/`**
+   (Paramètres → Fichiers et liens → Filtres d'exclusion) : Obsidian indexe
+   tout le vault, et les markdown OCR archivés référencent des images non
+   extraites qui apparaissent en nœuds fantômes — cliquer sur l'un d'eux crée
+   une note vide à la racine.
 
 Installer une mise à jour : automatique en arrière-plan, ou manuelle —
 `/plugin marketplace update zairth_store` puis `/reload-plugins` (récupère le
@@ -178,7 +182,9 @@ commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
   wikilinks entrants réécrits, ancien nom conservé en alias),
   contradictions en souffrance,
   pages orphelines, trous d'INDEX, fichiers de conflit Drive, inbox en
-  attente, frontmatters obligatoires manquants, cohérence de l'index vectoriel
+  attente, frontmatters obligatoires manquants, parasites hors `wiki/`
+  (`.md` inattendu à la racine, notes vides, nœuds fantômes venus des
+  archives OCR), cohérence de l'index vectoriel
   (`.index/`) ; corrections validées avec l'utilisateur puis appliquées en
   contexte principal.
 - `/doc-bench` — le mètre étalon de la recherche, en trois modes. `creer`

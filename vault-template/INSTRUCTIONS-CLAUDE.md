@@ -119,6 +119,11 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
 - `archives/` est immuable comme `wiki/sources/`. Les fichiers archivés
   gardent leur nom et leur extension ; l'index sémantique ne couvre que
   `wiki/`, les archives restent donc hors index (zéro coût, zéro bruit).
+  **Obsidian, lui, indexe tout le vault** : exclure `archives/` dans
+  Paramètres → Fichiers et liens → Filtres d'exclusion, sinon les markdown
+  OCR y référencent des images non extraites, qui apparaissent en nœuds
+  fantômes dans le graphe — et un clic sur l'un d'eux crée une note vide à la
+  racine du vault.
   Attention avant de partager le vault : les archives peuvent
   contenir des données sensibles que les notes condensées ont volontairement
   écartées.

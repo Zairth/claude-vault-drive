@@ -20,7 +20,7 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
 2. Lire intégralement `$VAULT/INSTRUCTIONS-CLAUDE.md` et s'y conformer
    (règles de maintenance : sources immuables, LOG append-only, INDEX à jour).
 
-## Vérifications (les neuf)
+## Vérifications (les dix)
 
 1. **Contradictions en souffrance** : chercher `> [!warning]` dans `wiki/` →
    lister fichier + extrait du callout.
@@ -63,7 +63,24 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      vecteurs = indexation non suivie (le verdict définitif reste le hash,
      jamais les dates).
 
-9. **Doublons suspectés (pages vivantes)** : sur l'ensemble `wiki/concepts/`
+9. **Parasites hors `wiki/`** — les autres vérifications ne regardent que
+   `wiki/`, or Obsidian indexe TOUT le vault : ce qui traîne ailleurs pollue
+   le graphe humain (l'index sémantique, lui, ne couvre que `wiki/`).
+   - `.md` inattendu à la **racine** du vault : tout sauf `INDEX.md`,
+     `INSTRUCTIONS-CLAUDE.md`, `BENCH.md` et un `LOG.md` hérité → lister.
+     Cas typique : un clic sur un nœud fantôme du graphe Obsidian crée une
+     note vide à la racine (voir ci-dessous).
+   - **notes vides** (0 octet, ou frontmatter seul sans corps) n'importe où
+     dans le vault → lister.
+   - **nœuds fantômes venus d'`archives/`** : les markdown OCR y référencent
+     des images qui n'ont pas été extraites
+     (`![img-0.jpeg](img-0.jpeg)`, `[[piece-jointe]]`…). Obsidian affiche ces
+     cibles introuvables comme des ronds dans le graphe, et un clic dessus
+     **crée** la note vide correspondante. Compter les cibles distinctes de ce
+     type dans `archives/` et, s'il y en a, rappeler le remède durable dans
+     les corrections. Ne jamais modifier un fichier d'`archives/` : la couche
+     est immuable.
+10. **Doublons suspectés (pages vivantes)** : sur l'ensemble `wiki/concepts/`
    + `wiki/entites/` — les doublons traversent les deux dossiers
    (`Docker.md` dans l'un, `conteneurisation-docker.md` dans l'autre) :
    - collision de **noms normalisés** (casse, accents, tirets/underscores,
@@ -84,8 +101,8 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
    d'un coup d'œil, comparable d'un lint à l'autre :
    `liens pendants: n · doublons suspectés: n · orphelines: n ·
    trous d'INDEX: n · conflits Drive: n · inbox: n ·
-   frontmatters incomplets: n · notes: n (concepts n · entites n ·
-   sources n · syntheses n)`.
+   frontmatters incomplets: n · parasites: n · notes: n (concepts n ·
+   entites n · sources n · syntheses n)`.
 3. Le rapport par catégorie (vide = le dire aussi : « rien à signaler »).
 4. Un bloc `Pour l'agent principal` — proposer les corrections à l'utilisateur
    et n'appliquer QUE ce qu'il valide :
@@ -113,6 +130,16 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      purge les vecteurs de la page absorbée et vectorise la survivante
      enrichie ; moteur indisponible → noter « indexation à rattraper » (le
      prochain `/doc-query` la fera).
+   - Pour les parasites : `.md` inattendu à la racine ou note vide →
+     proposer la suppression (rien à sauver dans un fichier vide), ou son
+     déplacement dans `wiki/` avec un frontmatter conforme si l'utilisateur
+     reconnaît une note qu'il voulait écrire. Nœuds fantômes d'`archives/` →
+     le remède n'est pas dans le vault mais dans **Obsidian** : Paramètres →
+     Fichiers et liens → Filtres d'exclusion → ajouter `archives/`. Les
+     archives sortent alors du graphe et de la recherche Obsidian, sans être
+     touchées ni perdues — c'est exactement leur statut (pièces d'origine
+     conservées, hors index). Sans cette exclusion, chaque clic sur un rond
+     fantôme recrée une note vide à la racine.
    - Pour chaque wikilink pendant : cible renommée ou mal orthographiée →
      corriger le lien vers la page existante ; page réellement manquante →
      proposer sa création ou le délier (texte simple) — jamais de page coquille
