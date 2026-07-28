@@ -76,6 +76,21 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
   `original` (pointent vers `archives/` ou hors vault — hors graphe, voulu).
 - Citations verbatim ≤ 125 caractères ; au-delà, paraphraser — le verbatim long
   reste dans `wiki/sources/`.
+- **Deux callouts, et deux seulement**, ont un sens dans le vault. Ils ne se
+  distinguent pas par leur gravité mais par leur **durée de vie** — l'un est
+  définitif, l'autre est une tâche en attente. Ne jamais les confondre :
+  `/doc-lint` les compte séparément et ne réclame que le second.
+  - `> [!warning]` — **mise en garde documentaire** : une réserve sur la pièce
+    elle-même (OCR partiel ou illisible, capture non datée, propos rapporté,
+    document non signé, expéditeur non identifié, date déduite). Rien à
+    trancher : c'est un fait constaté sur la source. **Permanente** — elle vit
+    surtout dans `wiki/sources/`, immuable, et n'est jamais retirée.
+  - `> [!question]` — **contradiction non tranchée** : deux affirmations
+    incompatibles sans savoir laquelle fait foi. Appelle un arbitrage de
+    l'utilisateur et **disparaît** une fois tranchée. Elle ne se pose donc
+    **jamais dans `wiki/sources/`** : la couche est immuable, un callout posé
+    là ne pourrait plus jamais être retiré. Sa place est sur la page
+    `concepts/`, `entites/` ou `syntheses/` qui porte l'affirmation.
 - Contradiction entre une nouvelle information et l'existant — jamais résolue
   silencieusement, deux issues :
   - **tranchée** (l'utilisateur confirme que la nouvelle version fait foi) →
@@ -85,8 +100,9 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
     wikilink vers sa source>`. Une seule vérité lisible en tête de note,
     l'historique conservé dessous ;
   - **non tranchée** (impossible de savoir laquelle fait foi) → callout
-    `> [!warning]` décrivant les deux versions, à résoudre en conversation —
-    `/doc-lint` rappelle ceux en souffrance.
+    `> [!question]` sur la page concept/entité concernée, décrivant les deux
+    versions et pointant chacune vers sa source en wikilink, à résoudre en
+    conversation — `/doc-lint` rappelle ceux en souffrance.
 
 ## Règles de maintenance
 

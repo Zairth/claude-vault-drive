@@ -9,6 +9,39 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.15.0] — 2026-07-28
+
+**Raison de l'update** : un seul callout `> [!warning]` servait à deux choses incompatibles — la réserve documentaire sur une pièce (OCR partiel, capture non datée), qui est définitive, et la contradiction non tranchée, qui est une tâche en attente. `/doc-lint` les additionnait : sur un vault réel, 19 « contradictions en souffrance » dont la plupart n'appelaient aucune action, donc un compteur qu'on apprend à ignorer.
+
+### Ajouté
+- Convention de **deux callouts distingués par leur durée de vie**, dans
+  `INSTRUCTIONS-CLAUDE.md` : `> [!warning]` = mise en garde documentaire,
+  **permanente**, sur la pièce elle-même ; `> [!question]` = contradiction non
+  tranchée, **temporaire**, retirée à l'arbitrage. Corollaire structurel : un
+  `[!question]` ne se pose jamais dans `wiki/sources/`, couche immuable où il
+  ne pourrait plus être retiré — sa place est sur la page concept/entité qui
+  porte l'affirmation.
+- `/doc-lint` : la vérification 1 compte les deux séparément et ne réclame que
+  les `[!question]` ; détecte les `[!question]` mal placés dans
+  `wiki/sources/` ; requalifie l'héritage ≤ 1.14.0 en lisant le corps de
+  chaque `[!warning]` hors sources pour y reconnaître les vraies
+  contradictions.
+- `/doc-lint` : `contradictions: n` entre en tête de la ligne de compteurs —
+  la dette réelle, mises en garde documentaires exclues.
+- `/doc-lint` : auto-réparation de la convention — `/vault-init` n'écrasant
+  jamais les fichiers racine, un vault antérieur garde l'ancienne règle ; le
+  lint le détecte et propose l'unique édition qui remet
+  `INSTRUCTIONS-CLAUDE.md` à jour. En cas de désaccord, la commande fait foi.
+
+### Modifié
+- `/doc-ingest` : pose désormais `> [!warning]` sur la note source (réserve
+  sur la pièce) et `> [!question]` sur la page concept/entité (contradiction),
+  jamais l'inverse ; le compte rendu sépare les deux natures.
+- Retirer un `[!question]` égaré d'une note source devient la **seule**
+  modification autorisée sur `wiki/sources/`, après validation explicite :
+  l'immuabilité protège ce que la pièce dit, or une contradiction n'est pas
+  dans la pièce mais dans sa relation au vault.
+
 ## [1.14.0] — 2026-07-28
 
 **Raison de l'update** : toutes les vérifications de `/doc-lint` regardaient `wiki/` — un `.md` parasite à la racine du vault n'était examiné par rien. Et « `archives/` est hors index » n'était vrai que de l'index sémantique : Obsidian, lui, indexe tout le vault, si bien que les markdown OCR archivés injectent des nœuds fantômes dans le graphe humain, dont un simple clic crée une note vide à la racine.

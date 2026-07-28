@@ -164,7 +164,10 @@ commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
   écrit : note source immuable, pages concepts/entités, INDEX, LOG.
   Contradiction détectée → tranchée avec l'utilisateur : la note porte la
   valeur courante, l'ancienne descend en `## Historique` (une seule vérité en
-  tête, l'historique conservé) ; non tranchable → callout `> [!warning]`.
+  tête, l'historique conservé) ; non tranchable → callout `> [!question]` sur
+  la page concept/entité — à ne pas confondre avec `> [!warning]`, qui porte
+  une réserve documentaire permanente sur la pièce (OCR partiel, capture non
+  datée) et n'appelle aucun arbitrage.
   Le brut venu d'`inbox/` est **archivé dans `archives/`**, jamais supprimé —
   le vault reste auto-porteur (condensé + pièces d'origine).
 - `/doc-query <question>` — le tout en fork isolé : réindexation incrémentale
@@ -181,7 +184,9 @@ commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
   l'autre) : wikilinks pendants, doublons suspectés de pages vivantes (noms
   normalisés + similarité sémantique ; fusion assistée après validation —
   wikilinks entrants réécrits, ancien nom conservé en alias),
-  contradictions en souffrance,
+  contradictions en souffrance (les callouts `> [!question]` seuls — les
+  `> [!warning]`, réserves documentaires permanentes, sont comptés mais
+  jamais réclamés),
   pages orphelines, trous d'INDEX, fichiers de conflit Drive, inbox en
   attente, frontmatters obligatoires manquants, parasites hors `wiki/`
   (`.md` inattendu à la racine, notes vides, nœuds fantômes venus des

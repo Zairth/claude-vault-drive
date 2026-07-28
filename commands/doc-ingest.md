@@ -105,6 +105,10 @@ jamais rouvrir la source en contexte principal)
    **jamais un chemin absolu de la machine**),
    les enseignements validés, citations verbatim ≤ 125 caractères, wikilinks
    vers les concepts/entités concernés. Immuable une fois écrit.
+   Réserve constatée sur la pièce elle-même — OCR partiel, capture non datée,
+   propos rapporté, document non signé, date déduite → callout
+   `> [!warning]` dans cette note, permanent : il décrit la pièce, il n'y a
+   rien à trancher. **Jamais de `> [!question]` ici** (voir 2).
 2. Pour chaque concept ou entité touché : créer ou mettre à jour la page dans
    `$VAULT/wiki/concepts/` ou `$VAULT/wiki/entites/` (frontmatter `type: concept`
    ou `type: entite` + `date` + `auteur` + `description` à la création,
@@ -116,7 +120,10 @@ jamais rouvrir la source en contexte principal)
    d'`INSTRUCTIONS-CLAUDE.md` : la trancher avec l'utilisateur (la validation
    est le bon moment) → valeur courante mise à jour dans le corps + entrée
    `## Historique` en fin de note ; impossible à trancher → callout
-   `> [!warning]` décrivant les deux versions, signalé à l'utilisateur.
+   `> [!question]` **sur cette page** (jamais sur la note source, immuable :
+   on ne pourrait plus l'en retirer une fois tranché), décrivant les deux
+   versions et pointant chacune vers sa source en wikilink, signalé à
+   l'utilisateur.
 3. Mettre à jour `$VAULT/INDEX.md` : ajouter chaque nouvelle note dans sa
    section, sous forme `- [[<slug>]] — <description>` — la même `description`
    que le frontmatter (INDEX est un dérivé du frontmatter, mêmes mots aux
@@ -148,7 +155,9 @@ jamais rouvrir la source en contexte principal)
 
 ## Compte rendu
 
-Lister les fichiers créés/modifiés (chemins relatifs au vault) et les
-`> [!warning]` posés, le cas échéant. Terminer par l'état de l'indexation :
+Lister les fichiers créés/modifiés (chemins relatifs au vault) et les callouts
+posés, le cas échéant, **en séparant les deux natures** : `> [!warning]`
+(réserves documentaires, définitives) et `> [!question]` (contradictions en
+attente d'arbitrage). Terminer par l'état de l'indexation :
 `embedded_chunks`/`reused_chunks` du rapport JSON, ou « ⚠ indexation sémantique
 échouée (<raison>) — à rattraper » si l'étape 6 a échoué.

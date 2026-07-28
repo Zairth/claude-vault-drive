@@ -22,8 +22,29 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
 
 ## Vérifications (les dix)
 
-1. **Contradictions en souffrance** : chercher `> [!warning]` dans `wiki/` →
-   lister fichier + extrait du callout.
+1. **Callouts** — deux natures que la convention d'`INSTRUCTIONS-CLAUDE.md`
+   sépare par leur durée de vie ; ne jamais les additionner :
+   - `> [!question]` dans `wiki/` = **contradiction en souffrance**, à
+     trancher → lister fichier + extrait. C'est le seul des deux qui appelle
+     une action.
+   - `> [!warning]` dans `wiki/` = **mise en garde documentaire**,
+     permanente → compter seulement, et le dire ; ne rien réclamer.
+   - `> [!question]` trouvé dans `wiki/sources/` = **défaut de placement** :
+     la couche est immuable, le callout ne pourra jamais y être retiré une
+     fois tranché → lister à part (remède dans les corrections).
+   - **Héritage des versions ≤ 1.14.0**, où `> [!warning]` servait aux deux
+     usages : hors `wiki/sources/`, lire le corps de chaque `[!warning]` et
+     signaler ceux qui décrivent en réalité deux affirmations incompatibles —
+     ce sont des contradictions à requalifier en `[!question]`. Un
+     `[!warning]` qui énonce une réserve sur une pièce est conforme, ne pas
+     le toucher.
+   - Enfin, vérifier que `$VAULT/INSTRUCTIONS-CLAUDE.md` mentionne bien
+     `[!question]` : les fichiers racine d'un vault ne sont jamais écrasés par
+     `/vault-init`, donc un vault créé avant 1.15.0 porte encore l'ancienne
+     convention. Absent → le signaler (remède dans les corrections). En cas
+     de désaccord entre ce fichier et la présente commande, **c'est la
+     commande qui fait foi** : elle vient du plugin, donc de la version
+     installée.
 2. **Pages orphelines** : pour chaque note de `wiki/concepts/` et `wiki/entites/`,
    chercher `[[<nom-du-fichier-sans-extension>` dans tout le vault (hors la note
    elle-même). Aucune occurrence = orpheline.
@@ -99,10 +120,13 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
    la sortie de vault-check).
 2. **La ligne de compteurs**, sur une seule ligne — l'état de santé du vault
    d'un coup d'œil, comparable d'un lint à l'autre :
-   `liens pendants: n · doublons suspectés: n · orphelines: n ·
-   trous d'INDEX: n · conflits Drive: n · inbox: n ·
+   `contradictions: n · liens pendants: n · doublons suspectés: n ·
+   orphelines: n · trous d'INDEX: n · conflits Drive: n · inbox: n ·
    frontmatters incomplets: n · parasites: n · notes: n (concepts n ·
    entites n · sources n · syntheses n)`.
+   `contradictions` ne compte QUE les `[!question]` en souffrance, augmentés
+   des `[!warning]` requalifiés — jamais les mises en garde documentaires,
+   qui sont un état normal du vault et non une dette.
 3. Le rapport par catégorie (vide = le dire aussi : « rien à signaler »).
 4. Un bloc `Pour l'agent principal` — proposer les corrections à l'utilisateur
    et n'appliquer QUE ce qu'il valide :
@@ -113,10 +137,24 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      conflits Drive (comparer les versions, garder la bonne, supprimer
      l'autre — sauf sur `INDEX.md` : supprimer le fichier de conflit et
      régénérer, un conflit sur un dérivé ne coûte rien) ;
-     rappeler les `> [!warning]` à trancher — un callout tranché se
+     rappeler les `> [!question]` à trancher — un callout tranché se
      résout par la convention d'`INSTRUCTIONS-CLAUDE.md` : valeur courante
      mise à jour dans le corps, ancienne version poussée en `## Historique`,
-     callout retiré.
+     callout retiré. Pour un `[!warning]` requalifié : le retyper en
+     `[!question]` sur place, puis le traiter comme les autres. Pour un
+     `[!question]` égaré dans `wiki/sources/` : reporter le callout sur la
+     page concept/entité concernée, puis **le retirer de la note source** —
+     seule modification jamais autorisée sur `wiki/sources/`, et seulement
+     après validation explicite. Elle se justifie parce que l'immuabilité
+     protège ce que la pièce dit : une contradiction n'est pas dans la
+     pièce, elle est dans la relation entre la pièce et le vault. L'ôter
+     restaure la fidélité de la source au lieu de l'entamer.
+     Si `INSTRUCTIONS-CLAUDE.md` ignore encore `[!question]` : proposer d'y
+     remplacer la puce « Contradiction entre une nouvelle information et
+     l'existant » par la version en vigueur (les deux callouts distingués par
+     leur durée de vie, `[!warning]` permanent et documentaire, `[!question]`
+     temporaire et hors `wiki/sources/`) — une seule édition, le reste du
+     fichier n'est pas touché.
    - Pour chaque paire de doublons que l'utilisateur confirme — **fusion
      assistée**, dans cet ordre : il choisit la page survivante ; rapatrier le
      contenu utile de la page absorbée ; ajouter le nom de l'absorbée aux
