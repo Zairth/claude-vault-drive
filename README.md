@@ -185,10 +185,13 @@ commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
   `creer`) : propose ~20 questions de référence tirées du contenu du vault,
   chacune avec ses notes attendues — validées puis figées dans `BENCH.md`
   (racine du vault, hors index). Lancements suivants : run de mesure
-  **mécanique** (réindexation, puis top 5 sémantique + grep par question,
-  aucun jugement dans le score) → ligne de score comparable d'un run à
-  l'autre (`sémantique@5 · grep · couverture`), détail des échecs avec ce que
-  la recherche a renvoyé à la place, entrée `bench` au journal. C'est le juge
+  **mécanique** (réindexation, puis top 5 sémantique, wikilinks de ce top 5,
+  et grep par question — aucun jugement dans le score) → ligne de score
+  comparable d'un run à l'autre
+  (`sémantique@5 · +1 saut · grep · couverture`), détail des échecs avec ce
+  que la recherche a renvoyé à la place, entrée `bench` au journal. L'écart
+  entre `sémantique@5` et `+1 saut` chiffre ce que le graphe de wikilinks
+  rattrape déjà tout seul. C'est le juge
   des évolutions du moteur : une fusion scorée ou une décroissance n'entrera
   que si le banc prouve qu'elle fait mieux.
 

@@ -80,27 +80,37 @@ attendu : [[note-a]], [[note-b]]
      `directory: $VAULT/wiki` explicite) → rang de la première attendue
      (1-5, ou absente) ;
    - **grep** : les mots pleins de la question (sans articles ni mots-outils)
-     sur `wiki/` → attendues touchées ou non.
+     sur `wiki/` → attendues touchées ou non ;
+   - **+1 saut** : les wikilinks `[[...]]` des notes du top 5 sémantique
+     contiennent-ils une attendue absente de ce top 5 ? C'est ce que la
+     cascade de `/doc-query` fait gratuitement (elle suit les wikilinks des
+     notes remontées) : l'écart entre `sémantique@5` et `+1 saut` mesure ce
+     que le graphe rattrape déjà — et donc ce qu'une expansion par backlinks
+     apporterait, ou non. L'INDEX n'entre pas dans ce calcul : il liste TOUTES
+     les notes, un saut par l'INDEX trouverait tout et ne mesurerait rien.
 4. **Scores** (mêmes définitions à chaque run — c'est ce qui les rend
    comparables) :
    - `sémantique@5` : x/n questions avec ≥ 1 attendue dans le top 5, et le
      rang moyen des touchées ;
+   - `+1 saut` : x/n questions avec ≥ 1 attendue dans le top 5 **ou** dans les
+     wikilinks de ce top 5 ;
    - `grep` : x/n questions avec ≥ 1 attendue touchée ;
    - `couverture` : x/n questions dont TOUTES les attendues sont trouvées
-     (sémantique et grep confondus).
+     (top 5, wikilinks du top 5 et grep confondus).
 
 ## Rapport final (ton retour à l'agent principal)
 
 1. Le chemin `$VAULT` résolu, écrit en clair.
 2. L'avertissement « sémantique indisponible », le cas échéant.
 3. La ligne de score :
-   `sémantique@5 x/n (rang moyen r) · grep x/n · couverture x/n`.
-4. Le tableau par question : rang sémantique, grep, verdict — et pour chaque
-   question en échec, ce que la recherche a renvoyé **à la place** (c'est le
-   carburant des évolutions du moteur : fusion scorée, décroissance).
+   `sémantique@5 x/n (rang moyen r) · +1 saut x/n · grep x/n · couverture x/n`.
+4. Le tableau par question : rang sémantique, +1 saut (la note pivot dont le
+   wikilink mène à l'attendue), grep, verdict — et pour chaque question en
+   échec, ce que la recherche a renvoyé **à la place** (c'est le carburant des
+   évolutions du moteur).
 5. Les attendues disparues (« banc à mettre à jour »), le cas échéant.
 6. Bloc `Pour l'agent principal` : proposer d'ajouter en fin de
    `$VAULT/LOG/YYYY-MM-DD.md` (fichier du jour, créé au besoin) :
-   `## [YYYY-MM-DD] bench | sémantique@5 x/n · grep x/n · couverture x/n`
+   `## [YYYY-MM-DD] bench | sémantique@5 x/n · +1 saut x/n · grep x/n · couverture x/n`
    suivi d'une ligne listant les questions en échec. Rien d'autre à écrire —
    un run ne modifie jamais `BENCH.md`.

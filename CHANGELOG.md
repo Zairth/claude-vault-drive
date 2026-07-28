@@ -9,6 +9,19 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.12.0] — 2026-07-28
+
+**Raison de l'update** : le premier banc réel a montré que le score ne mesurait pas ce que `/doc-query` fait vraiment — la cascade suit les wikilinks des notes remontées, et plusieurs « échecs » du banc sont en fait rattrapés par le graphe. La colonne `+1 saut` chiffre ce rattrapage, et décide ainsi sur mesure si une expansion par backlinks vaut la peine d'être construite.
+
+### Ajouté
+- `/doc-bench`, mode mesure : troisième colonne **`+1 saut`** — une attendue
+  absente du top 5 sémantique mais citée en wikilink par une note de ce top 5
+  compte comme atteinte, puisque la cascade de `/doc-query` la suit. Mécanique
+  et sans coût API supplémentaire. L'INDEX est volontairement exclu du calcul
+  (il liste toutes les notes : un saut par l'INDEX trouverait tout et ne
+  mesurerait rien). Ligne de score et entrée de journal :
+  `sémantique@5 x/n (rang moyen r) · +1 saut x/n · grep x/n · couverture x/n`.
+
 ## [1.11.2] — 2026-07-28
 
 **Raison de l'update** : sur un vault fourni, le hook SessionStart ne livrait plus qu'un fragment de la carte — une sortie de hook n'est injectée telle quelle qu'en deçà d'environ 2 Ko, bien avant le garde-fou de 16 Ko du script, et la troncature brute s'arrêtait au milieu des concepts (entités, sources et synthèses invisibles).
