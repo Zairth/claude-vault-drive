@@ -19,15 +19,44 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
   (lister le contenu de `$VAULT/inbox/` s'il n'est pas vide).
 - Texte bref fourni directement dans `$ARGUMENTS` → il est déjà en contexte :
   pas de sub-agent, passer directement à la validation.
-- Fichier local, élément d'`inbox/`, URL, PDF → **NE JAMAIS lire la source en
-  contexte principal** (anti-saturation : sur un gros volume, l'ingestion
-  ferait déborder la session). **Mesurer d'abord le volume** sans lire le
-  contenu : `wc -c` par fichier ; PDF → conversion markdown par OCR d'abord
-  (outil MCP `mcp__plugin_agentic-toolbox_toolbox__ocr_convert` si
-  disponible, sinon le CLI `services.document_ocr.cli_parser convert` depuis
-  le clone local), dépôt dans `$VAULT/inbox/`, et mesure du markdown obtenu ;
-  URL → taille inconnue : partir du montage nominal, le lecteur signale s'il
-  déborde. Puis choisir le montage :
+- Fichier local, élément d'`inbox/`, URL, PDF, capture d'écran → **NE JAMAIS
+  lire la source en contexte principal** (anti-saturation : sur un gros
+  volume, l'ingestion ferait déborder la session).
+
+  **Router d'abord selon la nature de la source** — l'OCR n'est pas un passage
+  obligé, c'est un outil à documents :
+
+  - **PDF, scan, document multi-pages** → conversion markdown par OCR
+    (outil MCP `mcp__plugin_agentic-toolbox_toolbox__ocr_convert` si
+    disponible, sinon le CLI `services.document_ocr.cli_parser convert` depuis
+    le clone local), dépôt dans `$VAULT/inbox/`, puis mesure du markdown
+    obtenu. C'est son terrain : mise en page structurée, texte au fil des
+    pages.
+  - **Capture d'écran** (`.png`, `.jpg`, `.jpeg`, `.webp`, `.heic`…) →
+    **jamais d'OCR**. Un OCR documentaire aplatit en flux linéaire ce qui,
+    dans une conversation, porte le sens par la **position** — bulle à gauche
+    ou à droite, en-tête de fil, alignement : l'attribution du locuteur n'est
+    pas mal transcrite, elle est détruite à la lecture, et aucun réglage n'y
+    remédie. Le sub-agent lecteur **ouvre l'image directement** (outil Read,
+    qui affiche les images) et la transcrit lui-même. Trois conséquences :
+    - pas de mesure par `wc -c` — une image ne se compte pas en octets de
+      texte. L'unité de source est la **conversation, pas le fichier** : une
+      série de captures d'un même fil est UNE source, qu'un seul lecteur
+      ouvre dans l'ordre (une dizaine au plus par lecteur ; au-delà, découper
+      la série en tranches et appliquer le montage gros volume) ;
+    - mission de lecture explicite : restituer **qui parle** (déduit de
+      l'alignement et des en-têtes), les horodatages visibles, l'ordre
+      chronologique ; et **signaler tout passage illisible, coupé ou ambigu
+      plutôt que de le deviner** — ce sera un `> [!warning]` sur la note
+      source ;
+    - c'est l'**image elle-même** qui est archivée et que pointe `origine:`.
+      Aucun markdown intermédiaire n'est produit, donc aucune référence
+      d'image pendante à traîner ensuite dans le graphe.
+  - **Texte, markdown, export brut** → tel quel, mesure par `wc -c`.
+  - **URL** → taille inconnue : partir du montage nominal, le lecteur signale
+    s'il déborde.
+
+  Puis choisir le montage :
 
   **Montage nominal — source unique ≤ ~150 Ko de texte** : un **sub-agent
   lecteur** (outil Agent, en avant-plan — `run_in_background: false`) avec
@@ -136,7 +165,9 @@ jamais rouvrir la source en contexte principal)
    venue de `$VAULT/inbox/` → la **déplacer** vers `$VAULT/archives/` ; venue
    d'ailleurs sur la machine → l'y **copier** (le fichier de l'utilisateur
    n'est jamais déplacé ni supprimé). PDF passé par OCR : archiver les deux —
-   le markdown OCR et le PDF d'origine. Les fichiers archivés gardent leur
+   le markdown OCR et le PDF d'origine. Captures d'écran : archiver **les
+   images elles-mêmes**, toutes celles de la série, dans leur ordre — elles
+   sont la pièce d'origine, il n'y a rien d'autre à conserver. Les fichiers archivés gardent leur
    nom et leur extension — `archives/` est hors index par construction, seul
    `$VAULT/wiki` est indexé. Renseigner `origine:`
    (et `original:` le cas échéant) avec ces chemins archivés, relatifs au

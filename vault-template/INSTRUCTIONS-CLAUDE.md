@@ -60,8 +60,10 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
   page — après une fusion de doublons, le nom de la page absorbée vit ici :
   les wikilinks `[[ancien-nom]]` continuent de résoudre dans Obsidian et
   `/doc-lint` ne les compte pas comme pendants), et toute propriété utile au cas particulier
-  (ex. `image`, `capture_precedente`/`capture_suivante` pour des captures OCR
-  en série) — enrichir librement, ne jamais retirer une propriété obligatoire.
+  (ex. `image`, `capture_precedente`/`capture_suivante` pour une série de
+  captures d'écran — lues visuellement, jamais passées à l'OCR : un OCR
+  documentaire détruit l'attribution du locuteur, qui tient à la position des
+  bulles) — enrichir librement, ne jamais retirer une propriété obligatoire.
 - Avant de créer une page dans `concepts/` ou `entites/` : vérifier qu'aucune
   page existante ne couvre déjà le sujet — nom normalisé (casse, accents,
   tirets), alias `aliases:`, libellé proche. En cas de doute, **enrichir

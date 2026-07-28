@@ -159,7 +159,12 @@ commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
 
 - `/doc-ingest <texte | fichier | URL | élément de inbox/>` — un sub-agent
   lecteur lit la source (le contexte principal ne la voit jamais) et propose
-  2-5 enseignements clés ; la discussion passe par ce même sub-agent (relais
+  2-5 enseignements clés. La source est routée selon sa nature : **document
+  ou PDF → OCR** ; **capture d'écran → lecture visuelle directe par le
+  lecteur, jamais d'OCR** (dans une conversation, qui parle tient à la
+  position des bulles — un OCR documentaire aplatit tout en un flux linéaire
+  et détruit cette information) ; une série de captures d'un même fil compte
+  pour **une** source, et ce sont les images qui sont archivées ; la discussion passe par ce même sub-agent (relais
   SendMessage, contexte conservé) ; après validation, l'agent principal
   écrit : note source immuable, pages concepts/entités, INDEX, LOG.
   Contradiction détectée → tranchée avec l'utilisateur : la note porte la

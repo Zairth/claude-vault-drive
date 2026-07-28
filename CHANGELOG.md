@@ -9,6 +9,33 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.16.0] — 2026-07-28
+
+**Raison de l'update** : toute source non textuelle passait par l'OCR, captures d'écran comprises. Or l'OCR documentaire est fait pour des documents structurés : sur une capture de conversation, il aplatit en flux linéaire ce qui porte le sens par la position (bulle à gauche ou à droite = qui parle). L'attribution du locuteur n'était pas mal transcrite, elle était détruite à la lecture — et aucun réglage de modèle n'y remédie.
+
+### Ajouté
+- `/doc-ingest` : **routage de la source selon sa nature**, avant tout
+  traitement. PDF, scan, document multi-pages → OCR, c'est son terrain.
+  Capture d'écran (`.png`, `.jpg`, `.webp`, `.heic`…) → **jamais d'OCR** : le
+  sub-agent lecteur ouvre l'image directement et la transcrit, avec pour
+  mission explicite de restituer qui parle (alignement des bulles, en-têtes),
+  les horodatages et l'ordre chronologique, et de **signaler tout passage
+  illisible plutôt que de le deviner** — ce qui devient un `> [!warning]` sur
+  la note source. Texte/markdown → tel quel ; URL → montage nominal.
+- `/doc-ingest` : l'unité de source d'une capture est la **conversation, pas
+  le fichier** — une série de captures d'un même fil est UNE source, qu'un
+  seul lecteur ouvre dans l'ordre (une dizaine au plus, au-delà montage gros
+  volume).
+
+### Modifié
+- `/doc-ingest`, archivage : pour une capture, ce sont **les images
+  elles-mêmes** qui sont archivées et que pointe `origine:`. Aucun markdown
+  intermédiaire n'est produit — donc plus aucune référence d'image pendante
+  (`![img-N.jpeg]`) injectée dans le graphe Obsidian par cette voie.
+- `INSTRUCTIONS-CLAUDE.md` : `capture_precedente`/`capture_suivante`
+  décrivent une série de captures **lues visuellement**, la mention « OCR »
+  disparaît.
+
 ## [1.15.0] — 2026-07-28
 
 **Raison de l'update** : un seul callout `> [!warning]` servait à deux choses incompatibles — la réserve documentaire sur une pièce (OCR partiel, capture non datée), qui est définitive, et la contradiction non tranchée, qui est une tâche en attente. `/doc-lint` les additionnait : sur un vault réel, 19 « contradictions en souffrance » dont la plupart n'appelaient aucune action, donc un compteur qu'on apprend à ignorer.
