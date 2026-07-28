@@ -200,9 +200,13 @@ le plugin est invisible tant que `/vault-init` n'a pas été lancé. Aucune donn
 du hook ne transite par argv ni par l'environnement ; tout champ servant à
 nommer un fichier est filtré et confiné au vault.
 
-- **SessionStart** — injecte `INDEX.md` (la carte du vault, tronquée à 16 Ko)
-  dans le contexte à l'ouverture de session : Claude sait d'emblée ce que le
-  vault contient. Vault configuré mais inaccessible → une seule ligne
+- **SessionStart** — injecte la carte du vault (`INDEX.md`) dans le contexte à
+  l'ouverture de session : Claude sait d'emblée ce que le vault contient. Une
+  sortie de hook n'étant injectée telle quelle qu'en deçà d'environ 2 Ko, un
+  INDEX volumineux est **condensé** — les slugs seuls, sans les descriptions,
+  répartis équitablement entre sections (`(+n autres)` là où ça déborde) et
+  suivis du chemin de l'INDEX complet : une carte entière vaut mieux qu'un
+  début de carte. Vault configuré mais inaccessible → une seule ligne
   d'avertissement (Drive pas monté ?).
 - **UserPromptSubmit** — recherche sémantique directe sur chaque prompt
   (`vault-search.sh`, appel du moteur sans fork) : le top 3 est injecté comme

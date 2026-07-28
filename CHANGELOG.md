@@ -9,6 +9,20 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.11.2] — 2026-07-28
+
+**Raison de l'update** : sur un vault fourni, le hook SessionStart ne livrait plus qu'un fragment de la carte — une sortie de hook n'est injectée telle quelle qu'en deçà d'environ 2 Ko, bien avant le garde-fou de 16 Ko du script, et la troncature brute s'arrêtait au milieu des concepts (entités, sources et synthèses invisibles).
+
+### Corrigé
+- **Hook SessionStart** : au-delà du budget d'injection, la carte est
+  désormais **condensée** au lieu d'être coupée — les slugs seuls, sans les
+  descriptions, répartis équitablement entre sections (la part non consommée
+  par une section profite aux suivantes), `(+n autres)` là où ça déborde, et
+  le chemin de l'`INDEX.md` complet en pied. La carte reste entière quel que
+  soit le volume du vault ; les descriptions se lisent dans l'INDEX. Replis
+  conservés : `python3` absent ou INDEX sans entrées reconnaissables →
+  troncature brute annoncée comme telle.
+
 ## [1.11.1] — 2026-07-27
 
 **Raison de l'update** : supprime l'erreur « Duplicate hooks file detected » au chargement du plugin — `hooks/hooks.json` est chargé automatiquement par Claude Code (emplacement standard), la déclaration explicite `hooks` du manifeste faisait doublon ; elle est retirée. Les hooks fonctionnaient déjà, seule l'erreur affichée disparaît.
