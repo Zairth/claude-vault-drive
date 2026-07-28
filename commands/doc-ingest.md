@@ -137,8 +137,33 @@ jamais rouvrir la source en contexte principal)
    Réserve constatée sur la pièce elle-même — OCR partiel, capture non datée,
    propos rapporté, document non signé, date déduite → callout
    `> [!warning]` dans cette note, permanent : il décrit la pièce, il n'y a
-   rien à trancher. **Jamais de `> [!question]` ici** (voir 2).
-2. Pour chaque concept ou entité touché : créer ou mettre à jour la page dans
+   rien à trancher. **Jamais de `> [!question]` ici** (voir 3).
+2. **Source conversationnelle uniquement** (captures d'un fil, export d'un outil de messagerie — pas un document,
+   pas un article) : écrire en plus la
+   **transcription intégrale** dans
+   `$VAULT/wiki/transcriptions/<conversation>/<slug>.md`, où `<conversation>`
+   est un dossier en kebab-case nommant le fil (`<fil-a>`,
+   `<fil-b>`, `<fil-c>`…) — créé s'il n'existe pas,
+   réutilisé s'il existe déjà. Frontmatter `type: transcription` + `date` +
+   `auteur` + `description` + `origine` (les pièces d'`archives/`, captures
+   dans leur ordre) + `conversation` + `participants` + `periode`.
+   Corps : **un message par bloc**, auteur et horodatage en tête quand ils sont
+   lisibles, ordre chronologique, texte intégral — pas un résumé. Wikilinks
+   vers les entités citées, et vers la note source du 1 (qui pointe en retour).
+   Immuable une fois écrite.
+   Un passage illisible ou ambigu se **signale** (`[illisible]`, et un
+   `> [!warning]` en tête si la conversation en compte plusieurs) ; il ne se
+   devine jamais.
+   Fil très long → plusieurs notes **dans le même dossier**, découpées par
+   période (`2026-03.md`, `2026-04.md`…) : le dossier reste l'unité de
+   conversation.
+   **`transcriptions/` n'est pas vectorisé** (voir 7) : cette note se retrouve
+   par le wikilink de son condensé, par grep, et par lecture.
+   **Pourquoi cette note en plus du condensé** : sans elle, seuls les 2 à 5
+   enseignements retenus sont interrogeables, et une question du type « tous
+   les messages où X reconnaît le travail de Y » n'a aucune matière. Le
+   condensé est ce qu'on lit ; la transcription est ce qu'on fouille.
+3. Pour chaque concept ou entité touché : créer ou mettre à jour la page dans
    `$VAULT/wiki/concepts/` ou `$VAULT/wiki/entites/` (frontmatter `type: concept`
    ou `type: entite` + `date` + `auteur` + `description` à la création,
    paraphrase, wikilink retour vers la note source). **Avant de créer** : vérifier qu'aucune page
@@ -153,15 +178,16 @@ jamais rouvrir la source en contexte principal)
    on ne pourrait plus l'en retirer une fois tranché), décrivant les deux
    versions et pointant chacune vers sa source en wikilink, signalé à
    l'utilisateur.
-3. Mettre à jour `$VAULT/INDEX.md` : ajouter chaque nouvelle note dans sa
+4. Mettre à jour `$VAULT/INDEX.md` : ajouter chaque nouvelle note dans sa
    section, sous forme `- [[<slug>]] — <description>` — la même `description`
    que le frontmatter (INDEX est un dérivé du frontmatter, mêmes mots aux
-   deux endroits).
-4. Ajouter en fin de `$VAULT/LOG/YYYY-MM-DD.md` (le fichier du jour — le créer
+   deux endroits). Une transcription va en section Transcriptions, son dossier
+   de conversation entre parenthèses.
+5. Ajouter en fin de `$VAULT/LOG/YYYY-MM-DD.md` (le fichier du jour — le créer
    au besoin ; jamais dans un `LOG.md` racine hérité, gelé) :
    `## [YYYY-MM-DD] ingest | <titre de la source>`
    suivi d'une ligne listant les fichiers créés/modifiés.
-5. Archiver la pièce d'origine — pour TOUTE source qui est un fichier local :
+6. Archiver la pièce d'origine — pour TOUTE source qui est un fichier local :
    venue de `$VAULT/inbox/` → la **déplacer** vers `$VAULT/archives/` ; venue
    d'ailleurs sur la machine → l'y **copier** (le fichier de l'utilisateur
    n'est jamais déplacé ni supprimé). PDF passé par OCR : archiver les deux —
@@ -174,12 +200,21 @@ jamais rouvrir la source en contexte principal)
    vault — **jamais un chemin absolu de la machine** (`/home/...`,
    `/mnt/...`, `C:\...`) : il meurt avec la machine, le vault doit rester
    auto-porteur.
-6. Indexation sémantique — outil MCP
-   `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` avec
-   `directory: $VAULT/wiki` **explicite** (`wiki` seul : `archives/` et
-   `inbox/` restent hors index)
-   si le plugin agentic-toolbox est installé, sinon
-   `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"` (clone + venv).
+7. Indexation sémantique — **seulement les dossiers de savoir touchés par
+   cette ingestion** : `sources`, et `concepts`/`entites` si des pages y ont
+   été touchées. Chacun a son propre index (la liste des dossiers indexables
+   est donnée par
+   `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index-targets.sh"`).
+   **Ne jamais indexer `transcriptions/`** : c'est un choix de conception, pas
+   un oubli — un corpus de messages se lit en entier, et un classement ne
+   garantirait pas l'exhaustivité qu'on lui demanderait.
+   Outil MCP `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` avec
+   `directory: $VAULT/wiki/<dossier>` **explicite**, un appel par dossier —
+   jamais `$VAULT/wiki` seul, que le moteur indexerait récursivement et qui
+   vectoriserait deux fois les sous-dossiers.
+   Sans le plugin agentic-toolbox :
+   `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh" "$VAULT/wiki/<dossier>"`
+   par dossier, ou sans argument pour tout réindexer.
    Incrémental — seuls les chunks des notes créées/modifiées coûtent un appel
    API. **Échec = non bloquant** : l'ingestion reste valide ; noter que
    l'indexation se rattrapera au prochain `/doc-query`.
@@ -189,6 +224,9 @@ jamais rouvrir la source en contexte principal)
 Lister les fichiers créés/modifiés (chemins relatifs au vault) et les callouts
 posés, le cas échéant, **en séparant les deux natures** : `> [!warning]`
 (réserves documentaires, définitives) et `> [!question]` (contradictions en
-attente d'arbitrage). Terminer par l'état de l'indexation :
-`embedded_chunks`/`reused_chunks` du rapport JSON, ou « ⚠ indexation sémantique
-échouée (<raison>) — à rattraper » si l'étape 6 a échoué.
+attente d'arbitrage). Pour une source conversationnelle, dire explicitement
+combien de messages la transcription contient et sur quelle période — c'est ce
+qui permet de repérer une transcription tronquée.
+Terminer par l'état de l'indexation, **par dossier** :
+`<dossier> : <embedded_chunks>/<reused_chunks>`, ou « ⚠ indexation sémantique
+échouée (<raison>) — à rattraper » si l'étape 7 a échoué.

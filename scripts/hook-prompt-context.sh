@@ -27,29 +27,43 @@ esac
 (( ${#prompt} >= 12 )) || exit 0
 
 vault="$(bash "$script_directory/vault-check.sh" 2>/dev/null)" || exit 0
+
+# Le hook n'interroge QUE la couche synthétisée (concepts + entités), jamais
+# les sources ni les transcriptions. Deux raisons : chaque index interrogé
+# coûte un embedding de la question, et ce hook se déclenche à CHAQUE prompt —
+# balayer tout le wiki en ferait un poste de dépense permanent ; et ce qu'on
+# veut ici, ce sont des pistes de savoir consolidé, pas des extraits bruts.
+# La recherche exhaustive est le métier de /doc-query, pas le sien.
 # Recherche seule, jamais d'indexation ici : un index absent signifie qu'aucun
 # /doc-query n'a encore tourné — pas au hook de payer la construction.
-[[ -f "$vault/wiki/.index/embeddings.jsonl" ]] || exit 0
-
-results="$(bash "$script_directory/vault-search.sh" "$prompt" "$vault/wiki" 3 2>/dev/null)" || exit 0
-
-printf '%s' "$results" | python3 -c '
-import json, sys
+format_hits='
+import json, os, sys
 try:
     hits = json.load(sys.stdin)
 except Exception:
     sys.exit(0)
-if not isinstance(hits, list) or not hits:
+if not isinstance(hits, list):
     sys.exit(0)
-print("Pistes du vault (recherche sémantique automatique sur ce prompt — des extraits, pas une réponse ; /doc-query pour une recherche complète et citée) :")
-for hit in hits[:3]:
+layer = os.environ["LAYER"]
+for hit in hits[:2]:
     path = hit.get("relative_path", "?")
     section = hit.get("section") or ""
     score = hit.get("score")
     excerpt = " ".join(str(hit.get("excerpt", "")).split())
     if len(excerpt) > 200:
         excerpt = excerpt[:200] + "…"
-    where = f"wiki/{path}" + (f" § {section}" if section else "")
+    where = f"wiki/{layer}/{path}" + (f" § {section}" if section else "")
     note = f" ({score:.2f})" if isinstance(score, (int, float)) else ""
     print(f"- {where}{note} : {excerpt}")
 '
+
+lines=""
+for layer in concepts entites; do
+    [[ -f "$vault/wiki/$layer/.index/embeddings.jsonl" ]] || continue
+    layer_results="$(bash "$script_directory/vault-search.sh" "$prompt" "$vault/wiki/$layer" 2 2>/dev/null)" || continue
+    formatted="$(printf '%s' "$layer_results" | LAYER="$layer" python3 -c "$format_hits" 2>/dev/null)" || continue
+    [[ -n "$formatted" ]] && lines+="$formatted"$'\n'
+done
+[[ -n "$lines" ]] || exit 0
+
+printf 'Pistes du vault (recherche sémantique automatique sur ce prompt, concepts et entités seulement — des extraits, pas une réponse ; /doc-query pour une recherche complète et citée) :\n%s' "$lines"

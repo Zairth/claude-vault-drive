@@ -44,39 +44,62 @@ dossier parent (ex. autoriser `<parent>` plutôt que `<parent>/<vault>` seul).
 
 ## Recherche sémantique
 
+**Un index par dossier de savoir.** `concepts/`, `entites/`, `syntheses/` et
+`sources/` portent chacun son `.index/embeddings.jsonl`, donc son propre
+espace vectoriel : les notes ne concourent qu'entre semblables, ce qui empêche
+une entité de dix lignes d'être écrasée par un extrait d'une source de trois
+cents. **`transcriptions/` n'est pas vectorisé** — on l'atteint par le
+condensé de `sources/` qui pointe dessus, par grep et par lecture (voir la
+règle sur les questions exhaustives). En contrepartie, chaque index interrogé
+coûte un embedding de la question.
+
 1. Si `$ARGUMENTS` contient le jeton `--no-index`, le retirer de la question et
    sauter l'étape 2 (échappatoire : interroger sans réindexer).
-2. Indexer — toujours `$VAULT/wiki` (l'index ne couvre que `wiki/` : ni
-   `archives/`, ni `inbox/`, ni les fichiers racine), même quand la cible est
-   un dossier voisin `dans:` (un voisin est en lecture seule : on ne l'indexe
-   JAMAIS, son équipe s'en charge). Indexation incrémentale : seuls les chunks
-   nouveaux/modifiés coûtent un appel API. Deux portes d'entrée vers le
-   moteur, dans cet ordre :
-   - **MCP** (plugin agentic-toolbox installé) : outil
-     `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build`, en passant
-     `directory: $VAULT/wiki` **explicitement** — jamais de dossier
-     implicite ;
+2. Indexer — **chaque dossier de savoir, séparément** (ni `transcriptions/`,
+   ni `archives/`, ni `inbox/`, ni les fichiers racine ; jamais un dossier
+   voisin `dans:`, qui
+   est en lecture seule et dont l'indexation appartient à son équipe).
+   Incrémental : seuls les chunks nouveaux/modifiés coûtent un appel API.
+   Deux portes d'entrée, dans cet ordre :
+   - **MCP** (plugin agentic-toolbox installé) : d'abord obtenir la liste des
+     dossiers à indexer —
+     `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index-targets.sh"` (une cible
+     par ligne, relative à `wiki/` ; `transcriptions/` n'y figure pas, c'est
+     voulu) —, puis un appel
+     `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` par cible,
+     avec `directory: $VAULT/wiki/<cible>` **explicite** — jamais de dossier
+     implicite, et jamais `$VAULT/wiki` seul : le moteur indexe
+     récursivement, ce qui vectoriserait deux fois les sous-dossiers ;
    - **wrapper** sinon : `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"`
-     (clone local + venv du moteur).
-3. Chercher — même cascade, dans le dossier indexé (`$VAULT/wiki` en cible
-   normale, le dossier voisin pour `dans:`) :
-   - **MCP** : outil `mcp__plugin_agentic-toolbox_toolbox__semantic_search`
-     (`question`, `directory` explicite) ;
+     sans argument (il boucle lui-même sur les cibles ; sortie : un bloc
+     `## <cible>` par dossier).
+3. Chercher — même cascade, dans **chaque dossier indexé** (ou le seul dossier
+   voisin, pour `dans:`) :
+   - **MCP** : `mcp__plugin_agentic-toolbox_toolbox__semantic_search` par
+     cible (`question`, `directory` explicite), `top_k` 3 par défaut — quatre
+     index à cinq résultats noieraient le signal sous le volume ;
    - **wrapper** sinon :
-     `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-search.sh" "<question>" "<cible>"`
-     (le 2e argument ne sert que pour une cible `dans:` ; l'omettre sinon).
+     `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-search.sh" "<question>" "" 3`
+     (2e argument vide = toutes les cibles ; le renseigner pour une cible
+     `dans:` ou pour restreindre volontairement à une catégorie).
 4. Repli grep explicite : si l'étape 2 ou 3 échoue (moteur indisponible — ni
    outils MCP dans la session ni clone local —, index absent — cas normal d'un
    voisin `dans:` jamais indexé), continuer SANS résultats sémantiques et
    ouvrir le rapport final par : « ⚠ recherche sémantique indisponible
    (<raison en quelques mots>), résultats par mots-clés uniquement ». Jamais
    d'échec silencieux, jamais d'autre fournisseur d'embeddings.
+   Une cible en échec sur plusieurs n'est pas un repli : poursuivre avec les
+   autres et le signaler en une ligne (« index <cible> indisponible »).
 5. Les résultats (`relative_path`, `section`, `score`, `excerpt`) constituent
-   les « pistes sémantiques » de la recherche ci-dessous. En cible normale,
-   `relative_path` est relatif à `wiki/` — préfixer par `wiki/` pour ouvrir
-   et citer les notes. (Index d'une version ≤ 1.5.3 encore en place : des
-   résultats `LOG.md`, `INDEX.md`, `inbox/`, `archives/` peuvent apparaître —
-   les ignorer.)
+   les « pistes sémantiques ». **`relative_path` est relatif à la cible**, pas
+   à `wiki/` : le chemin réel est `wiki/<cible>/<relative_path>`.
+   **Ne jamais fusionner ni comparer les scores entre deux index** — ce sont
+   des classements distincts sur des corpus disjoints, et les mêler
+   reviendrait à inventer une fusion que rien ne justifie. Garder les pistes
+   **groupées par cible**, dans l'ordre rendu.
+   (Index d'une version ≤ 1.15.x encore en place : un `wiki/.index/` unique,
+   qui produirait des résultats en doublon — le signaler comme reliquat à
+   supprimer et l'ignorer.)
 
 ## Recherche
 
@@ -87,17 +110,33 @@ La question à traiter est `$ARGUMENTS`, nettoyée des jetons `dans:` et
 2. Pistes sémantiques (s'il y en a) : ouvrir ces notes EN PREMIER, aux
    sections indiquées, puis suivre leurs wikilinks `[[...]]`. Ensuite, repérer
    les entrées pertinentes de l'INDEX et les ouvrir de la même façon.
-3. Compléter par grep sur les mots-clés de la question ET leurs synonymes /
-   variantes françaises.
-4. Ne jamais recopier des notes entières.
-5. Si rien de pertinent : le dire explicitement et lister ce qui s'en
+3. **Question exhaustive** — « tous les messages qui… », « combien de fois… »,
+   « qui a dit… à quel moment », « liste tous les… » : aucun classement ne peut
+   y répondre, et s'y fier produirait une réponse fausse d'aspect crédible. Un
+   index rend les K meilleurs résultats, jamais l'ensemble des résultats
+   qualifiants : demander 3 en rend 3, même si quarante messages conviennent.
+   Sur ce type de question, les pistes de `sources/` et l'INDEX ne servent qu'à
+   **désigner quelles conversations ouvrir** — lire ensuite **intégralement**
+   les notes des dossiers `transcriptions/<conversation>/` retenus et les
+   balayer. L'exhaustivité vient de la lecture, jamais du classement.
+   Trop de conversations pour un seul lecteur → le dire dans le rapport et
+   nommer celles qui n'ont pas été balayées ; jamais de silence sur une
+   couverture partielle.
+4. Compléter par grep sur les mots-clés de la question ET leurs synonymes /
+   variantes françaises. Sur une question exhaustive, le grep sur les
+   transcriptions est un **filet de sécurité** : ce qu'il trouve et que le
+   balayage a manqué signale un balayage incomplet.
+5. Ne jamais recopier des notes entières.
+6. Si rien de pertinent : le dire explicitement et lister ce qui s'en
    rapproche.
 
 ## Rapport final (ton retour à l'agent principal)
 
 Exactement ces blocs, dans cet ordre :
 
-1. L'avertissement de repli grep, le cas échéant (étape 4 ci-dessus).
+1. L'avertissement de repli grep, le cas échéant — et, sur une question
+   exhaustive, la liste des conversations effectivement balayées en entier
+   (une couverture partielle se dit, elle ne se devine pas).
 2. La réponse à la question (concise, en français).
 3. `Sources` : les chemins relatifs des notes utilisées.
 4. Un bloc `Pour l'agent principal`, avec le chemin `$VAULT` résolu écrit en

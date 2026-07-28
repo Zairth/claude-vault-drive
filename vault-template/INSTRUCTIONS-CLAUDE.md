@@ -25,11 +25,33 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
 ├── archives/                ← pièces d'origine conservées après ingestion (hors index)
 ├── wiki/
 │   ├── sources/             ← couche IMMUABLE : une note par source, jamais réécrite
+│   ├── transcriptions/      ← couche IMMUABLE : un dossier par conversation, texte intégral (NON vectorisé)
+│   │   └── <conversation>/  ← les notes du fil
 │   ├── concepts/            ← couche vivante : pages de concepts
 │   ├── entites/             ← couche vivante : personnes, outils, projets
-│   ├── syntheses/           ← réponses de /doc-query sauvegardées
-│   └── .index/              ← index de recherche sémantique optionnel (ne pas toucher)
+│   └── syntheses/           ← réponses de /doc-query sauvegardées
 ```
+
+**Un index sémantique par dossier de savoir**, dans le dossier lui-même
+(`concepts/.index/`, `entites/.index/`, `syntheses/.index/`,
+`sources/.index/` — dérivés jetables, ne pas y toucher). Ce n'est pas un
+détail d'implémentation : chaque dossier est un **espace vectoriel séparé**,
+donc les notes ne concourent qu'entre semblables. Une entité de dix lignes ne
+peut plus être écrasée par un gros extrait d'une source de trois cents. C'est
+ce qui rend la recherche utilisable sans réglage de score.
+
+**`transcriptions/` n'est pas vectorisé**, délibérément. Ce qu'on demande à un
+corpus de messages est presque toujours exhaustif (« tous les messages qui… »),
+or un index rend les K meilleurs résultats, jamais l'ensemble des résultats
+qualifiants : il faut lire les conversations en entier — et dès lors qu'on lit
+tout, l'ordre de lecture ne change plus rien. On y accède donc par le condensé
+de `sources/` (vectorisé, il désigne quelle conversation ouvrir et pointe
+dessus en wikilink), par grep, et par lecture intégrale.
+
+Conséquence : **une note posée directement à la racine de `wiki/` n'est
+indexée par rien** — toute note de savoir vit dans un de ces dossiers. Et
+`transcriptions/` ne contient que des dossiers, jamais de note en direct : le
+dossier est l'unité de conversation.
 
 ## Conventions de notes
 
@@ -38,7 +60,8 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
 - Nommage : `kebab-case.md` ; sources préfixées `YYYY-MM-DD-`.
 - **Modèle de note — frontmatter obligatoire** (une note sans ces propriétés
   n'est pas conforme ; `/doc-lint` les vérifie) :
-  - toutes les notes : `type` (source | concept | entite | synthese),
+  - toutes les notes : `type` (source | transcription | concept | entite |
+    synthese),
     `date` (date de création `YYYY-MM-DD`, jamais modifiée ensuite),
     `auteur` (qui a créé la note : la personne pilotant la session — la
     demander une fois si inconnue, puis réutiliser — ou le nom de l'équipe
@@ -53,6 +76,11 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
     la machine** (`/home/...`, `/mnt/...`, `C:\...`) dans `origine`/`original` :
     un fichier local ingéré est copié dans `archives/` et référencé
     relativement au vault ;
+  - `type: transcription` : `origine` (même règle que pour une source : les
+    pièces d'`archives/` dont vient le texte — captures dans leur ordre,
+    export brut), `conversation` (le nom du fil, identique au dossier qui la
+    porte), `participants` (liste), et `periode` (`YYYY-MM-DD → YYYY-MM-DD`)
+    quand elle est connue ;
   - `type: synthese` : `question` — la question posée ; `perimetre` si la
     recherche visait un dossier voisin du vault.
 
@@ -108,8 +136,21 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
 
 ## Règles de maintenance
 
-- `wiki/sources/` est **immuable** : une note de source n'est jamais modifiée
-  après son ingestion.
+- `wiki/sources/` et `wiki/transcriptions/` sont **immuables** : ni une note de
+  source ni une transcription n'est modifiée après son ingestion.
+- Une **source conversationnelle** (captures d'écran d'un fil, export d'un outil de messagerie) produit **deux notes**, et elles ne font pas double emploi :
+  - le **condensé** dans `wiki/sources/` — 2 à 5 enseignements, citations
+    courtes, wikilinks : c'est ce qu'on lit ;
+  - la **transcription intégrale** dans
+    `wiki/transcriptions/<conversation>/` — **un message par bloc**, avec
+    auteur et horodatage quand ils sont lisibles : c'est ce qu'on fouille.
+    Sans elle, une question comme « tous les messages où X reconnaît Y » n'a
+    aucune matière à interroger — seuls les quelques enseignements retenus
+    seraient cherchables.
+  Les deux se pointent mutuellement en wikilink, et `origine` renvoie dans les
+  deux cas aux pièces d'`archives/`.
+  Un fil très long se découpe en plusieurs notes **dans le même dossier**
+  (`2026-03.md`, `2026-04.md`…) : le dossier reste l'unité de conversation.
 - Toute écriture dans `wiki/` met à jour `INDEX.md` **dans la foulée**.
   `INDEX.md` est un **dérivé** : chaque entrée vient du frontmatter de la note
   (`- [[<slug>]] — <description>`) et `/doc-lint` sait le régénérer
@@ -151,6 +192,17 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
 - Point d'entrée : `INDEX.md`, puis suivre les wikilinks des notes pertinentes.
 - Compléter par grep sur les mots-clés de la question **et leurs synonymes /
   variantes françaises**.
+- **Les transcriptions ne sont pas vectorisées** : on les atteint par le
+  condensé de `sources/` qui pointe dessus en wikilink, par grep, et par
+  lecture.
+- **Question exhaustive** — « tous les messages qui… », « combien de fois… »,
+  « liste tous les… » : aucun classement ne peut y répondre. Un index rend les
+  K meilleurs résultats, jamais l'ensemble des résultats qualifiants —
+  demander 5 en rend 5, même si quarante messages conviennent. L'exhaustivité
+  vient de la **lecture intégrale** des dossiers
+  `transcriptions/<conversation>/` retenus. Ne jamais conclure « tous les X »
+  sur la foi d'extraits remontés, et dire quelles conversations ont été
+  balayées quand la couverture est partielle.
 - Ne remonter au contexte principal **que** la réponse citée (avec les chemins
   des notes sources, relatifs au vault) — jamais le contenu brut des notes.
 - Un passage trouvé sous une section `## Historique` est une version périmée :

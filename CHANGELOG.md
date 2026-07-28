@@ -11,9 +11,37 @@ Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 
 ## [1.16.0] — 2026-07-28
 
-**Raison de l'update** : toute source non textuelle passait par l'OCR, captures d'écran comprises. Or l'OCR documentaire est fait pour des documents structurés : sur une capture de conversation, il aplatit en flux linéaire ce qui porte le sens par la position (bulle à gauche ou à droite = qui parle). L'attribution du locuteur n'était pas mal transcrite, elle était détruite à la lecture — et aucun réglage de modèle n'y remédie.
+**Raison de l'update** : deux angles morts découverts en mesurant. D'abord, toute source non textuelle passait par l'OCR, captures comprises — or sur une conversation, l'OCR documentaire aplatit en flux linéaire ce qui porte le sens par la position (bulle à gauche ou à droite = qui parle) : l'attribution du locuteur n'était pas mal transcrite, elle était détruite. Ensuite, un index unique sur tout `wiki/` faisait concourir des notes de natures et de tailles incomparables — deux runs de banc ont montré les notes courtes systématiquement écrasées par les gros extraits des notes longues. Enfin, le texte intégral des conversations n'existait nulle part d'interrogeable : seuls les 2-5 enseignements retenus l'étaient.
 
 ### Ajouté
+- **Un index sémantique par dossier de savoir** (`concepts/.index/`,
+  `entites/.index/`, `syntheses/.index/`, `sources/.index/`) au lieu d'un index
+  unique sur `wiki/`. Chaque dossier devient un espace vectoriel séparé : les
+  notes ne concourent qu'entre semblables, et une entité de dix lignes ne peut
+  plus être écrasée par un extrait d'une source de trois cents. C'est une
+  séparation structurelle, pas un réglage de score — elle attaque la cause du
+  défaut mesuré au banc plutôt que ses symptômes.
+  Nouveau `scripts/vault-index-targets.sh` : source unique des dossiers à
+  indexer. `vault-index.sh` et `vault-search.sh` bouclent dessus sans argument,
+  et acceptent toujours un dossier unique en échappatoire.
+- **`wiki/transcriptions/`** : couche immuable, un dossier par conversation,
+  texte intégral **un message par bloc**. Toute source conversationnelle
+  (captures d'un fil, export d'un outil de messagerie) produit désormais deux
+  notes qui ne font pas double emploi — le condensé de `sources/` est ce qu'on
+  lit, la transcription est ce qu'on fouille. Sans elle, une question comme
+  « tous les messages où X reconnaît le travail de Y » n'avait aucune matière.
+- **Règle des questions exhaustives** dans `/doc-query` et le template :
+  « tous les messages qui… », « combien de fois… » ne peuvent PAS être
+  résolues par un classement — un index rend les K meilleurs résultats, jamais
+  l'ensemble des résultats qualifiants. L'exhaustivité vient de la lecture
+  intégrale des conversations retenues, et une couverture partielle se dit
+  explicitement dans le rapport.
+- `/doc-lint` : cohérence vectorielle par dossier (cible jamais indexée =
+  notes invisibles à la recherche) ; détection des `.md` posés à la racine de
+  `wiki/` ou de `transcriptions/`, et des sous-dossiers inattendus — tous
+  échappent à l'indexation ou au repérage ; reliquats `wiki/.index/` (≤ 1.15.x)
+  à supprimer ; divergence de provider/modèle/dimension entre deux index ;
+  compteur `index manquants` et décompte des transcriptions par conversation.
 - `/doc-ingest` : **routage de la source selon sa nature**, avant tout
   traitement. PDF, scan, document multi-pages → OCR, c'est son terrain.
   Capture d'écran (`.png`, `.jpg`, `.webp`, `.heic`…) → **jamais d'OCR** : le
@@ -34,7 +62,28 @@ Installer une mise à jour : `/plugin marketplace update zairth_store` puis
   (`![img-N.jpeg]`) injectée dans le graphe Obsidian par cette voie.
 - `INSTRUCTIONS-CLAUDE.md` : `capture_precedente`/`capture_suivante`
   décrivent une série de captures **lues visuellement**, la mention « OCR »
-  disparaît.
+  disparaît. Nouveau `type: transcription` (`origine`, `conversation`,
+  `participants`, `periode`) ; quatre couches de savoir au lieu de trois.
+- `/doc-bench` : le score devient `sémantique@3`, mesuré **par dossier** — les
+  espaces vectoriels étant disjoints, le rang d'une attendue est son rang dans
+  l'index de son propre dossier, jamais dans un classement global reconstitué.
+  Les scores d'avant 1.16.0 ne sont plus comparables.
+- Le hook `UserPromptSubmit` n'interroge plus que `concepts/` et `entites/` :
+  il se déclenche à chaque prompt, et chaque index interrogé coûte un
+  embedding — les pistes qu'on veut là sont du savoir consolidé, pas des
+  extraits bruts. La recherche large reste le métier de `/doc-query`.
+
+### Non retenu
+- **Vectoriser les transcriptions.** Envisagé, puis écarté après examen : ce
+  qu'on demande à un corpus de messages est presque toujours exhaustif, or un
+  classement ne garantit jamais l'exhaustivité — il faut lire les
+  conversations en entier, et dès lors qu'on lit tout, l'ordre de lecture ne
+  change plus le résultat. On les atteint par le condensé de `sources/` qui
+  pointe dessus, par grep, et par lecture. Trois bénéfices : pas de coût
+  d'embedding sur des milliers de chunks, **le contenu intégral des
+  conversations ne part pas chez le fournisseur d'embeddings**, et une requête
+  ne coûte pas un embedding par conversation. Réversible : la structure en un
+  dossier par conversation supporte les deux.
 
 ## [1.15.0] — 2026-07-28
 

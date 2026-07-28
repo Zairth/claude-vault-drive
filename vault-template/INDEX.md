@@ -17,6 +17,11 @@ régénère le tout — un conflit de synchro sur ce fichier ne coûte rien.
 
 *(vide pour l'instant)*
 
+## Transcriptions
+
+*(vide pour l'instant — une entrée par conversation, le dossier qui la porte
+entre parenthèses)*
+
 ## Synthèses
 
 *(vide pour l'instant)*

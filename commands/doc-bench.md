@@ -85,37 +85,46 @@ Déléguer l'intégralité de la mesure à un **sub-agent** (outil Agent, type
 ni les recherches ni les notes. Sa mission :
 
 1. **Réindexation incrémentale d'abord** (mesurer sur un index à jour) —
-   outil MCP `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` avec
-   `directory: $VAULT/wiki` **explicite**, sinon
-   `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"`. Moteur indisponible
-   → ouvrir le rapport par « ⚠ sémantique indisponible (<raison>) — score
-   grep seul » et sauter les mesures sémantiques.
+   il y a **un index par dossier de savoir** (`transcriptions/` n'est pas
+   vectorisé) : obtenir la liste par
+   `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index-targets.sh"`, puis un
+   `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` par cible avec
+   `directory: $VAULT/wiki/<cible>` **explicite** ; sinon
+   `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"` sans argument, qui
+   boucle lui-même. Moteur indisponible → ouvrir le rapport par
+   « ⚠ sémantique indisponible (<raison>) — score grep seul » et sauter les
+   mesures sémantiques.
 2. Pour chaque question, mécaniquement :
-   - **sémantique** : `semantic_search` top 5 (`question` telle quelle,
-     `directory: $VAULT/wiki` explicite) → rang de la première attendue
-     (1-5, ou absente) ;
+   - **sémantique** : `semantic_search` top 3 **sur chaque cible**
+     (`question` telle quelle, `directory: $VAULT/wiki/<cible>` explicite).
+     Les espaces vectoriels étant disjoints, **les scores ne se comparent pas
+     d'une cible à l'autre** : le rang d'une attendue est son rang **dans
+     l'index de son propre dossier**, jamais dans un classement global
+     reconstitué. Une attendue de `entites/` au rang 1 de `entites/` compte
+     comme rang 1, quel que soit le score des pistes de `sources/`.
+     → rang de la première attendue (1-3, ou absente) ;
    - **grep** : les mots pleins de la question (sans articles ni mots-outils)
      sur `wiki/` → attendues touchées ou non ;
-   - **+1 saut** : les wikilinks `[[...]]` des notes du top 5 contiennent-ils
-     une attendue absente de ce top 5 ? C'est ce que la cascade de
+   - **+1 saut** : les wikilinks `[[...]]` des notes remontées contiennent-ils
+     une attendue absente de ces remontées ? C'est ce que la cascade de
      `/doc-query` fait gratuitement (elle suit les wikilinks des notes
-     remontées) : l'écart avec `sémantique@5` chiffre ce que le graphe
+     remontées) : l'écart avec `sémantique@3` chiffre ce que le graphe
      rattrape déjà, et donc ce qu'une expansion par backlinks apporterait — ou
      non. L'INDEX est volontairement exclu du calcul : il liste TOUTES les
      notes, un saut par l'INDEX trouverait tout et ne mesurerait rien.
 3. **Scores** (mêmes définitions à chaque run — c'est ce qui les rend
    comparables) :
-   - `sémantique@5` : x/n questions avec ≥ 1 attendue dans le top 5, et le
-     rang moyen des touchées ;
-   - `+1 saut` : x/n questions avec ≥ 1 attendue dans le top 5 **ou** dans les
-     wikilinks de ce top 5 ;
+   - `sémantique@3` : x/n questions avec ≥ 1 attendue dans le top 3 de son
+     dossier, et le rang moyen des touchées ;
+   - `+1 saut` : x/n questions avec ≥ 1 attendue remontée **ou** dans les
+     wikilinks des notes remontées ;
    - `grep` : x/n questions avec ≥ 1 attendue touchée ;
    - `couverture` : x/n questions dont TOUTES les attendues sont trouvées
-     (top 5, wikilinks du top 5 et grep confondus).
+     (remontées, wikilinks et grep confondus).
 4. **Rapport** : la ligne de score
-   `sémantique@5 x/n (rang moyen r) · +1 saut x/n · grep x/n · couverture x/n` ;
-   le tableau par question (rang sémantique, note pivot du +1 saut, grep,
-   verdict) ; pour chaque échec, ce que la recherche a renvoyé **à la place**
+   `sémantique@3 x/n (rang moyen r) · +1 saut x/n · grep x/n · couverture x/n` ;
+   le tableau par question (dossier et rang de l'attendue, note pivot du
+   +1 saut, grep, verdict) ; pour chaque échec, ce que la recherche a renvoyé **à la place**
    (c'est le carburant des évolutions du moteur) ; les attendues disparues.
 
 ## Mode réel (`reel`) — mesurer ce que /doc-query répond
@@ -161,7 +170,7 @@ Présenter le rapport, puis proposer d'ajouter en fin de
 `$VAULT/LOG/YYYY-MM-DD.md` (fichier du jour, créé au besoin) :
 
 - mécanique :
-  `## [YYYY-MM-DD] bench | sémantique@5 x/n · +1 saut x/n · grep x/n · couverture x/n`
+  `## [YYYY-MM-DD] bench | sémantique@3 x/n · +1 saut x/n · grep x/n · couverture x/n`
 - réel :
   `## [YYYY-MM-DD] bench-reel | réel x/n · citations complètes x/n`
 

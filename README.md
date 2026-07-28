@@ -47,8 +47,9 @@ claude-vault-drive/
 │   ├── vault-check.sh       # portier : vérifie l'accès au vault, imprime son chemin
 │   ├── vault-init.sh        # initialisation du vault en une commande, idempotente
 │   ├── toolbox-env.sh       # résolution du moteur sémantique (dossier + venv)
+│   ├── vault-index-targets.sh   # les dossiers de wiki/ à indexer séparément (un index par dossier)
 │   ├── vault-index.sh       # indexation sémantique incrémentale (repli CLI, sans plugin toolbox)
-│   ├── vault-search.sh      # recherche sémantique dans un dossier indexé (repli CLI)
+│   ├── vault-search.sh      # recherche sémantique dans un ou tous les dossiers indexés (repli CLI)
 │   ├── hook-session-start.sh    # hook : INDEX.md injecté à l'ouverture de session
 │   ├── hook-prompt-context.sh   # hook : pistes sémantiques sous chaque prompt
 │   └── hook-precompact-inbox.sh # hook : transcript déposé dans inbox/ avant compactage
@@ -72,20 +73,38 @@ vault par projet**.
   frontmatter de la commande) — le contexte principal de Claude ne voit jamais
   les notes brutes ni même les instructions de la commande (anti-saturation,
   anti-distracteurs) ; seuls la réponse citée ou le rapport remontent.
-- **Trois couches de savoir** : `wiki/sources/` (immuable, une note par source),
-  `wiki/concepts/` + `wiki/entites/` (vivantes, reliées par wikilinks),
-  `wiki/syntheses/` (réponses transversales persistées).
+- **Quatre couches de savoir** : `wiki/sources/` (immuable, une note par
+  source — le condensé qu'on lit), `wiki/transcriptions/` (immuable, un dossier
+  par conversation, texte intégral message par message — la matière qu'on
+  fouille), `wiki/concepts/` + `wiki/entites/` (vivantes, reliées par
+  wikilinks), `wiki/syntheses/` (réponses transversales persistées).
+- **Un index sémantique par dossier de savoir**, dans le dossier lui-même
+  (`concepts/.index/`, `entites/.index/`, `syntheses/.index/`,
+  `sources/.index/`). Chaque dossier est un espace vectoriel séparé, donc les
+  notes ne concourent qu'entre semblables : une entité de dix lignes ne peut
+  plus être écrasée par un extrait d'une source de trois cents. C'est une
+  séparation structurelle, pas un réglage de score.
+- **`wiki/transcriptions/` n'est pas vectorisé**, délibérément. Ce qu'on
+  demande à un corpus de messages est presque toujours exhaustif (« tous les
+  messages qui… »), or un index rend les K meilleurs résultats, jamais
+  l'ensemble des résultats qualifiants : il faut lire les conversations en
+  entier — et dès lors qu'on lit tout, l'ordre de lecture ne change plus rien.
+  On les atteint par le condensé de `sources/` (vectorisé, il désigne quelle
+  conversation ouvrir et pointe dessus en wikilink), par grep, et par lecture.
+  Économie au passage : le contenu intégral des conversations ne part pas chez
+  le fournisseur d'embeddings.
 - **Modèle de note** : frontmatter obligatoire sur chaque note — `type`,
   `date` (création), `auteur`, `description` (alimente l'INDEX), plus
-  `origine`/`original` (sources) et
+  `origine`/`original` (sources et transcriptions),
+  `conversation`/`participants` (transcriptions) et
   `question` (synthèses) ; défini dans l'`INSTRUCTIONS-CLAUDE.md` du vault,
   appliqué par `/doc-ingest`, vérifié par `/doc-lint`.
 - **Vault auto-porteur** : `inbox/` est un sas, pas un stockage — un fichier
   ingéré est déplacé vers `archives/`, jamais supprimé. Le condensé vit dans
   `wiki/sources/`, la pièce d'origine reste vérifiable dans le vault, qui
   voyage d'un bloc. `archives/` est immuable et **hors index sémantique**
-  (l'index ne couvre que `wiki/` : zéro coût, zéro bruit — les fichiers
-  archivés gardent leur nom et leur extension) ; attention
+  (seuls les dossiers de `wiki/` sont indexés : zéro coût, zéro bruit — les
+  fichiers archivés gardent leur nom et leur extension) ; attention
   avant de partager le vault, les archives peuvent contenir des données
   sensibles que les notes condensées ont volontairement écartées.
 - **Échecs explicites** : Drive non monté, vault non initialisé → message clair,
@@ -130,7 +149,7 @@ Puis dans chaque projet qui doit avoir son vault :
    `[[...]]` (les chemins bruts et propriétés `origine`/`original` n'en créent
    pas) ; pour colorer les nœuds par type, créer un groupe par dossier dans
    les paramètres du graphe — `path:wiki/concepts`, `path:wiki/entites`,
-   `path:wiki/sources`, `path:wiki/syntheses`. **Exclure `archives/`**
+   `path:wiki/sources`, `path:wiki/transcriptions`, `path:wiki/syntheses`. **Exclure `archives/`**
    (Paramètres → Fichiers et liens → Filtres d'exclusion) : Obsidian indexe
    tout le vault, et les markdown OCR archivés référencent des images non
    extraites qui apparaissent en nœuds fantômes — cliquer sur l'un d'eux crée
@@ -164,7 +183,12 @@ commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
   lecteur, jamais d'OCR** (dans une conversation, qui parle tient à la
   position des bulles — un OCR documentaire aplatit tout en un flux linéaire
   et détruit cette information) ; une série de captures d'un même fil compte
-  pour **une** source, et ce sont les images qui sont archivées ; la discussion passe par ce même sub-agent (relais
+  pour **une** source, et ce sont les images qui sont archivées. Une source
+  conversationnelle produit **deux notes** : le condensé dans `wiki/sources/`
+  (2-5 enseignements, ce qu'on lit) et la **transcription intégrale** dans
+  `wiki/transcriptions/<conversation>/` (un message par bloc, ce qu'on
+  fouille) — sans quoi une question comme « tous les messages où X reconnaît
+  le travail de Y » n'aurait aucune matière à interroger ; la discussion passe par ce même sub-agent (relais
   SendMessage, contexte conservé) ; après validation, l'agent principal
   écrit : note source immuable, pages concepts/entités, INDEX, LOG.
   Contradiction détectée → tranchée avec l'utilisateur : la note porte la
@@ -202,10 +226,10 @@ commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
   (ou premier lancement) : propose ~20 questions de référence tirées du
   contenu du vault, chacune avec ses notes attendues — validées puis figées
   dans `BENCH.md` (racine du vault, hors index). Sans argument : run
-  **mécanique** — réindexation, puis top 5 sémantique, wikilinks de ce top 5
+  **mécanique** — réindexation, puis top 3 sémantique par dossier, wikilinks des notes remontées
   et grep par question, aucun jugement dans le score →
-  `sémantique@5 · +1 saut · grep · couverture`, détail des échecs avec ce que
-  la recherche a renvoyé à la place. L'écart entre `sémantique@5` et
+  `sémantique@3 · +1 saut · grep · couverture`, détail des échecs avec ce que
+  la recherche a renvoyé à la place. L'écart entre `sémantique@3` et
   `+1 saut` chiffre ce que le graphe de wikilinks rattrape déjà tout seul.
   Avec `reel` : la même question posée à `/doc-query` lui-même — un sub-agent
   lecteur par question exécute la cascade complète (il lit la procédure dans
@@ -271,12 +295,14 @@ nommer un fichier est filtré et confiné au vault.
 
 ## Recherche sémantique (facultative, repli grep sinon)
 
-L'index d'embeddings vit dans `<vault>/wiki/.index/embeddings.jsonl` (seul
-`wiki/` est indexé — ni `archives/`, ni `inbox/`, ni les fichiers racine) — un mapping
+Il y a **un index par dossier de savoir**, dans le dossier lui-même :
+`<vault>/wiki/<dossier>/.index/embeddings.jsonl` pour `concepts/`, `entites/`,
+`syntheses/` et `sources/`. Ni `archives/`, ni `inbox/`, ni les fichiers
+racine, ni `transcriptions/` (voir Principes). Chaque index est un mapping
 `hash(chunk) → vecteur` partagé via Drive, fournisseur/modèle épinglés en
 ligne 1, réindexation incrémentale par hash (jamais de fallback d'embeddings
-entre modèles : espaces vectoriels incompatibles). Il est **dérivé et
-reconstructible** : le supprimer ne perd rien.
+entre modèles : espaces vectoriels incompatibles). Tous sont **dérivés et
+reconstructibles** : les supprimer ne perd rien.
 
 Le moteur n'est pas inclus dans ce repo : c'est
 **[agentic-toolbox](https://github.com/Zairth/agentic-toolbox)** (projet de

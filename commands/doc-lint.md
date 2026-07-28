@@ -59,25 +59,43 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
    lister les absentes. Inversement, lister les entrées d'`INDEX.md` pointant
    vers des fichiers disparus.
 5. **Fichiers de conflit Drive** : chercher les motifs `* (1).md`, `* (2).md` et
-   `*conflit*` dans tout le vault → lister. Chercher aussi dans `wiki/.index/` les
-   doublons du mapping vectoriel (`embeddings (1).jsonl`, `*conflit*`) → lister
-   séparément (résolution spécifique, voir corrections).
+   `*conflit*` dans tout le vault → lister. Chercher aussi les doublons du mapping
+   vectoriel (`embeddings (1).jsonl`, `*conflit*`) dans **chaque**
+   `wiki/<dossier>/.index/` → lister séparément (résolution spécifique, voir
+   corrections).
 6. **inbox/ en attente** : lister les fichiers non ingérés (information, pas erreur).
 7. **Frontmatter obligatoire** (modèle de note d'`INSTRUCTIONS-CLAUDE.md`) :
    pour chaque note de `wiki/`, vérifier la présence de `type` + `date` +
-   `auteur` + `description`, plus `origine` pour les sources et `question`
-   pour les synthèses
+   `auteur` + `description`, plus `origine` pour les sources et les
+   transcriptions, `conversation` + `participants` pour les transcriptions, et
+   `question` pour les synthèses
    → lister les notes non conformes avec leurs propriétés manquantes.
-8. **Cohérence vectorielle** :
-   - `wiki/.index/embeddings.jsonl` absent → « index sémantique jamais
-     construit » (information ; remède : la réindexation décrite dans les
-     corrections). Un `.index/` à la racine du vault est un reliquat des
-     versions ≤ 1.5.3 (l'index vit désormais dans `wiki/.index/`) → proposer
-     sa suppression (dérivé jetable).
-   - Présent → lire ses métadonnées (outil MCP
+   Vérifier aussi que `type` s'accorde au dossier (`type: transcription` sous
+   `transcriptions/`, `type: entite` sous `entites/`…) : un désaccord fausse
+   l'INDEX et trahit une note écrite au mauvais endroit.
+8. **Cohérence vectorielle** — il y a **un index par dossier de savoir**
+   (`concepts/`, `entites/`, `syntheses/`, `sources/`), pas un index global.
+   La liste fait foi :
+   `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index-targets.sh"` (une cible par
+   ligne, relative à `wiki/`) — chacune doit avoir son
+   `<dossier>/.index/embeddings.jsonl`. `transcriptions/` n'y figure pas et ne
+   doit PAS être indexé : un `.index/` sous `transcriptions/` est un reliquat
+   à supprimer, pas un manque à combler.
+   - Cible sans index → « jamais indexée » : **ses notes sont invisibles à la
+     recherche sémantique**, ce qui est plus grave qu'un index périmé (remède :
+     la réindexation décrite dans les corrections). Lister ces cibles.
+   - Reliquats à proposer à la suppression (dérivés jetables) : un
+     `wiki/.index/` (index global unique des versions ≤ 1.15.x — il ferait
+     doublon avec les index par dossier), et un `.index/` à la racine du vault
+     (versions ≤ 1.5.3).
+   - Pour chaque index présent → lire ses métadonnées (outil MCP
      `mcp__plugin_agentic-toolbox_toolbox__semantic_info` avec
-     `directory: $VAULT/wiki` — purement local, zéro quota — sinon ligne 1 du
-     fichier : provider, modèle, dimension, version) et les reporter.
+     `directory: $VAULT/wiki/<cible>` — purement local, zéro quota — sinon
+     ligne 1 du fichier : provider, modèle, dimension, version) et les
+     reporter. **Provider, modèle ou dimension divergents entre deux index**
+     = incohérence à signaler : les vecteurs n'ont pas été construits avec le
+     même moteur, et les scores de ces dossiers ne veulent plus rien dire
+     l'un par rapport à l'autre → réindexation complète.
      Diagnostic de suivi : comparer le `created_at` le plus récent du mapping
      aux dernières entrées `ingest` du journal (`LOG/*.md`, plus un `LOG.md`
      racine hérité s'il existe) — des ingests postérieurs aux
@@ -91,6 +109,18 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      `INSTRUCTIONS-CLAUDE.md`, `BENCH.md` et un `LOG.md` hérité → lister.
      Cas typique : un clic sur un nœud fantôme du graphe Obsidian crée une
      note vide à la racine (voir ci-dessous).
+   - **`.md` posé directement dans `wiki/`** (hors d'un de ses dossiers) →
+     lister. Ce n'est pas cosmétique : les index vivent dans les dossiers, donc
+     une note à la racine de `wiki/` **n'est indexée par rien** et reste
+     introuvable en recherche sémantique.
+   - **`.md` posé directement dans `wiki/transcriptions/`** → lister :
+     l'unité de conversation est le dossier
+     (`transcriptions/<conversation>/`), jamais `transcriptions/` lui-même —
+     une note posée là échappe au repérage par conversation.
+   - **Sous-dossier inattendu** dans `concepts/`, `entites/`, `syntheses/` ou
+     `sources/` → lister : le moteur indexant récursivement, ses notes se
+     retrouveraient mêlées à celles du parent, ce que la séparation par
+     dossier cherche justement à éviter.
    - **notes vides** (0 octet, ou frontmatter seul sans corps) n'importe où
      dans le vault → lister.
    - **nœuds fantômes venus d'`archives/`** : les markdown OCR y référencent
@@ -107,10 +137,13 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
    - collision de **noms normalisés** (casse, accents, tirets/underscores,
      pluriel final) entre noms de fichiers et alias `aliases:` ;
    - moteur sémantique disponible → pour chaque page vivante, `semantic_search`
-     avec son titre + sa première phrase (`directory: $VAULT/wiki` explicite) :
-     une AUTRE page vivante en tête des résultats avec un score nettement
-     détaché du reste = paire suspectée. Moteur indisponible → le noter, la
-     normalisation des noms reste faite.
+     avec son titre + sa première phrase, sur `directory: $VAULT/wiki/concepts`
+     **et** `directory: $VAULT/wiki/entites` (les deux, explicitement : un
+     doublon traverse les deux dossiers, et chacun a son propre index) : une
+     AUTRE page vivante en tête des résultats avec un score nettement détaché
+     du reste = paire suspectée. Ne comparer les scores qu'à l'intérieur d'un
+     même index. Moteur indisponible → le noter, la normalisation des noms
+     reste faite.
    Lister chaque paire avec sa raison (nom / sémantique / les deux).
    Détection seulement — aucune fusion sans validation (voir corrections).
 
@@ -122,8 +155,9 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
    d'un coup d'œil, comparable d'un lint à l'autre :
    `contradictions: n · liens pendants: n · doublons suspectés: n ·
    orphelines: n · trous d'INDEX: n · conflits Drive: n · inbox: n ·
-   frontmatters incomplets: n · parasites: n · notes: n (concepts n ·
-   entites n · sources n · syntheses n)`.
+   frontmatters incomplets: n · parasites: n · index manquants: n ·
+   notes: n (concepts n · entites n · sources n · syntheses n ·
+   transcriptions n dans c conversations)`.
    `contradictions` ne compte QUE les `[!question]` en souffrance, augmentés
    des `[!warning]` requalifiés — jamais les mises en garde documentaires,
    qui sont un état normal du vault et non une dette.
@@ -171,7 +205,11 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
    - Pour les parasites : `.md` inattendu à la racine ou note vide →
      proposer la suppression (rien à sauver dans un fichier vide), ou son
      déplacement dans `wiki/` avec un frontmatter conforme si l'utilisateur
-     reconnaît une note qu'il voulait écrire. Nœuds fantômes d'`archives/` →
+     reconnaît une note qu'il voulait écrire. `.md` posé à la racine de
+     `wiki/` ou de `transcriptions/` → proposer son déplacement dans le
+     dossier qui convient (pour une transcription, un dossier de conversation
+     en kebab-case), puis l'indexation de ce dossier : tant qu'elle reste là,
+     la note est introuvable en recherche sémantique. Nœuds fantômes d'`archives/` →
      le remède n'est pas dans le vault mais dans **Obsidian** : Paramètres →
      Fichiers et liens → Filtres d'exclusion → ajouter `archives/`. Les
      archives sortent alors du graphe et de la recherche Obsidian, sans être
@@ -187,16 +225,23 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      de la note dans `LOG/` ou un `LOG.md` racine hérité ; `description`
      manquante : rapatrier celle de l'entrée `INDEX.md` existante, sinon la
      déduire du contenu) — jamais de valeur inventée sans le signaler.
-   - Pour la cohérence vectorielle : proposer la réindexation — outil MCP
+   - Pour la cohérence vectorielle : proposer la réindexation **des seules
+     cibles en défaut** — outil MCP
      `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` avec
-     `directory: $VAULT/wiki` **explicite** (jamais de dossier implicite)
-     si le plugin agentic-toolbox est installé, sinon
-     `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"` (clone + venv)
+     `directory: $VAULT/wiki/<cible>` **explicite**, un appel par cible
+     (jamais `$VAULT/wiki` seul : le moteur indexe récursivement et
+     vectoriserait deux fois les sous-dossiers) si le plugin agentic-toolbox
+     est installé, sinon
+     `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"` — avec le chemin de
+     la cible en argument, ou sans argument pour tout reprendre (clone + venv)
      (coût API : uniquement les chunks au hash inconnu) — le rapport JSON fait
      foi : `embedded_chunks > 0` = vecteurs manquants/périmés qui viennent
      d'être réparés (notes éditées hors circuit) ; la réécriture complète
      purge par construction les vecteurs orphelins.
-   - Pour un conflit Drive sur `wiki/.index/` : si la ligne 1 (métadonnées) des
+     Les reliquats (`wiki/.index/`, `.index/` racine) se suppriment sans
+     précaution : ce sont des dérivés, rien ne s'y trouve qui ne se
+     reconstruise.
+   - Pour un conflit Drive sur un `wiki/<dossier>/.index/` : si la ligne 1 (métadonnées) des
      deux fichiers est identique, fusion mécanique — union des lignes de
      chunks, dédoublonnage par `hash` (deux lignes de même hash sont
      identiques par construction), réécriture atomique, suppression du fichier
