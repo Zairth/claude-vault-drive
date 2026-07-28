@@ -42,6 +42,7 @@ claude-vault-drive/
 │   └── doc-bench.md         # /doc-bench — banc de questions de référence (mesure mécanique, ou réelle via /doc-query)
 ├── hooks/
 │   └── hooks.json           # déclaration des trois hooks (SessionStart, UserPromptSubmit, PreCompact)
+├── docs/                    # captures illustrant les prérequis (opt-out d'entraînement Mistral)
 ├── scripts/
 │   ├── vault-check.sh       # portier : vérifie l'accès au vault, imprime son chemin
 │   ├── vault-init.sh        # initialisation du vault en une commande, idempotente

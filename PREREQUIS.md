@@ -106,6 +106,15 @@ incompatibles). Création : https://console.mistral.ai/?profile_dialog=api-keys
 > sont exclues par défaut. Un vault contenant des données personnelles, des
 > pièces confidentielles ou un dossier en cours : vérifier ce réglage d'abord.
 
+L'état correct — les deux interrupteurs sur off :
+
+![Console Mistral, page Confidentialité : « Autoriser l'utilisation de vos appels API pour entraîner les modèles d'IA de Mistral » désactivé, et « Activer les modèles Labs » désactivé](docs/mistral-opt-out-entrainement.png)
+
+Noter la formulation de Mistral : « vos **nouvelles** interactions … ne seront
+pas utilisées ». La désactivation ne rattrape pas ce qui a déjà été envoyé —
+d'où l'intérêt de la faire avant d'indexer. Pour du contenu déjà transmis, le
+recours est une demande d'effacement (RGPD art. 17) auprès du fournisseur.
+
 ### Voie nominale : le plugin (zéro clone)
 
 La toolbox existe en plugin Claude Code avec **serveur MCP intégré** — les
