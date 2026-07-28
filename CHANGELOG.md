@@ -52,6 +52,10 @@ Installer une mise à jour : `/plugin marketplace update zairth_store` puis
   = entraînement sauf désactivation, clé API = jamais) — avec une capture de la
   page de réglage pour chacun, et le rappel que coller un rapport à la main
   court-circuite l'isolement en sub-agent de `/doc-query` et `/doc-lint`.
+  Le README pose la règle générale : **pour chaque clé API utilisée avec le
+  plugin**, décider explicitement du sort de ses données avant de la coller
+  (entraînement, rétention, opt-out) — plusieurs paliers gratuits autorisent
+  l'entraînement par défaut et le réglage ne vaut que pour les appels futurs.
 
 ## [1.13.0] — 2026-07-28
 

@@ -294,8 +294,19 @@ rattraper ». Installation du moteur (plugin, ou clone + venv + clé Mistral) :
 [PREREQUIS.md](PREREQUIS.md).
 
 **Ce qui sort du vault** : indexer envoie le texte de `wiki/` au fournisseur
-d'embeddings, et chaque `/doc-query` y envoie la question. Sur le palier
-gratuit de Mistral, ces appels alimentent l'entraînement des modèles **par
-défaut** — l'opt-out est gratuit mais doit être coché avant la première
-indexation (console → Administration → Confidentialité). Détail et procédure :
-[PREREQUIS.md](PREREQUIS.md#5-agentic-toolbox-recherche-sémantique--ocr--facultatif).
+d'embeddings, chaque `/doc-query` y envoie la question, et l'OCR y envoie les
+pièces converties. Un vault n'est donc jamais purement local dès qu'un moteur
+est branché.
+
+> **Règle à s'appliquer pour chaque clé API utilisée avec ce plugin** : avant
+> de la coller, ouvrir la console du fournisseur et **décider explicitement du
+> sort de vos données** — servent-elles à entraîner ses modèles, combien de
+> temps sont-elles conservées, l'opt-out est-il actif ? Ce n'est pas une
+> formalité : plusieurs paliers gratuits (Mistral compris) autorisent
+> l'entraînement **par défaut**, et le réglage ne vaut en général que pour les
+> appels **futurs** — le faire après une première indexation, c'est le faire
+> trop tard. La même question vaut pour la session Claude Code elle-même, qui
+> transmet à Anthropic tout ce que Claude lit, écrit, ou que vous collez à la
+> main. Procédures, régimes par fournisseur et captures des deux pages de
+> réglage :
+> [PREREQUIS.md](PREREQUIS.md#5-agentic-toolbox-recherche-sémantique--ocr--facultatif).
