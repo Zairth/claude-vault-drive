@@ -26,6 +26,18 @@ Installer une mise à jour : `/plugin marketplace update zairth_store` puis
   fichiers d'`archives/` ne sont jamais modifiés : la couche reste immuable.
 - Règle correspondante dans l'`INSTRUCTIONS-CLAUDE.md` du template et dans le
   pas-à-pas Obsidian du README.
+- **`/vault-init` pose le réglage lui-même** : `archives/` ajouté aux
+  exclusions d'Obsidian (`userIgnoreFilters` de `.obsidian/app.json`), pour
+  qu'un vault neuf naisse sans nœuds fantômes. Idempotent et non destructif —
+  vault neuf : fichier écrit en bash pur (aucune dépendance) ; config
+  existante : fusion qui préserve les autres réglages et ne duplique pas une
+  exclusion déjà là ; config illisible ou `python3` absent : rien n'est
+  touché, la manipulation manuelle est affichée. Obsidian préserve un
+  `.obsidian/` existant à sa première ouverture, le réglage vaut donc aussi
+  pour un vault jamais ouvert dans Obsidian.
+- `PREREQUIS.md` : section 7 — `python3` (livré par défaut sur WSL/Linux/macOS)
+  déclaré comme dépendance douce, avec ce qui s'en sert et ce qui se passe
+  s'il manque (dégradation silencieuse, jamais d'erreur).
 
 ## [1.13.0] — 2026-07-28
 

@@ -163,6 +163,27 @@ fichiers markdown, Claude Code y accède directement. Obsidian est la vitrine
   du projet.
 - Les écritures faites par Claude hors d'Obsidian peuvent mettre un moment à
   apparaître — Ctrl+R recharge ; `/doc-lint` fait foi.
+- `/vault-init` exclut `archives/` de l'index d'Obsidian
+  (`.obsidian/app.json`) : Obsidian avale tous les `.md` du vault, et les
+  markdown OCR archivés y référencent des images non extraites qui
+  apparaîtraient en nœuds fantômes dans le graphe. Le réglage est posé même si
+  Obsidian n'a jamais ouvert le vault — il préserve une config existante à la
+  première ouverture. Si Obsidian tournait pendant l'init : le redémarrer.
+
+## 7. python3 (présent par défaut — bon à savoir)
+
+Aucune installation à prévoir : WSL, Linux et macOS livrent `python3`. Ce qui
+s'en sert dans le plugin, et ce qui se passe s'il manque :
+
+- **hooks** (pistes sémantiques sous chaque prompt, dépôt du transcript avant
+  compactage) → le hook sort en silence, sans erreur ;
+- **`/vault-init`, fusion de la config Obsidian** — uniquement quand
+  `.obsidian/app.json` existe déjà : sans `python3`, le script n'y touche pas
+  et affiche la manipulation à faire à la main. Sur un vault neuf, le fichier
+  est écrit en bash pur, sans dépendance.
+
+Rien d'autre n'en dépend : les commandes `/doc-*` fonctionnent intégralement.
+(Le moteur sémantique, lui, a ses propres prérequis Python — section 5.)
 
 ## Récapitulatif
 
@@ -174,6 +195,7 @@ fichiers markdown, Claude Code y accède directement. Obsidian est la vitrine
 | 4 | Montage Drive dans WSL | vault partagé sous WSL | `ls "/mnt/g/Mon Drive"` |
 | 5 | agentic-toolbox (plugin + `uv`, ou clone) + `MISTRAL_API_KEY` | recherche sémantique/OCR seulement | outil MCP `llm_check` (plugin) ou `providers.cli_parser check` (clone) |
 | 6 | Obsidian | non (vitrine humaine) | ouvrir le vault comme coffre |
+| 7 | `python3` | non (hooks + fusion de config Obsidian ; dégradation silencieuse) | `python3 --version` |
 
 Ensuite, dans Claude Code ([README](README.md#installation)) :
 
