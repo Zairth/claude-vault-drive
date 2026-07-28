@@ -115,6 +115,26 @@ pas utilisées ». La désactivation ne rattrape pas ce qui a déjà été envoy
 d'où l'intérêt de la faire avant d'indexer. Pour du contenu déjà transmis, le
 recours est une demande d'effacement (RGPD art. 17) auprès du fournisseur.
 
+**Le second canal : la session Claude Code elle-même.** Le vault parle au
+fournisseur d'embeddings ; la session, elle, parle à Anthropic — et y fait
+passer tout ce que Claude lit ou écrit, y compris ce que vous collez à la main
+dans la conversation. Le régime dépend de la facturation (`/status` indique
+laquelle) : sur **abonnement** (Free/Pro/Max), les conversations et sessions de
+code servent à l'entraînement **sauf si l'option est désactivée** ; par **clé
+API** ou en offre Work/Enterprise, elles n'y servent pas. Le réglage est dans
+claude.ai → Paramètres → Confidentialité :
+
+![Paramètres Claude, page Confidentialité : « Contribuez à améliorer nos modèles d'IA » désactivé](docs/anthropic-opt-out-entrainement.png)
+
+Même logique que chez Mistral : le réglage vaut pour les conversations
+nouvelles ou reprises, pas pour le passé.
+
+**Et une règle qui ne dépend d'aucun réglage** : `/doc-query` et `/doc-lint`
+tournent en sub-agent isolé précisément pour que le contenu des notes ne
+remonte pas dans la conversation principale. Coller un rapport ou un extrait de
+note à la main court-circuite cette protection. Sur un vault sensible, laisser
+les commandes faire leur travail vaut mieux que n'importe quelle case cochée.
+
 ### Voie nominale : le plugin (zéro clone)
 
 La toolbox existe en plugin Claude Code avec **serveur MCP intégré** — les

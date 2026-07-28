@@ -47,6 +47,11 @@ Installer une mise à jour : `/plugin marketplace update zairth_store` puis
   futures ; « modèles Labs » à laisser désactivé (ils autorisent
   l'entraînement quel que soit l'opt-out). Manquait entièrement — un vault
   peut contenir des données personnelles ou des pièces confidentielles.
+  Couvre les **deux canaux** — le vault vers le fournisseur d'embeddings, et la
+  session Claude Code vers Anthropic (régime selon la facturation : abonnement
+  = entraînement sauf désactivation, clé API = jamais) — avec une capture de la
+  page de réglage pour chacun, et le rappel que coller un rapport à la main
+  court-circuite l'isolement en sub-agent de `/doc-query` et `/doc-lint`.
 
 ## [1.13.0] — 2026-07-28
 
