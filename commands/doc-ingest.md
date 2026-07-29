@@ -82,10 +82,22 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
   tranche concernée et transmettre sa réponse au synthétiseur.
 
   **Lot de fichiers (plusieurs chemins, un dossier, inbox/ entier)** : le
-  modèle reste « une note par source » — un lecteur par fichier (parallèle,
-  4 au plus), puis validation présentée source par source (l'affichage peut
-  être groupé, l'accord est explicite par source) et écriture par source.
-  Un fichier du lot dépasse le seuil → lui appliquer le montage gros volume.
+  modèle reste « une note par source » — mais **une source n'est pas
+  forcément un fichier**. Avant de répartir les lecteurs, **regrouper le lot
+  en sources**, et le faire valider :
+  - une **série de captures d'un même fil** est UNE source — un seul lecteur
+    les ouvre toutes dans l'ordre. Indices de regroupement : sous-dossier
+    commun, préfixe de nom commun, numérotation continue, horodatages qui se
+    suivent. Dans le doute, **demander** plutôt que découper : douze captures
+    d'une conversation ingérées séparément produiraient douze notes creuses,
+    et il faudrait tout refaire ;
+  - un document, un export, un article = une source chacun.
+
+  Annoncer le regroupement retenu avant de lancer quoi que ce soit
+  (« <n> fichiers → <m> sources : … »), puis un lecteur par **source**
+  (parallèle, 4 au plus), validation présentée source par source (l'affichage
+  peut être groupé, l'accord est explicite par source) et écriture par source.
+  Une source du lot dépasse le seuil → lui appliquer le montage gros volume.
 
   Cas particulier — `inbox/session-*.md` (`type: session` : transcript de
   session Claude Code déposé automatiquement avant compactage) : densité utile

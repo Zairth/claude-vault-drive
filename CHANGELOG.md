@@ -9,6 +9,19 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.17.0] — 2026-07-29
+
+**Raison de l'update** : ingérer `inbox/` en lot répartissait un lecteur par fichier. Correct pour des documents distincts, faux pour une conversation éclatée en douze captures — qui produisait douze notes creuses au lieu d'une. La règle « une série de captures est UNE source » n'existait que dans la branche capture, qu'un agent pouvait lire sans voir la branche lot.
+
+### Modifié
+- `/doc-ingest`, montage « lot de fichiers » : **regrouper le lot en sources
+  avant de répartir les lecteurs**, et faire valider ce regroupement
+  (« <n> fichiers → <m> sources »). Une source n'est pas forcément un
+  fichier : sous-dossier commun, préfixe de nom, numérotation continue ou
+  horodatages qui se suivent signalent une série de captures d'un même fil,
+  qu'un seul lecteur ouvre dans l'ordre. Dans le doute, demander plutôt que
+  découper — un mauvais découpage se paie en réingestion complète.
+
 ## [1.16.0] — 2026-07-28
 
 **Raison de l'update** : deux angles morts découverts en mesurant. D'abord, toute source non textuelle passait par l'OCR, captures comprises — or sur une conversation, l'OCR documentaire aplatit en flux linéaire ce qui porte le sens par la position (bulle à gauche ou à droite = qui parle) : l'attribution du locuteur n'était pas mal transcrite, elle était détruite. Ensuite, un index unique sur tout `wiki/` faisait concourir des notes de natures et de tailles incomparables — deux runs de banc ont montré les notes courtes systématiquement écrasées par les gros extraits des notes longues. Enfin, le texte intégral des conversations n'existait nulle part d'interrogeable : seuls les 2-5 enseignements retenus l'étaient.
