@@ -44,28 +44,24 @@ dossier parent (ex. autoriser `<parent>` plutôt que `<parent>/<vault>` seul).
 
 ## Recherche sémantique
 
-**Un index par dossier de savoir.** `concepts/`, `entites/`, `syntheses/` et
-`sources/` portent chacun son `.index/embeddings.jsonl`, donc son propre
-espace vectoriel : les notes ne concourent qu'entre semblables, ce qui empêche
-une entité de dix lignes d'être écrasée par un extrait d'une source de trois
-cents. **`transcriptions/` n'est pas vectorisé** — on l'atteint par le
-condensé de `sources/` qui pointe dessus, par grep et par lecture (voir la
-règle sur les questions exhaustives). En contrepartie, chaque index interrogé
-coûte un embedding de la question.
+**Un index par dossier.** `concepts/`, `entites/`, `syntheses/` et `sources/`
+portent chacun son `.index/embeddings.jsonl`, donc son propre espace
+vectoriel : les notes ne concourent qu'entre semblables, ce qui empêche une
+entité de dix lignes d'être écrasée par un extrait d'une source de trois
+cents. En contrepartie, chaque index interrogé coûte un embedding de la
+question.
 
 1. Si `$ARGUMENTS` contient le jeton `--no-index`, le retirer de la question et
    sauter l'étape 2 (échappatoire : interroger sans réindexer).
-2. Indexer — **chaque dossier de savoir, séparément** (ni `transcriptions/`,
-   ni `archives/`, ni `inbox/`, ni les fichiers racine ; jamais un dossier
-   voisin `dans:`, qui
+2. Indexer — **chaque dossier de `wiki/`, séparément** (ni `archives/`, ni
+   `inbox/`, ni les fichiers racine ; jamais un dossier voisin `dans:`, qui
    est en lecture seule et dont l'indexation appartient à son équipe).
    Incrémental : seuls les chunks nouveaux/modifiés coûtent un appel API.
    Deux portes d'entrée, dans cet ordre :
    - **MCP** (plugin agentic-toolbox installé) : d'abord obtenir la liste des
      dossiers à indexer —
      `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index-targets.sh"` (une cible
-     par ligne, relative à `wiki/` ; `transcriptions/` n'y figure pas, c'est
-     voulu) —, puis un appel
+     par ligne, relative à `wiki/`) —, puis un appel
      `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` par cible,
      avec `directory: $VAULT/wiki/<cible>` **explicite** — jamais de dossier
      implicite, et jamais `$VAULT/wiki` seul : le moteur indexe
@@ -110,22 +106,24 @@ La question à traiter est `$ARGUMENTS`, nettoyée des jetons `dans:` et
 2. Pistes sémantiques (s'il y en a) : ouvrir ces notes EN PREMIER, aux
    sections indiquées, puis suivre leurs wikilinks `[[...]]`. Ensuite, repérer
    les entrées pertinentes de l'INDEX et les ouvrir de la même façon.
-3. **Question exhaustive** — « tous les messages qui… », « combien de fois… »,
-   « qui a dit… à quel moment », « liste tous les… » : aucun classement ne peut
-   y répondre, et s'y fier produirait une réponse fausse d'aspect crédible. Un
-   index rend les K meilleurs résultats, jamais l'ensemble des résultats
-   qualifiants : demander 3 en rend 3, même si quarante messages conviennent.
-   Sur ce type de question, les pistes de `sources/` et l'INDEX ne servent qu'à
-   **désigner quelles conversations ouvrir** — lire ensuite **intégralement**
-   les notes des dossiers `transcriptions/<conversation>/` retenus et les
-   balayer. L'exhaustivité vient de la lecture, jamais du classement.
-   Trop de conversations pour un seul lecteur → le dire dans le rapport et
-   nommer celles qui n'ont pas été balayées ; jamais de silence sur une
-   couverture partielle.
-4. Compléter par grep sur les mots-clés de la question ET leurs synonymes /
-   variantes françaises. Sur une question exhaustive, le grep sur les
-   transcriptions est un **filet de sécurité** : ce qu'il trouve et que le
-   balayage a manqué signale un balayage incomplet.
+3. **Grep, TOUJOURS, en plus du sémantique — jamais à la place.** Les deux
+   couches ne trouvent pas la même chose : le vectoriel rapproche par le sens
+   et rate le terme exact ; le grep touche le terme exact et rate la
+   reformulation. Chercher les mots pleins de la question ET leurs synonymes /
+   variantes françaises dans tout `wiki/`. **Ouvrir au moins une note issue du
+   grep**, même si la sémantique a déjà remonté des pistes : une note qui
+   contient littéralement les mots de la question est le résultat le plus
+   pertinent qui soit, et aucun score ne le dira. Si le grep et la sémantique
+   désignent la même note, c'est un signal fort — la traiter en priorité.
+4. **Question exhaustive** — « tous les… », « combien de fois… », « liste tous
+   les… » : aucun classement ne peut y répondre, et s'y fier produirait une
+   réponse fausse d'aspect crédible. Un index rend les K meilleurs résultats,
+   jamais l'ensemble des résultats qualifiants : en demander 3 en rend 3, même
+   si quarante notes conviennent. Sur ce type de question, les pistes et
+   l'INDEX ne servent qu'à **désigner quoi ouvrir** — l'exhaustivité vient de
+   la lecture, jamais du classement. Trop de notes pour un seul lecteur → le
+   dire dans le rapport et nommer ce qui n'a pas été couvert ; jamais de
+   silence sur une couverture partielle.
 5. Ne jamais recopier des notes entières.
 6. Si rien de pertinent : le dire explicitement et lister ce qui s'en
    rapproche.
@@ -135,8 +133,8 @@ La question à traiter est `$ARGUMENTS`, nettoyée des jetons `dans:` et
 Exactement ces blocs, dans cet ordre :
 
 1. L'avertissement de repli grep, le cas échéant — et, sur une question
-   exhaustive, la liste des conversations effectivement balayées en entier
-   (une couverture partielle se dit, elle ne se devine pas).
+   exhaustive, ce qui a effectivement été lu en entier (une couverture
+   partielle se dit, elle ne se devine pas).
 2. La réponse à la question (concise, en français).
 3. `Sources` : les chemins relatifs des notes utilisées.
 4. Un bloc `Pour l'agent principal`, avec le chemin `$VAULT` résolu écrit en

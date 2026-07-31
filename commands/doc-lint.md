@@ -66,21 +66,18 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
 6. **inbox/ en attente** : lister les fichiers non ingérés (information, pas erreur).
 7. **Frontmatter obligatoire** (modèle de note d'`INSTRUCTIONS-CLAUDE.md`) :
    pour chaque note de `wiki/`, vérifier la présence de `type` + `date` +
-   `auteur` + `description`, plus `origine` pour les sources et les
-   transcriptions, `conversation` + `participants` pour les transcriptions, et
-   `question` pour les synthèses
+   `auteur` + `description`, plus `origine` pour les sources et `question`
+   pour les synthèses
    → lister les notes non conformes avec leurs propriétés manquantes.
-   Vérifier aussi que `type` s'accorde au dossier (`type: transcription` sous
-   `transcriptions/`, `type: entite` sous `entites/`…) : un désaccord fausse
-   l'INDEX et trahit une note écrite au mauvais endroit.
-8. **Cohérence vectorielle** — il y a **un index par dossier de savoir**
+   Vérifier aussi que `type` s'accorde au dossier (`type: entite` sous
+   `entites/`, `type: source` sous `sources/`…) : un désaccord fausse l'INDEX
+   et trahit une note écrite au mauvais endroit.
+8. **Cohérence vectorielle** — il y a **un index par dossier de `wiki/`**
    (`concepts/`, `entites/`, `syntheses/`, `sources/`), pas un index global.
    La liste fait foi :
    `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index-targets.sh"` (une cible par
    ligne, relative à `wiki/`) — chacune doit avoir son
-   `<dossier>/.index/embeddings.jsonl`. `transcriptions/` n'y figure pas et ne
-   doit PAS être indexé : un `.index/` sous `transcriptions/` est un reliquat
-   à supprimer, pas un manque à combler.
+   `<dossier>/.index/embeddings.jsonl`.
    - Cible sans index → « jamais indexée » : **ses notes sont invisibles à la
      recherche sémantique**, ce qui est plus grave qu'un index périmé (remède :
      la réindexation décrite dans les corrections). Lister ces cibles.
@@ -113,10 +110,6 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      lister. Ce n'est pas cosmétique : les index vivent dans les dossiers, donc
      une note à la racine de `wiki/` **n'est indexée par rien** et reste
      introuvable en recherche sémantique.
-   - **`.md` posé directement dans `wiki/transcriptions/`** → lister :
-     l'unité de conversation est le dossier
-     (`transcriptions/<conversation>/`), jamais `transcriptions/` lui-même —
-     une note posée là échappe au repérage par conversation.
    - **Sous-dossier inattendu** dans `concepts/`, `entites/`, `syntheses/` ou
      `sources/` → lister : le moteur indexant récursivement, ses notes se
      retrouveraient mêlées à celles du parent, ce que la séparation par
@@ -156,8 +149,7 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
    `contradictions: n · liens pendants: n · doublons suspectés: n ·
    orphelines: n · trous d'INDEX: n · conflits Drive: n · inbox: n ·
    frontmatters incomplets: n · parasites: n · index manquants: n ·
-   notes: n (concepts n · entites n · sources n · syntheses n ·
-   transcriptions n dans c conversations)`.
+   notes: n (concepts n · entites n · sources n · syntheses n)`.
    `contradictions` ne compte QUE les `[!question]` en souffrance, augmentés
    des `[!warning]` requalifiés — jamais les mises en garde documentaires,
    qui sont un état normal du vault et non une dette.
@@ -206,10 +198,9 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      proposer la suppression (rien à sauver dans un fichier vide), ou son
      déplacement dans `wiki/` avec un frontmatter conforme si l'utilisateur
      reconnaît une note qu'il voulait écrire. `.md` posé à la racine de
-     `wiki/` ou de `transcriptions/` → proposer son déplacement dans le
-     dossier qui convient (pour une transcription, un dossier de conversation
-     en kebab-case), puis l'indexation de ce dossier : tant qu'elle reste là,
-     la note est introuvable en recherche sémantique. Nœuds fantômes d'`archives/` →
+     `wiki/` → proposer son déplacement dans le dossier qui convient, puis
+     l'indexation de ce dossier : tant qu'elle reste là, la note est
+     introuvable en recherche sémantique. Nœuds fantômes d'`archives/` →
      le remède n'est pas dans le vault mais dans **Obsidian** : Paramètres →
      Fichiers et liens → Filtres d'exclusion → ajouter `archives/`. Les
      archives sortent alors du graphe et de la recherche Obsidian, sans être

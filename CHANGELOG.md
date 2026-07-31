@@ -9,74 +9,80 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.18.0] — 2026-07-29
+
+**Raison de l'update** : le vectoriel avait pris trop de place dans la cascade de recherche, au point de reléguer le grep au rang de repli. Or les deux couches ne trouvent pas la même chose — le vectoriel rapproche par le sens et rate le terme exact, le grep touche le terme exact et rate la reformulation. Une note qui contient littéralement les mots de la question est le meilleur résultat possible, et aucun score de similarité ne le dira.
+
+### Modifié
+- `/doc-query` : **le grep est systématique, en plus du sémantique et jamais à
+  sa place**, et la commande doit **ouvrir au moins une note issue du grep**
+  même quand la sémantique a déjà remonté des pistes. Une note désignée par
+  les deux couches est un signal fort, à traiter en priorité.
+- Retrait d'une quatrième couche de notes introduite en 1.16.0 : le vault
+  revient à `sources/`, `concepts/`, `entites/`, `syntheses/`. Elle répondait
+  à un besoin particulier qui n'a pas sa place dans un outil générique, et
+  faisait porter au plugin une structure que ses conventions de notes
+  n'exigeaient pas.
+- Formulation générique du routage des captures d'écran et du regroupement
+  d'un lot en sources : ces règles tiennent par la propriété technique qui les
+  motive, sans référence à un type de contenu particulier.
+
 ## [1.17.0] — 2026-07-29
 
-**Raison de l'update** : ingérer `inbox/` en lot répartissait un lecteur par fichier. Correct pour des documents distincts, faux pour une conversation éclatée en douze captures — qui produisait douze notes creuses au lieu d'une. La règle « une série de captures est UNE source » n'existait que dans la branche capture, qu'un agent pouvait lire sans voir la branche lot.
+**Raison de l'update** : ingérer `inbox/` en lot répartissait un lecteur par fichier. Correct quand chaque fichier est une source, faux quand plusieurs fichiers n'en forment qu'une — chacun produisait alors une note creuse.
 
 ### Modifié
 - `/doc-ingest`, montage « lot de fichiers » : **regrouper le lot en sources
   avant de répartir les lecteurs**, et faire valider ce regroupement
   (« <n> fichiers → <m> sources »). Une source n'est pas forcément un
   fichier : sous-dossier commun, préfixe de nom, numérotation continue ou
-  horodatages qui se suivent signalent une série de captures d'un même fil,
-  qu'un seul lecteur ouvre dans l'ordre. Dans le doute, demander plutôt que
-  découper — un mauvais découpage se paie en réingestion complète.
+  dates qui se suivent signalent des fichiers d'un même ensemble, qu'un seul
+  lecteur ouvre dans l'ordre. Dans le doute, demander plutôt que découper —
+  un mauvais découpage se paie en réingestion complète.
 
 ## [1.16.0] — 2026-07-28
 
-**Raison de l'update** : deux angles morts découverts en mesurant. D'abord, toute source non textuelle passait par l'OCR, captures comprises — or sur une conversation, l'OCR documentaire aplatit en flux linéaire ce qui porte le sens par la position (bulle à gauche ou à droite = qui parle) : l'attribution du locuteur n'était pas mal transcrite, elle était détruite. Ensuite, un index unique sur tout `wiki/` faisait concourir des notes de natures et de tailles incomparables — deux runs de banc ont montré les notes courtes systématiquement écrasées par les gros extraits des notes longues. Enfin, le texte intégral des conversations n'existait nulle part d'interrogeable : seuls les 2-5 enseignements retenus l'étaient.
+**Raison de l'update** : deux angles morts découverts en mesurant. Un index unique sur tout `wiki/` faisait concourir des notes de natures et de tailles incomparables — deux runs de banc ont montré les notes courtes systématiquement écrasées par les gros extraits des notes longues. Et toute source non textuelle passait par l'OCR, y compris les captures d'écran, pour lesquelles il n'est pas fait.
 
 ### Ajouté
-- **Un index sémantique par dossier de savoir** (`concepts/.index/`,
+- **Un index sémantique par dossier de `wiki/`** (`concepts/.index/`,
   `entites/.index/`, `syntheses/.index/`, `sources/.index/`) au lieu d'un index
-  unique sur `wiki/`. Chaque dossier devient un espace vectoriel séparé : les
-  notes ne concourent qu'entre semblables, et une entité de dix lignes ne peut
-  plus être écrasée par un extrait d'une source de trois cents. C'est une
-  séparation structurelle, pas un réglage de score — elle attaque la cause du
-  défaut mesuré au banc plutôt que ses symptômes.
+  unique. Chaque dossier devient un espace vectoriel séparé : les notes ne
+  concourent qu'entre semblables, et une entité de dix lignes ne peut plus être
+  écrasée par un extrait d'une source de trois cents. C'est une séparation
+  structurelle, pas un réglage de score — elle attaque la cause du défaut
+  mesuré au banc plutôt que ses symptômes.
   Nouveau `scripts/vault-index-targets.sh` : source unique des dossiers à
   indexer. `vault-index.sh` et `vault-search.sh` bouclent dessus sans argument,
   et acceptent toujours un dossier unique en échappatoire.
-- **`wiki/transcriptions/`** : couche immuable, un dossier par conversation,
-  texte intégral **un message par bloc**. Toute source conversationnelle
-  (captures d'un fil, export d'un outil de messagerie) produit désormais deux
-  notes qui ne font pas double emploi — le condensé de `sources/` est ce qu'on
-  lit, la transcription est ce qu'on fouille. Sans elle, une question comme
-  « tous les messages où X reconnaît le travail de Y » n'avait aucune matière.
 - **Règle des questions exhaustives** dans `/doc-query` et le template :
-  « tous les messages qui… », « combien de fois… » ne peuvent PAS être
-  résolues par un classement — un index rend les K meilleurs résultats, jamais
-  l'ensemble des résultats qualifiants. L'exhaustivité vient de la lecture
-  intégrale des conversations retenues, et une couverture partielle se dit
-  explicitement dans le rapport.
+  « tous les… », « combien de fois… » ne peuvent PAS être résolues par un
+  classement — un index rend les K meilleurs résultats, jamais l'ensemble des
+  résultats qualifiants. L'exhaustivité vient de la lecture des notes
+  retenues, et une couverture partielle se dit explicitement dans le rapport.
 - `/doc-lint` : cohérence vectorielle par dossier (cible jamais indexée =
   notes invisibles à la recherche) ; détection des `.md` posés à la racine de
-  `wiki/` ou de `transcriptions/`, et des sous-dossiers inattendus — tous
-  échappent à l'indexation ou au repérage ; reliquats `wiki/.index/` (≤ 1.15.x)
-  à supprimer ; divergence de provider/modèle/dimension entre deux index ;
-  compteur `index manquants` et décompte des transcriptions par conversation.
+  `wiki/` et des sous-dossiers inattendus — tous échappent à l'indexation ;
+  reliquats `wiki/.index/` (≤ 1.15.x) à supprimer ; divergence de
+  provider/modèle/dimension entre deux index ; compteur `index manquants`.
 - `/doc-ingest` : **routage de la source selon sa nature**, avant tout
   traitement. PDF, scan, document multi-pages → OCR, c'est son terrain.
-  Capture d'écran (`.png`, `.jpg`, `.webp`, `.heic`…) → **jamais d'OCR** : le
-  sub-agent lecteur ouvre l'image directement et la transcrit, avec pour
-  mission explicite de restituer qui parle (alignement des bulles, en-têtes),
-  les horodatages et l'ordre chronologique, et de **signaler tout passage
-  illisible plutôt que de le deviner** — ce qui devient un `> [!warning]` sur
-  la note source. Texte/markdown → tel quel ; URL → montage nominal.
-- `/doc-ingest` : l'unité de source d'une capture est la **conversation, pas
-  le fichier** — une série de captures d'un même fil est UNE source, qu'un
-  seul lecteur ouvre dans l'ordre (une dizaine au plus, au-delà montage gros
-  volume).
+  Capture d'écran (`.png`, `.jpg`, `.webp`, `.heic`…) → **jamais d'OCR** : un
+  OCR documentaire est réglé pour une mise en page de document et rend, sur
+  une capture d'interface, un flux linéaire où la disposition a disparu. Le
+  sub-agent lecteur ouvre l'image directement et la retranscrit, avec pour
+  consigne de **signaler tout passage illisible plutôt que de le deviner** —
+  ce qui devient un `> [!warning]` sur la note source. Texte/markdown → tel
+  quel ; URL → montage nominal.
+- `/doc-ingest` : des captures formant **un même ensemble** comptent pour une
+  seule source, qu'un seul lecteur ouvre dans l'ordre (une dizaine au plus,
+  au-delà montage gros volume).
 
 ### Modifié
 - `/doc-ingest`, archivage : pour une capture, ce sont **les images
   elles-mêmes** qui sont archivées et que pointe `origine:`. Aucun markdown
   intermédiaire n'est produit — donc plus aucune référence d'image pendante
   (`![img-N.jpeg]`) injectée dans le graphe Obsidian par cette voie.
-- `INSTRUCTIONS-CLAUDE.md` : `capture_precedente`/`capture_suivante`
-  décrivent une série de captures **lues visuellement**, la mention « OCR »
-  disparaît. Nouveau `type: transcription` (`origine`, `conversation`,
-  `participants`, `periode`) ; quatre couches de savoir au lieu de trois.
 - `/doc-bench` : le score devient `sémantique@3`, mesuré **par dossier** — les
   espaces vectoriels étant disjoints, le rang d'une attendue est son rang dans
   l'index de son propre dossier, jamais dans un classement global reconstitué.
@@ -85,18 +91,6 @@ Installer une mise à jour : `/plugin marketplace update zairth_store` puis
   il se déclenche à chaque prompt, et chaque index interrogé coûte un
   embedding — les pistes qu'on veut là sont du savoir consolidé, pas des
   extraits bruts. La recherche large reste le métier de `/doc-query`.
-
-### Non retenu
-- **Vectoriser les transcriptions.** Envisagé, puis écarté après examen : ce
-  qu'on demande à un corpus de messages est presque toujours exhaustif, or un
-  classement ne garantit jamais l'exhaustivité — il faut lire les
-  conversations en entier, et dès lors qu'on lit tout, l'ordre de lecture ne
-  change plus le résultat. On les atteint par le condensé de `sources/` qui
-  pointe dessus, par grep, et par lecture. Trois bénéfices : pas de coût
-  d'embedding sur des milliers de chunks, **le contenu intégral des
-  conversations ne part pas chez le fournisseur d'embeddings**, et une requête
-  ne coûte pas un embedding par conversation. Réversible : la structure en un
-  dossier par conversation supporte les deux.
 
 ## [1.15.0] — 2026-07-28
 

@@ -29,7 +29,7 @@ esac
 vault="$(bash "$script_directory/vault-check.sh" 2>/dev/null)" || exit 0
 
 # Le hook n'interroge QUE la couche synthétisée (concepts + entités), jamais
-# les sources ni les transcriptions. Deux raisons : chaque index interrogé
+# les sources. Deux raisons : chaque index interrogé
 # coûte un embedding de la question, et ce hook se déclenche à CHAQUE prompt —
 # balayer tout le wiki en ferait un poste de dépense permanent ; et ce qu'on
 # veut ici, ce sont des pistes de savoir consolidé, pas des extraits bruts.

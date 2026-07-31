@@ -73,31 +73,22 @@ vault par projet**.
   frontmatter de la commande) — le contexte principal de Claude ne voit jamais
   les notes brutes ni même les instructions de la commande (anti-saturation,
   anti-distracteurs) ; seuls la réponse citée ou le rapport remontent.
-- **Quatre couches de savoir** : `wiki/sources/` (immuable, une note par
-  source — le condensé qu'on lit), `wiki/transcriptions/` (immuable, un dossier
-  par conversation, texte intégral message par message — la matière qu'on
-  fouille), `wiki/concepts/` + `wiki/entites/` (vivantes, reliées par
-  wikilinks), `wiki/syntheses/` (réponses transversales persistées).
-- **Un index sémantique par dossier de savoir**, dans le dossier lui-même
+- **Trois couches de savoir** : `wiki/sources/` (immuable, une note par source),
+  `wiki/concepts/` + `wiki/entites/` (vivantes, reliées par wikilinks),
+  `wiki/syntheses/` (réponses transversales persistées).
+- **Un index sémantique par dossier de `wiki/`**, dans le dossier lui-même
   (`concepts/.index/`, `entites/.index/`, `syntheses/.index/`,
   `sources/.index/`). Chaque dossier est un espace vectoriel séparé, donc les
   notes ne concourent qu'entre semblables : une entité de dix lignes ne peut
   plus être écrasée par un extrait d'une source de trois cents. C'est une
   séparation structurelle, pas un réglage de score.
-- **`wiki/transcriptions/` n'est pas vectorisé**, délibérément. Ce qu'on
-  demande à un corpus de messages est presque toujours exhaustif (« tous les
-  messages qui… »), or un index rend les K meilleurs résultats, jamais
-  l'ensemble des résultats qualifiants : il faut lire les conversations en
-  entier — et dès lors qu'on lit tout, l'ordre de lecture ne change plus rien.
-  On les atteint par le condensé de `sources/` (vectorisé, il désigne quelle
-  conversation ouvrir et pointe dessus en wikilink), par grep, et par lecture.
-  Économie au passage : le contenu intégral des conversations ne part pas chez
-  le fournisseur d'embeddings.
+- **Le grep ne disparaît jamais derrière le vectoriel** : `/doc-query` fait
+  les deux et ouvre au moins une note venue du grep. Une note qui contient
+  littéralement les mots de la question est le résultat le plus pertinent qui
+  soit, et aucun score de similarité ne le dira.
 - **Modèle de note** : frontmatter obligatoire sur chaque note — `type`,
   `date` (création), `auteur`, `description` (alimente l'INDEX), plus
-  `origine`/`original` (sources et transcriptions),
-  `conversation`/`participants` (transcriptions) et
-  `question` (synthèses) ; défini dans l'`INSTRUCTIONS-CLAUDE.md` du vault,
+  `origine`/`original` (sources) et `question` (synthèses) ; défini dans l'`INSTRUCTIONS-CLAUDE.md` du vault,
   appliqué par `/doc-ingest`, vérifié par `/doc-lint`.
 - **Vault auto-porteur** : `inbox/` est un sas, pas un stockage — un fichier
   ingéré est déplacé vers `archives/`, jamais supprimé. Le condensé vit dans
@@ -149,7 +140,7 @@ Puis dans chaque projet qui doit avoir son vault :
    `[[...]]` (les chemins bruts et propriétés `origine`/`original` n'en créent
    pas) ; pour colorer les nœuds par type, créer un groupe par dossier dans
    les paramètres du graphe — `path:wiki/concepts`, `path:wiki/entites`,
-   `path:wiki/sources`, `path:wiki/transcriptions`, `path:wiki/syntheses`. **Exclure `archives/`**
+   `path:wiki/sources`, `path:wiki/syntheses`. **Exclure `archives/`**
    (Paramètres → Fichiers et liens → Filtres d'exclusion) : Obsidian indexe
    tout le vault, et les markdown OCR archivés référencent des images non
    extraites qui apparaissent en nœuds fantômes — cliquer sur l'un d'eux crée
@@ -180,15 +171,12 @@ commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
   lecteur lit la source (le contexte principal ne la voit jamais) et propose
   2-5 enseignements clés. La source est routée selon sa nature : **document
   ou PDF → OCR** ; **capture d'écran → lecture visuelle directe par le
-  lecteur, jamais d'OCR** (dans une conversation, qui parle tient à la
-  position des bulles — un OCR documentaire aplatit tout en un flux linéaire
-  et détruit cette information) ; une série de captures d'un même fil compte
-  pour **une** source, et ce sont les images qui sont archivées. Une source
-  conversationnelle produit **deux notes** : le condensé dans `wiki/sources/`
-  (2-5 enseignements, ce qu'on lit) et la **transcription intégrale** dans
-  `wiki/transcriptions/<conversation>/` (un message par bloc, ce qu'on
-  fouille) — sans quoi une question comme « tous les messages où X reconnaît
-  le travail de Y » n'aurait aucune matière à interroger ; la discussion passe par ce même sub-agent (relais
+  lecteur, jamais d'OCR** (un OCR documentaire est réglé pour une mise en page
+  de document : sur une capture d'interface il rend un flux linéaire où la
+  disposition a disparu, et une partie du sens avec elle) ; des captures
+  formant un même ensemble
+  comptent pour **une** source, et ce sont les images qui sont archivées ;
+  la discussion passe par ce même sub-agent (relais
   SendMessage, contexte conservé) ; après validation, l'agent principal
   écrit : note source immuable, pages concepts/entités, INDEX, LOG.
   Contradiction détectée → tranchée avec l'utilisateur : la note porte la
@@ -298,7 +286,7 @@ nommer un fichier est filtré et confiné au vault.
 Il y a **un index par dossier de savoir**, dans le dossier lui-même :
 `<vault>/wiki/<dossier>/.index/embeddings.jsonl` pour `concepts/`, `entites/`,
 `syntheses/` et `sources/`. Ni `archives/`, ni `inbox/`, ni les fichiers
-racine, ni `transcriptions/` (voir Principes). Chaque index est un mapping
+racine. Chaque index est un mapping
 `hash(chunk) → vecteur` partagé via Drive, fournisseur/modèle épinglés en
 ligne 1, réindexation incrémentale par hash (jamais de fallback d'embeddings
 entre modèles : espaces vectoriels incompatibles). Tous sont **dérivés et
