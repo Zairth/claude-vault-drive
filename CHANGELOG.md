@@ -11,18 +11,82 @@ Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 
 ## [1.18.0] — 2026-07-29
 
-**Raison de l'update** : le vectoriel avait pris trop de place dans la cascade de recherche, au point de reléguer le grep au rang de repli. Or les deux couches ne trouvent pas la même chose — le vectoriel rapproche par le sens et rate le terme exact, le grep touche le terme exact et rate la reformulation. Une note qui contient littéralement les mots de la question est le meilleur résultat possible, et aucun score de similarité ne le dira.
+**Raison de l'update** : trois corrections de fond. Le vectoriel avait pris toute la place dans la cascade de recherche, au point de reléguer le grep au rang de repli — or les deux couches ne trouvent pas la même chose, l'une rapproche par le sens et rate le terme exact, l'autre touche le terme exact et rate la reformulation. `/doc-ingest` plafonnait par ailleurs chaque source à 2-5 enseignements, bridage hérité d'un temps où une note longue inondait le classement avec plusieurs de ses extraits : le regroupement des résultats par fichier règle ce point à la recherche, il n'y a plus de raison de jeter de l'information à l'écriture. Enfin, une couche de notes introduite en 1.16.0 dépassait le périmètre d'un outil générique.
+
+### Ajouté
+- **`wiki/sources/` porte désormais le texte intégral standardisé** de chaque
+  pièce, et **`wiki/enseignements/`** ce qu'on en retient — un titre `###` par
+  enseignement, donc un extrait indexé par enseignement, ni dilué dans ses
+  voisins ni coupé en deux. Avec `archives/`, cela fait **trois degrés de
+  fidélité** pour une même pièce : ce qu'on retient, le texte fidèle, la pièce
+  elle-même. Un doute se remonte toujours dans ce sens, et **plus rien de ce
+  qui est ingéré n'est perdu** — ce qu'aucun enseignement n'a retenu reste
+  cherchable dans le texte. Les deux notes partagent le slug et se pointent
+  mutuellement ; `archives/` reste hors index.
+  Contrepartie assumée : le texte intégral des pièces est vectorisé, donc plus
+  de chunks à chaque ingestion et un volume nettement supérieur transmis au
+  fournisseur d'embeddings.
+- Le texte intégral **ne traverse aucun contexte** : le sub-agent lecteur
+  l'écrit lui-même dans le sas (`inbox/<slug>.standardise.md`) et ne remonte
+  que son chemin et le dossier d'ingestion. L'agent principal déplace le
+  fichier sans le relire. Ingestion abandonnée → le sas est nettoyé.
+- **`/doc-repair <note> "<passage>" "<nouvelle valeur>"`** — nouvelle commande.
+  Là où `/doc-lint` ratisse le vault, celle-ci part d'une incohérence repérée
+  et **remonte sa chaîne** : elle cherche toutes les notes portant la même
+  affirmation, **vérifie la correction contre la pièce d'origine**, puis la
+  qualifie — erreur de restitution (on remplace, sans `## Historique` : une
+  erreur n'est pas une vérité passée) ou information périmée (valeur courante
+  mise à jour, ancienne poussée en `## Historique`). Elle rend un plan
+  ordonné : notes à modifier, wikilinks à refaire, entrée d'INDEX, dossiers à
+  réindexer — et n'écrit rien elle-même. `archives/` n'est jamais modifié : on
+  corrige ce que le vault a dit de la pièce, jamais la pièce. Une correction
+  de couche immuable est journalisée, ce qui la distingue d'une édition
+  silencieuse.
+- `/doc-lint` : neuvième vérification — **appariement des couches d'origine**.
+  Un texte sans enseignement, un enseignement sans son texte, un wikilink
+  manquant entre les deux, ou une note d'enseignements sans aucun titre `###`
+  (ses extraits seraient indexés en un seul bloc). Compteur
+  `appariements rompus` dans la ligne d'état.
+- `/doc-bench` : le banc attend désormais **la couche la plus travaillée qui
+  réponde**, et son rapport ajoute une **répartition des touches par couche** —
+  seule façon de voir si les textes intégraux étouffent les enseignements ou
+  les complètent.
 
 ### Modifié
 - `/doc-query` : **le grep est systématique, en plus du sémantique et jamais à
-  sa place**, et la commande doit **ouvrir au moins une note issue du grep**
-  même quand la sémantique a déjà remonté des pistes. Une note désignée par
-  les deux couches est un signal fort, à traiter en priorité.
-- Retrait d'une quatrième couche de notes introduite en 1.16.0 : le vault
-  revient à `sources/`, `concepts/`, `entites/`, `syntheses/`. Elle répondait
-  à un besoin particulier qui n'a pas sa place dans un outil générique, et
-  faisait porter au plugin une structure que ses conventions de notes
-  n'exigeaient pas.
+  sa place**. Le sub-agent **ouvre toutes ses touches, puis trie** et ne remonte
+  que ce qui apporte un fait ou un savoir explicitement énoncé : son contexte
+  est jetable — l'agent principal ne voit que le rapport —, donc lire large et
+  rendre étroit est son métier, et aucune présélection ne se fait sur un nom de
+  fichier — le nom de fichier est un indice faible, c'est le contenu qui
+  tranche. Le motif cherche sur la **racine** des termes, sans tenir compte de
+  la casse ni des accents — ce qui rattrape le pluriel, l'accent oublié et le
+  suffixe différent — et **écarte les termes trop répandus**, qui ne
+  discriminent rien : un patronyme suffit à ramener la moitié d'un vault. Trop
+  de touches malgré ça → resserrer et le dire dans le rapport, jamais
+  échantillonner. Deux indices pour le tri : une note contenant littéralement
+  les mots de la question est souvent le meilleur résultat possible, et une
+  note désignée par les deux couches est un signal fort.
+- `/doc-query`, rapport final : le bloc `Sources` devient **`Notes retenues`**
+  — toutes celles jugées pertinentes, pas seulement celles qui portent la
+  réponse. Chacune avec son chemin relatif au vault, **d'où elle vient**
+  (sémantique et son rang, grep, ou les deux) et une phrase sur ce qu'elle
+  apporte. Leur contenu n'est jamais recopié : le contexte principal reçoit
+  une carte, pas le territoire, et ouvre ce dont il a besoin quand il en a
+  besoin.
+- `/doc-ingest` : **le nombre d'enseignements devient proportionnel à la
+  source**, sans plafond. Le critère est la qualité — une idée par
+  enseignement, aucun qui n'apporte un fait durable, aucun remplissage — et
+  non plus un compte. La limite de 125 caractères par citation verbatim ne
+  bouge pas : elle porte sur la longueur d'une citation, pas sur leur nombre.
+- `/doc-ingest`, gros volume : le sub-agent synthétiseur **assemble** les
+  dossiers partiels au lieu de les comprimer. Il dédoublonne et organise, en
+  gardant une section par partie de la source.
+- `/doc-ingest`, validation : au-delà d'une dizaine d'enseignements, la
+  validation se fait **par tranches** — une liste de quarante lignes validée
+  d'un bloc n'est plus une validation.
+- Retrait d'une couche de notes introduite en 1.16.0, qui répondait à un
+  besoin particulier n'ayant pas sa place dans un outil générique.
 - Formulation générique du routage des captures d'écran et du regroupement
   d'un lot en sources : ces règles tiennent par la propriété technique qui les
   motive, sans référence à un type de contenu particulier.
@@ -70,13 +134,24 @@ Installer une mise à jour : `/plugin marketplace update zairth_store` puis
   Capture d'écran (`.png`, `.jpg`, `.webp`, `.heic`…) → **jamais d'OCR** : un
   OCR documentaire est réglé pour une mise en page de document et rend, sur
   une capture d'interface, un flux linéaire où la disposition a disparu. Le
-  sub-agent lecteur ouvre l'image directement et la retranscrit, avec pour
+  sub-agent lecteur ouvre l'image directement et en produit la version
+  standardisée, avec pour
   consigne de **signaler tout passage illisible plutôt que de le deviner** —
   ce qui devient un `> [!warning]` sur la note source. Texte/markdown → tel
   quel ; URL → montage nominal.
 - `/doc-ingest` : des captures formant **un même ensemble** comptent pour une
   seule source, qu'un seul lecteur ouvre dans l'ordre (une dizaine au plus,
   au-delà montage gros volume).
+- `/doc-ingest` : le routage couvre désormais **toutes les natures de
+  source**, avec une conduite explicite quand on ne sait pas. Texte lisible
+  tel quel (`.md`, `.txt`, `.csv`, `.json`, `.html`, `.eml`, code) transmis
+  sans conversion ; **bureautique binaire** (`.xlsx`, `.docx`, `.pptx`,
+  `.odt`…) convertie d'abord avec ce qui est présent sur la machine, sinon on
+  demande une version texte ou PDF — jamais de binaire présenté à un lecteur,
+  jamais de contenu deviné ; **archive** décompressée puis traitée comme un
+  lot ; **audio et vidéo** déclarés hors périmètre ; **format non identifié**
+  passé à `file`, puis question à l'utilisateur. Une ingestion ratée pollue
+  une couche immuable : dans le doute, on demande.
 
 ### Modifié
 - `/doc-ingest`, archivage : pour une capture, ce sont **les images

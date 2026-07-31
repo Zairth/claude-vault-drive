@@ -39,6 +39,7 @@ claude-vault-drive/
 │   ├── doc-ingest.md        # /doc-ingest — ingérer une source (validation conversationnelle)
 │   ├── doc-query.md         # /doc-query — interroger le vault (fork isolé, réponse citée)
 │   ├── doc-lint.md          # /doc-lint — maintenance (fork isolé : orphelins, INDEX, conflits Drive, vecteurs)
+│   ├── doc-repair.md        # /doc-repair — corriger une information et rebrancher sa chaîne, vérification contre la pièce
 │   └── doc-bench.md         # /doc-bench — banc de questions de référence (mesure mécanique, ou réelle via /doc-query)
 ├── hooks/
 │   └── hooks.json           # déclaration des trois hooks (SessionStart, UserPromptSubmit, PreCompact)
@@ -73,27 +74,38 @@ vault par projet**.
   frontmatter de la commande) — le contexte principal de Claude ne voit jamais
   les notes brutes ni même les instructions de la commande (anti-saturation,
   anti-distracteurs) ; seuls la réponse citée ou le rapport remontent.
-- **Trois couches de savoir** : `wiki/sources/` (immuable, une note par source),
-  `wiki/concepts/` + `wiki/entites/` (vivantes, reliées par wikilinks),
+- **Trois degrés de fidélité pour une même pièce**, du plus travaillé au plus
+  brut : `wiki/enseignements/<slug>.md` (ce qu'on en retient, un `###` par
+  enseignement — ce qu'on lit), `wiki/sources/<slug>.md` (le texte intégral
+  standardisé, fidèle et sans tri — ce qu'on fouille), `archives/<pièce>` (la
+  pièce elle-même, jamais indexée ni modifiée — ce qui fait foi). Un doute se
+  remonte toujours dans ce sens. Par-dessus, les couches vivantes :
+  `wiki/concepts/` + `wiki/entites/` (reliées par wikilinks) et
   `wiki/syntheses/` (réponses transversales persistées).
+  Rien de ce qui est ingéré n'est perdu : ce qu'aucun enseignement n'a retenu
+  reste cherchable dans le texte intégral.
 - **Un index sémantique par dossier de `wiki/`**, dans le dossier lui-même
-  (`concepts/.index/`, `entites/.index/`, `syntheses/.index/`,
-  `sources/.index/`). Chaque dossier est un espace vectoriel séparé, donc les
-  notes ne concourent qu'entre semblables : une entité de dix lignes ne peut
-  plus être écrasée par un extrait d'une source de trois cents. C'est une
-  séparation structurelle, pas un réglage de score.
-- **Le grep ne disparaît jamais derrière le vectoriel** : `/doc-query` fait
-  les deux et ouvre au moins une note venue du grep. Une note qui contient
-  littéralement les mots de la question est le résultat le plus pertinent qui
-  soit, et aucun score de similarité ne le dira.
+  (un `.index/` dans chacun des cinq dossiers). Chaque dossier est un espace
+  vectoriel séparé, donc les notes ne concourent qu'entre semblables : une
+  entité de dix lignes ne peut plus être écrasée par un extrait d'un texte
+  intégral de trois cents, et surtout **on peut chercher dans une couche sans
+  l'autre** — interroger les enseignements, puis descendre au texte si le
+  doute persiste. Le nombre d'index ne dépend pas du nombre de sources : cinq,
+  quelle que soit la taille du vault.
+- **Le grep ne disparaît jamais derrière le vectoriel** : `/doc-query` lance
+  toujours les deux. Le sub-agent **ouvre toutes les touches, puis trie** et ne
+  remonte que ce qui répond : son contexte est jetable, lire large et rendre
+  étroit est son métier. Une note qui contient littéralement les mots de la
+  question est souvent le meilleur résultat possible, et aucun score de
+  similarité ne le dira.
 - **Modèle de note** : frontmatter obligatoire sur chaque note — `type`,
   `date` (création), `auteur`, `description` (alimente l'INDEX), plus
-  `origine`/`original` (sources) et `question` (synthèses) ; défini dans l'`INSTRUCTIONS-CLAUDE.md` du vault,
+  `origine`/`original` (sources et enseignements) et `question` (synthèses) ; défini dans l'`INSTRUCTIONS-CLAUDE.md` du vault,
   appliqué par `/doc-ingest`, vérifié par `/doc-lint`.
 - **Vault auto-porteur** : `inbox/` est un sas, pas un stockage — un fichier
-  ingéré est déplacé vers `archives/`, jamais supprimé. Le condensé vit dans
-  `wiki/sources/`, la pièce d'origine reste vérifiable dans le vault, qui
-  voyage d'un bloc. `archives/` est immuable et **hors index sémantique**
+  ingéré est déplacé vers `archives/`, jamais supprimé. Le savoir vit dans
+  `wiki/`, la pièce d'origine reste vérifiable dans le vault, qui voyage d'un
+  bloc. `archives/` est immuable et **hors index sémantique**
   (seuls les dossiers de `wiki/` sont indexés : zéro coût, zéro bruit — les
   fichiers archivés gardent leur nom et leur extension) ; attention
   avant de partager le vault, les archives peuvent contenir des données
@@ -140,7 +152,7 @@ Puis dans chaque projet qui doit avoir son vault :
    `[[...]]` (les chemins bruts et propriétés `origine`/`original` n'en créent
    pas) ; pour colorer les nœuds par type, créer un groupe par dossier dans
    les paramètres du graphe — `path:wiki/concepts`, `path:wiki/entites`,
-   `path:wiki/sources`, `path:wiki/syntheses`. **Exclure `archives/`**
+   `path:wiki/sources`, `path:wiki/enseignements`, `path:wiki/syntheses`. **Exclure `archives/`**
    (Paramètres → Fichiers et liens → Filtres d'exclusion) : Obsidian indexe
    tout le vault, et les markdown OCR archivés référencent des images non
    extraites qui apparaissent en nœuds fantômes — cliquer sur l'un d'eux crée
@@ -169,7 +181,8 @@ commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
 
 - `/doc-ingest <texte | fichier | URL | élément de inbox/>` — un sub-agent
   lecteur lit la source (le contexte principal ne la voit jamais) et propose
-  2-5 enseignements clés. La source est routée selon sa nature : **document
+  ses enseignements clés — autant qu'elle en porte, sans plafond, validés par
+  tranches quand ils sont nombreux. La source est routée selon sa nature : **document
   ou PDF → OCR** ; **capture d'écran → lecture visuelle directe par le
   lecteur, jamais d'OCR** (un OCR documentaire est réglé pour une mise en page
   de document : sur une capture d'interface il rend un flux linéaire où la
@@ -210,6 +223,15 @@ commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
   archives OCR), cohérence de l'index vectoriel
   (`.index/`) ; corrections validées avec l'utilisateur puis appliquées en
   contexte principal.
+- `/doc-repair <note> "<passage>" "<nouvelle valeur>"` — corriger une
+  information repérée et **rebrancher toute sa chaîne**. En fork isolé : la
+  correction est d'abord **vérifiée contre la pièce d'origine** (`archives/`),
+  puis qualifiée — erreur de restitution (on remplace) ou information
+  périmée (valeur courante mise à jour, ancienne en `## Historique`). Le
+  rapport liste toutes les notes portant la même affirmation, les wikilinks à
+  refaire et les dossiers à réindexer ; l'agent principal n'applique que ce
+  que l'utilisateur valide. `archives/` n'est jamais modifié : on corrige ce
+  que le vault a dit de la pièce, jamais la pièce.
 - `/doc-bench` — le mètre étalon de la recherche, en trois modes. `creer`
   (ou premier lancement) : propose ~20 questions de référence tirées du
   contenu du vault, chacune avec ses notes attendues — validées puis figées

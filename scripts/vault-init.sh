@@ -61,7 +61,7 @@ done
 # Chaque dossier de wiki/ porte son propre index (`<dossier>/.index/`) — il est
 # créé par le moteur à la première indexation, pas ici.
 mkdir -p "$vault_path/inbox" "$vault_path/archives" "$vault_path/LOG" \
-         "$vault_path/wiki/sources" \
+         "$vault_path/wiki/sources" "$vault_path/wiki/enseignements" \
          "$vault_path/wiki/concepts" "$vault_path/wiki/entites" \
          "$vault_path/wiki/syntheses"
 echo "OK : arborescence du vault en place."
@@ -81,7 +81,7 @@ done
 # jamais dans un vault déjà vivant (LOG/ non vide, ou LOG.md hérité — gelé).
 if [[ -z "$(ls -A "$vault_path/LOG")" && ! -f "$vault_path/LOG.md" ]]; then
     today="$(date +%F)"
-    printf '## [%s] init | création du vault\n\nStructure initiale : INSTRUCTIONS-CLAUDE.md, INDEX.md, LOG/, inbox/, archives/,\nwiki/{sources,concepts,entites,syntheses}/ — un index sémantique\npar dossier de wiki/, construit à la première indexation.\n' \
+    printf '## [%s] init | création du vault\n\nStructure initiale : INSTRUCTIONS-CLAUDE.md, INDEX.md, LOG/, inbox/, archives/,\nwiki/{sources,enseignements,concepts,entites,syntheses}/ — un index sémantique\npar dossier de wiki/, construit à la première indexation.\n' \
         "$today" > "$vault_path/LOG/$today.md"
     echo "OK : LOG/$today.md créé (entrée init)."
 fi
@@ -138,4 +138,4 @@ bash "$script_directory/vault-check.sh" >/dev/null
 echo ""
 echo "✅ Vault initialisé et vérifié : $vault_path"
 echo "→ Facultatif : ouvrir ce dossier comme coffre dans Obsidian (vitrine humaine)."
-echo "→ Commandes disponibles : /doc-ingest, /doc-query, /doc-lint."
+echo "→ Commandes disponibles : /doc-ingest, /doc-query, /doc-lint, /doc-repair, /doc-bench."

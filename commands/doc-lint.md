@@ -20,7 +20,7 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
 2. Lire intégralement `$VAULT/INSTRUCTIONS-CLAUDE.md` et s'y conformer
    (règles de maintenance : sources immuables, LOG append-only, INDEX à jour).
 
-## Vérifications (les dix)
+## Vérifications (les onze)
 
 1. **Callouts** — deux natures que la convention d'`INSTRUCTIONS-CLAUDE.md`
    sépare par leur durée de vie ; ne jamais les additionner :
@@ -29,11 +29,12 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      une action.
    - `> [!warning]` dans `wiki/` = **mise en garde documentaire**,
      permanente → compter seulement, et le dire ; ne rien réclamer.
-   - `> [!question]` trouvé dans `wiki/sources/` = **défaut de placement** :
-     la couche est immuable, le callout ne pourra jamais y être retiré une
-     fois tranché → lister à part (remède dans les corrections).
+   - `> [!question]` trouvé dans `wiki/sources/` ou `wiki/enseignements/` =
+     **défaut de placement** : ces couches sont immuables, le callout ne
+     pourra jamais y être retiré une fois tranché → lister à part (remède dans
+     les corrections).
    - **Héritage des versions ≤ 1.14.0**, où `> [!warning]` servait aux deux
-     usages : hors `wiki/sources/`, lire le corps de chaque `[!warning]` et
+     usages : hors des couches immuables, lire le corps de chaque `[!warning]` et
      signaler ceux qui décrivent en réalité deux affirmations incompatibles —
      ce sont des contradictions à requalifier en `[!question]`. Un
      `[!warning]` qui énonce une réserve sur une pièce est conforme, ne pas
@@ -70,10 +71,12 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
    pour les synthèses
    → lister les notes non conformes avec leurs propriétés manquantes.
    Vérifier aussi que `type` s'accorde au dossier (`type: entite` sous
-   `entites/`, `type: source` sous `sources/`…) : un désaccord fausse l'INDEX
-   et trahit une note écrite au mauvais endroit.
+   `entites/`, `type: source` sous `sources/`, `type: enseignements` sous
+   `enseignements/`…) : un désaccord fausse l'INDEX et trahit une note écrite
+   au mauvais endroit.
 8. **Cohérence vectorielle** — il y a **un index par dossier de `wiki/`**
-   (`concepts/`, `entites/`, `syntheses/`, `sources/`), pas un index global.
+   (`concepts/`, `entites/`, `syntheses/`, `enseignements/`, `sources/`), pas
+   un index global.
    La liste fait foi :
    `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index-targets.sh"` (une cible par
    ligne, relative à `wiki/`) — chacune doit avoir son
@@ -99,7 +102,17 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      vecteurs = indexation non suivie (le verdict définitif reste le hash,
      jamais les dates).
 
-9. **Parasites hors `wiki/`** — les autres vérifications ne regardent que
+9. **Appariement des couches d'origine** — toute pièce ingérée produit deux
+   notes de même slug, `sources/<slug>.md` et `enseignements/<slug>.md`.
+   Lister les **orphelines d'appariement** : un texte intégral dont personne
+   n'a tiré d'enseignement (pièce ingérée puis abandonnée), et surtout un
+   enseignement sans son texte (le matériau qui l'appuie a disparu, la chaîne
+   de vérification est rompue). Vérifier aussi que les deux se pointent
+   mutuellement en wikilink et partagent le même `origine`.
+   Enfin, dans `enseignements/`, une note **sans aucun titre `###`** : ses
+   enseignements seraient indexés en un seul bloc au lieu d'un par
+   enseignement — la granularité de recherche est perdue.
+10. **Parasites hors `wiki/`** — les autres vérifications ne regardent que
    `wiki/`, or Obsidian indexe TOUT le vault : ce qui traîne ailleurs pollue
    le graphe humain (l'index sémantique, lui, ne couvre que `wiki/`).
    - `.md` inattendu à la **racine** du vault : tout sauf `INDEX.md`,
@@ -110,8 +123,8 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      lister. Ce n'est pas cosmétique : les index vivent dans les dossiers, donc
      une note à la racine de `wiki/` **n'est indexée par rien** et reste
      introuvable en recherche sémantique.
-   - **Sous-dossier inattendu** dans `concepts/`, `entites/`, `syntheses/` ou
-     `sources/` → lister : le moteur indexant récursivement, ses notes se
+   - **Sous-dossier inattendu** dans l'un des cinq dossiers de `wiki/` →
+     lister : le moteur indexant récursivement, ses notes se
      retrouveraient mêlées à celles du parent, ce que la séparation par
      dossier cherche justement à éviter.
    - **notes vides** (0 octet, ou frontmatter seul sans corps) n'importe où
@@ -124,7 +137,7 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      type dans `archives/` et, s'il y en a, rappeler le remède durable dans
      les corrections. Ne jamais modifier un fichier d'`archives/` : la couche
      est immuable.
-10. **Doublons suspectés (pages vivantes)** : sur l'ensemble `wiki/concepts/`
+11. **Doublons suspectés (pages vivantes)** : sur l'ensemble `wiki/concepts/`
    + `wiki/entites/` — les doublons traversent les deux dossiers
    (`Docker.md` dans l'un, `conteneurisation-docker.md` dans l'autre) :
    - collision de **noms normalisés** (casse, accents, tirets/underscores,
@@ -149,7 +162,8 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
    `contradictions: n · liens pendants: n · doublons suspectés: n ·
    orphelines: n · trous d'INDEX: n · conflits Drive: n · inbox: n ·
    frontmatters incomplets: n · parasites: n · index manquants: n ·
-   notes: n (concepts n · entites n · sources n · syntheses n)`.
+   appariements rompus: n · notes: n (concepts n · entites n · sources n ·
+   enseignements n · syntheses n)`.
    `contradictions` ne compte QUE les `[!question]` en souffrance, augmentés
    des `[!warning]` requalifiés — jamais les mises en garde documentaires,
    qui sont un état normal du vault et non une dette.
@@ -168,9 +182,9 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      mise à jour dans le corps, ancienne version poussée en `## Historique`,
      callout retiré. Pour un `[!warning]` requalifié : le retyper en
      `[!question]` sur place, puis le traiter comme les autres. Pour un
-     `[!question]` égaré dans `wiki/sources/` : reporter le callout sur la
+     `[!question]` égaré dans une couche immuable : reporter le callout sur la
      page concept/entité concernée, puis **le retirer de la note source** —
-     seule modification jamais autorisée sur `wiki/sources/`, et seulement
+     seule modification jamais autorisée hors `/doc-repair`, et seulement
      après validation explicite. Elle se justifie parce que l'immuabilité
      protège ce que la pièce dit : une contradiction n'est pas dans la
      pièce, elle est dans la relation entre la pièce et le vault. L'ôter
@@ -179,7 +193,7 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      remplacer la puce « Contradiction entre une nouvelle information et
      l'existant » par la version en vigueur (les deux callouts distingués par
      leur durée de vie, `[!warning]` permanent et documentaire, `[!question]`
-     temporaire et hors `wiki/sources/`) — une seule édition, le reste du
+     temporaire et hors des couches immuables) — une seule édition, le reste du
      fichier n'est pas touché.
    - Pour chaque paire de doublons que l'utilisateur confirme — **fusion
      assistée**, dans cet ordre : il choisit la page survivante ; rapatrier le

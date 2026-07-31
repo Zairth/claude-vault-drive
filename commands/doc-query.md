@@ -109,12 +109,31 @@ La question à traiter est `$ARGUMENTS`, nettoyée des jetons `dans:` et
 3. **Grep, TOUJOURS, en plus du sémantique — jamais à la place.** Les deux
    couches ne trouvent pas la même chose : le vectoriel rapproche par le sens
    et rate le terme exact ; le grep touche le terme exact et rate la
-   reformulation. Chercher les mots pleins de la question ET leurs synonymes /
-   variantes françaises dans tout `wiki/`. **Ouvrir au moins une note issue du
-   grep**, même si la sémantique a déjà remonté des pistes : une note qui
-   contient littéralement les mots de la question est le résultat le plus
-   pertinent qui soit, et aucun score ne le dira. Si le grep et la sémantique
-   désignent la même note, c'est un signal fort — la traiter en priorité.
+   reformulation.
+
+   Chercher les mots pleins de la question (mots-outils écartés), **sur leur
+   racine et sans tenir compte de la casse ni des accents** :
+   `grep -riE "h[ée]berg"` plutôt que `grep "hébergé"` — la racine attrape le
+   pluriel, le suffixe et la forme fléchie sans les énumérer, et c'est ce qui
+   rattrape la plupart des ratés d'une correspondance exacte. Étendre aux
+   synonymes et variantes françaises.
+   **Écarter les termes trop répandus** : un mot présent dans la plupart des
+   notes ne discrimine rien — un patronyme suffit à ramener la moitié d'un
+   vault. Ce sont les termes rares de la question qui portent le sens ; que
+   les touches viennent d'eux.
+
+   **Ouvrir TOUTES les touches retenues, puis trier** : ne retenir que celles qui
+   apportent un fait, ou un savoir explicitement énoncé, répondant à la
+   question. Ton contexte est jetable — l'agent principal ne verra que ton
+   rapport —, donc lire large et rendre étroit est exactement ton métier : ne
+   présélectionne jamais sur un nom de fichier ou sur une intuition.
+   Encore trop de touches → **resserrer le motif** — exiger plusieurs termes
+   rares ensemble plutôt qu'un seul — puis ouvrir tout ce qu'il rend, et dire
+   dans le rapport comment il a été resserré. Jamais d'échantillonnage.
+   Deux indices pour le tri : une note qui contient **littéralement** les mots
+   de la question est souvent le meilleur résultat possible, et aucun score de
+   similarité ne le dira ; une note désignée **par les deux couches** est un
+   signal fort.
 4. **Question exhaustive** — « tous les… », « combien de fois… », « liste tous
    les… » : aucun classement ne peut y répondre, et s'y fier produirait une
    réponse fausse d'aspect crédible. Un index rend les K meilleurs résultats,
@@ -136,7 +155,20 @@ Exactement ces blocs, dans cet ordre :
    exhaustive, ce qui a effectivement été lu en entier (une couverture
    partielle se dit, elle ne se devine pas).
 2. La réponse à la question (concise, en français).
-3. `Sources` : les chemins relatifs des notes utilisées.
+3. `Notes retenues` — **toutes** celles que tu as jugées pertinentes, pas
+   seulement celles qui portent la réponse : c'est le matériau que l'agent
+   principal pourra ouvrir lui-même s'il en a besoin. Une ligne chacune :
+   - le **chemin relatif au vault**, pour qu'il puisse l'ouvrir sans te
+     redemander ;
+   - **d'où elle vient** — `sémantique` (avec son dossier et son rang),
+     `grep`, ou **`les deux`**, qui est le signal de pertinence le plus fort
+     dont il dispose ;
+   - **une phrase** disant ce qu'elle apporte à la question.
+   Ne jamais recopier leur contenu : c'est toute la raison d'être du fork. Le
+   contexte principal reçoit une carte, pas le territoire — il ouvre ce dont
+   il a besoin, quand il en a besoin.
+   Les notes ouvertes puis écartées comme non pertinentes ne figurent pas
+   ici : dire seulement combien l'ont été, par couche.
 4. Un bloc `Pour l'agent principal`, avec le chemin `$VAULT` résolu écrit en
    clair (l'agent principal ne connaît pas la sortie de vault-check) :
    - présenter la réponse et ses sources à l'utilisateur, puis proposer :

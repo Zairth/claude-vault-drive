@@ -24,19 +24,40 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
 ├── inbox/                   ← sas : dépôts bruts en attente d'ingestion
 ├── archives/                ← pièces d'origine conservées après ingestion (hors index)
 ├── wiki/
-│   ├── sources/             ← couche IMMUABLE : une note par source, jamais réécrite
+│   ├── sources/             ← couche IMMUABLE : le texte intégral standardisé d'une pièce
+│   ├── enseignements/       ← couche IMMUABLE : ce qu'on retient d'une pièce, un ### par enseignement
 │   ├── concepts/            ← couche vivante : pages de concepts
 │   ├── entites/             ← couche vivante : personnes, outils, projets
 │   └── syntheses/           ← réponses de /doc-query sauvegardées
 ```
 
+**Trois degrés de fidélité, du plus travaillé au plus brut.** Une même pièce
+existe à trois endroits, et on descend d'un cran à chaque fois qu'un doute
+persiste :
+
+1. `wiki/enseignements/<slug>.md` — ce qu'on en a retenu, un enseignement par
+   titre `###`, avec sa citation courte. C'est ce qu'on lit ;
+2. `wiki/sources/<slug>.md` — le **texte intégral** de la pièce, converti en
+   markdown structuré, fidèle et sans tri. C'est ce qu'on fouille quand
+   l'enseignement ne suffit pas ;
+3. `archives/<nom d'origine>` — la **pièce elle-même**, telle qu'elle est
+   arrivée. Jamais indexée, jamais modifiée. C'est ce qui fait foi quand le
+   texte standardisé est mis en doute.
+
+Les deux notes portent le même `<slug>` et se pointent mutuellement en
+wikilink ; leur `origine` désigne la pièce d'`archives/`. Un doute se remonte
+donc toujours dans le même sens : enseignement → texte → pièce.
+
 **Un index sémantique par dossier**, dans le dossier lui-même
-(`concepts/.index/`, `entites/.index/`, `syntheses/.index/`,
-`sources/.index/` — dérivés jetables, ne pas y toucher). Ce n'est pas un
-détail d'implémentation : chaque dossier est un **espace vectoriel séparé**,
-donc les notes ne concourent qu'entre semblables. Une entité de dix lignes ne
-peut plus être écrasée par un gros extrait d'une source de trois cents. C'est
-ce qui rend la recherche utilisable sans réglage de score.
+(un `.index/` dans chacun des cinq dossiers — dérivés jetables, ne pas y
+toucher). Ce n'est pas un détail d'implémentation : chaque dossier est un
+**espace vectoriel séparé**, donc les notes ne concourent qu'entre semblables.
+Une entité de dix lignes ne peut plus être écrasée par un extrait d'un texte
+intégral de trois cents, et surtout **on peut chercher dans une couche sans
+l'autre** — interroger les enseignements sans que les textes intégraux
+saturent les résultats, puis descendre d'un cran si le doute persiste. Le
+nombre d'index ne dépend pas du nombre de sources : cinq, quelle que soit la
+taille du vault.
 
 Conséquence : **une note posée directement à la racine de `wiki/` n'est
 indexée par rien** — toute note vit dans un de ces dossiers.
@@ -48,7 +69,8 @@ indexée par rien** — toute note vit dans un de ces dossiers.
 - Nommage : `kebab-case.md` ; sources préfixées `YYYY-MM-DD-`.
 - **Modèle de note — frontmatter obligatoire** (une note sans ces propriétés
   n'est pas conforme ; `/doc-lint` les vérifie) :
-  - toutes les notes : `type` (source | concept | entite | synthese),
+  - toutes les notes : `type` (source | enseignements | concept | entite |
+    synthese),
     `date` (date de création `YYYY-MM-DD`, jamais modifiée ensuite),
     `auteur` (qui a créé la note : la personne pilotant la session — la
     demander une fois si inconnue, puis réutiliser — ou le nom de l'équipe
@@ -63,6 +85,13 @@ indexée par rien** — toute note vit dans un de ces dossiers.
     la machine** (`/home/...`, `/mnt/...`, `C:\...`) dans `origine`/`original` :
     un fichier local ingéré est copié dans `archives/` et référencé
     relativement au vault ;
+  - `type: enseignements` : `origine` (même pièce que la note de source
+    correspondante) et un wikilink vers cette note ; le corps est une suite de
+    titres `###`, un par enseignement, chacun suivi de sa citation verbatim et
+    des wikilinks vers les concepts/entités concernés. Le `###` n'est pas
+    cosmétique : le découpage sémantique se fait par titre, donc un
+    enseignement = un extrait indexé, ni dilué dans ses voisins ni coupé en
+    deux.
   - `type: synthese` : `question` — la question posée ; `perimetre` si la
     recherche visait un dossier voisin du vault.
 
@@ -117,8 +146,13 @@ indexée par rien** — toute note vit dans un de ces dossiers.
 
 ## Règles de maintenance
 
-- `wiki/sources/` est **immuable** : une note de source n'est jamais modifiée
-  après son ingestion.
+- `wiki/sources/` et `wiki/enseignements/` sont **immuables** : ni le texte
+  d'une pièce ni ce qu'on en a retenu ne sont réécrits au fil de l'eau. La
+  seule modification autorisée passe par `/doc-repair`, qui corrige une erreur
+  constatée et la journalise — jamais une édition silencieuse.
+- `archives/` ne se corrige **jamais**, par `/doc-repair` ni autrement : la
+  pièce d'origine est la preuve. Si elle est fausse, c'est un fait sur la
+  pièce, à consigner ; ce qu'on corrige, c'est ce que le vault en a dit.
 - Toute écriture dans `wiki/` met à jour `INDEX.md` **dans la foulée**.
   `INDEX.md` est un **dérivé** : chaque entrée vient du frontmatter de la note
   (`- [[<slug>]] — <description>`) et `/doc-lint` sait le régénérer

@@ -47,7 +47,10 @@ garder le contexte principal propre. Sa mission :
    (au moins les frontmatters `description`) pour cartographier le vault.
 2. Rédiger **~20 questions** (vault petit → réduire : viser une question pour
    2-3 notes, minimum 5) couvrant, en les mélangeant :
-   - des factuelles dont la réponse vit dans une note de `sources/` ;
+   - des factuelles dont la réponse vit dans un enseignement ;
+   - au moins une dont la réponse n'existe QUE dans le texte intégral d'une
+     source, qu'aucun enseignement n'a retenue — c'est elle qui mesure
+     l'utilité de cette couche ;
    - des transversales (plusieurs notes, syntheses) ;
    - des centrées sur un concept ou une entité ;
    - et plusieurs formulées en **synonymes** — jamais les mots exacts des
@@ -56,6 +59,11 @@ garder le contexte principal propre. Sa mission :
    qu'une bonne recherche doit remonter. Une note qui répond réellement mais
    n'est pas attendue fabriquera un faux échec : mieux vaut un attendu large
    qu'un attendu incomplet, mais jamais une note « à peu près liée ».
+   **Attendre la couche la plus travaillée qui réponde** : si l'information
+   tient dans un enseignement ou une page de concept, c'est elle l'attendue —
+   pas le texte intégral de la source, qui la contient aussi mais noyée. Le
+   texte intégral n'est attendu que pour une question à laquelle lui seul
+   répond (un détail qu'aucun enseignement n'a retenu).
 4. Retourner le banc complet.
 
 Puis, en contexte principal : faire valider les questions à l'utilisateur
@@ -123,7 +131,10 @@ ni les recherches ni les notes. Sa mission :
 4. **Rapport** : la ligne de score
    `sémantique@3 x/n (rang moyen r) · +1 saut x/n · grep x/n · couverture x/n` ;
    le tableau par question (dossier et rang de l'attendue, note pivot du
-   +1 saut, grep, verdict) ; pour chaque échec, ce que la recherche a renvoyé **à la place**
+   +1 saut, grep, verdict) ; **une ligne de répartition par couche** — d'où
+   viennent les touches, tous dossiers confondus. C'est elle qui dira si les
+   textes intégraux de `sources/` étouffent les enseignements ou les
+   complètent, question qu'aucun score global ne répond ; pour chaque échec, ce que la recherche a renvoyé **à la place**
    (c'est le carburant des évolutions du moteur) ; les attendues disparues.
 
 ## Mode réel (`reel`) — mesurer ce que /doc-query répond

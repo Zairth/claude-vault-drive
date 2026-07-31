@@ -37,7 +37,8 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
     document ; sur une capture d'interface, il rend un flux linéaire où la
     disposition — colonnes, encadrés, alignements — a disparu, et avec elle
     une partie du sens. Le sub-agent lecteur **ouvre l'image directement**
-    (outil Read, qui affiche les images) et la retranscrit lui-même. Trois
+    (outil Read, qui affiche les images) et en produit lui-même la version
+    standardisée. Trois
     conséquences :
     - pas de mesure par `wc -c` — une image ne se compte pas en octets de
       texte. Des captures qui forment **un même ensemble** comptent pour UNE
@@ -51,9 +52,30 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
     - c'est l'**image elle-même** qui est archivée et que pointe `origine:`.
       Aucun markdown intermédiaire n'est produit, donc aucune référence
       d'image pendante à traîner ensuite dans le graphe.
-  - **Texte, markdown, export brut** → tel quel, mesure par `wc -c`.
+  - **Texte lisible tel quel** — `.md`, `.txt`, `.csv`, `.tsv`, `.json`,
+    `.xml`, `.html`, `.eml`, code source, export brut → transmis au lecteur
+    sans conversion, mesure par `wc -c`.
+  - **Bureautique binaire** — `.xlsx`, `.ods`, `.docx`, `.odt`, `.pptx`… →
+    **illisibles tels quels**, et il est hors de question d'en deviner le
+    contenu. Convertir d'abord avec ce qui est présent sur la machine
+    (`libreoffice --headless --convert-to csv|txt|pdf`, `pandoc`…), dépôt du
+    résultat dans `$VAULT/inbox/`, puis router le résultat comme une source
+    texte ou paginée. **Aucun convertisseur disponible → le dire et demander à
+    l'utilisateur une version texte, CSV ou PDF.** Ne jamais présenter un
+    binaire à un lecteur.
+    La conversion perd formules, mise en forme et onglets masqués : c'est le
+    fichier d'origine qui est archivé et que pointe `origine:`, jamais sa
+    conversion seule.
+  - **Archive** — `.zip`, `.tar.gz`… → décompresser dans un sous-dossier
+    d'`inbox/`, puis appliquer le montage « lot de fichiers » à son contenu.
+  - **Audio, vidéo** → hors périmètre du plugin. Le dire, et proposer
+    d'ingérer une version texte si l'utilisateur en a une.
   - **URL** → taille inconnue : partir du montage nominal, le lecteur signale
     s'il déborde.
+  - **Format non identifié** → ne **jamais** deviner : `file <chemin>` pour
+    l'identifier, puis rattacher à l'une des natures ci-dessus. Toujours
+    indéterminé → demander à l'utilisateur ce qu'est ce fichier et comment il
+    veut qu'on le traite. Une ingestion ratée pollue une couche immuable.
 
   Puis choisir le montage :
 
@@ -61,22 +83,41 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
   lecteur** (outil Agent, en avant-plan — `run_in_background: false`) avec
   pour mission :
   1. lire la source — fichier local (chemin transmis), URL (WebFetch) ;
-  2. rédiger le **dossier d'ingestion** : 2 à 5 enseignements clés (une ligne
-     chacun), pour chacun une citation verbatim ≤ 125 caractères, les
-     concepts/entités candidats (wikilinks), et une description en quelques
-     mots pour l'INDEX ;
-  3. ne retourner QUE ce dossier — jamais la source brute ni de longs
+  2. **écrire lui-même la version standardisée** dans
+     `$VAULT/inbox/<slug>.standardise.md` : tout le texte de la pièce en
+     markdown structuré, fidèle et sans tri. Il l'**écrit sur disque**, il ne
+     la retourne pas — c'est ce qui permet de garder le texte intégral sans
+     qu'il traverse aucun contexte. Le fichier reste dans le sas tant que
+     l'ingestion n'est pas validée ;
+  3. rédiger le **dossier d'ingestion** : les enseignements clés (une ligne
+     chacun), **autant qu'en porte la source** — pas de plafond : un article
+     en donne deux, un document de cent pages en donne trente, et les brider
+     reviendrait à jeter ce qu'on vient d'ingérer. Le critère est la qualité,
+     pas le nombre : une idée par enseignement, aucun qui n'apporte un fait
+     durable, aucun remplissage. Pour chacun une citation verbatim ≤ 125
+     caractères, les concepts/entités candidats (wikilinks), et une
+     description en quelques mots pour l'INDEX ;
+  4. ne retourner QUE ce dossier et le chemin du fichier standardisé — jamais
+     la source brute, jamais ce fichier lui-même, jamais de longs
      extraits. S'il constate en lisant que la source dépasse ce qu'il peut
      traiter proprement, il retourne un **plan de découpe** (structure et
      bornes) au lieu d'un dossier — basculer alors sur le montage suivant.
 
   **Gros volume — source unique > ~150 Ko** : découper en tranches ≤ ~150 Ko
-  par la structure (sections markdown, chapitres, plages de pages — repérée
-  par grep/offsets, sans lire le contenu en contexte principal). **Un lecteur
-  par tranche**, lancés en parallèle (4 au plus à la fois), chacun rend un
-  dossier partiel. Puis un **sub-agent synthétiseur** reçoit les dossiers
-  partiels (jamais les sources) et les fusionne en un dossier d'ingestion
-  global de 2 à 5 enseignements. C'est lui l'interlocuteur de la validation.
+  par la structure (sections markdown, chapitres, plages de pages, plages de
+  lignes pour un tabulaire — repérée par grep/offsets, sans lire le contenu en
+  contexte principal). **Un lecteur
+  par tranche**, lancés en parallèle (4 au plus à la fois) ; chacun écrit la
+  version standardisée de SA tranche
+  (`$VAULT/inbox/<slug>.standardise-<n>.md`, numérotée dans l'ordre) et rend
+  un dossier partiel. Puis un **sub-agent synthétiseur** reçoit les dossiers
+  partiels (jamais les sources ni les fichiers standardisés) et les
+  **assemble** en
+  un dossier d'ingestion
+  global — il dédoublonne et organise, il ne **comprime pas** : ramener cent
+  pages à cinq lignes perdrait l'essentiel de ce qui vient d'être lu. Le
+  dossier garde une section par partie de la source. C'est lui l'interlocuteur
+  de la validation.
   Retouche exigeant un retour à la source → relancer un lecteur sur la
   tranche concernée et transmettre sa réponse au synthétiseur.
 
@@ -84,13 +125,15 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
   modèle reste « une note par source » — mais **une source n'est pas
   forcément un fichier**. Avant de répartir les lecteurs, **regrouper le lot
   en sources**, et le faire valider :
-  - plusieurs fichiers qui forment **un même ensemble** — typiquement une
-    série de captures d'un même écran — comptent pour UNE source, qu'un seul
-    lecteur ouvre dans l'ordre. Indices de regroupement : sous-dossier commun,
-    préfixe de nom commun, numérotation continue, dates qui se suivent. Dans
-    le doute, **demander** plutôt que découper : douze fichiers d'un même
-    ensemble ingérés séparément produiraient douze notes creuses, et il
-    faudrait tout refaire ;
+  - plusieurs fichiers qui forment **un même ensemble** comptent pour UNE
+    source, qu'un seul lecteur ouvre dans l'ordre. Le nom de fichier est un
+    indice **faible** — un préfixe commun ou une numérotation continue ne
+    prouvent rien, et deux pièces sans rapport peuvent se ressembler. Ce qui
+    tranche, c'est le **contenu** : ouvrir le premier fichier de chaque groupe
+    pressenti et vérifier qu'ils se poursuivent réellement l'un l'autre. Un
+    sous-dossier dédié reste le seul indice de nom qui vaille. Dans le doute,
+    **demander** plutôt que découper — mais un mauvais découpage n'est plus
+    fatal : `/doc-repair` corrige après coup sans tout refaire ;
   - un document, un export, un article = une source chacun.
 
   Annoncer le regroupement retenu avant de lancer quoi que ce soit
@@ -112,8 +155,11 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
 
 ## Validation conversationnelle (OBLIGATOIRE avant toute écriture)
 
-1. Proposer 2 à 5 enseignements clés extraits de la source, **écrits en clair
-   dans le corps de la réponse** (liste numérotée, une ligne chacun).
+1. Proposer les enseignements extraits de la source, **écrits en clair dans le
+   corps de la réponse** (liste numérotée, une ligne chacun). Au-delà d'une
+   dizaine, **valider par tranches** — présenter les enseignements d'une partie
+   de la source, recueillir l'accord, passer à la suivante : une liste de
+   quarante lignes validée d'un bloc n'est plus une validation.
    INTERDIT de les reléguer dans les options ou descriptions d'un outil de
    question (AskUserQuestion ou équivalent) : l'utilisateur doit avoir lu
    chaque enseignement intégralement AVANT qu'on lui demande de se prononcer.
@@ -135,25 +181,58 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
 ## Écriture (dans cet ordre — à partir du dossier d'ingestion validé, sans
 jamais rouvrir la source en contexte principal)
 
-1. `$VAULT/wiki/sources/YYYY-MM-DD-<slug>.md` (date du jour, slug kebab-case) :
-   frontmatter conforme au modèle de note d'`INSTRUCTIONS-CLAUDE.md`
-   (`type: source`, `date`, `auteur` — repérable dans les notes existantes du
-   vault, sinon le demander —, `description` — celle du dossier d'ingestion —,
-   `origine` = chemin archivé/URL/« conversation »,
-   `original` seulement si la pièce d'origine diffère de la copie pointée par
-   `origine` — ex. le PDF dont la note vient par OCR : chemin de sa copie dans
-   `archives/`, ou emplacement durable hors vault (URL, dossier partagé) —
-   **jamais un chemin absolu de la machine**),
-   les enseignements validés, citations verbatim ≤ 125 caractères, wikilinks
-   vers les concepts/entités concernés. Immuable une fois écrit.
-   Réserve constatée sur la pièce elle-même — OCR partiel, capture non datée,
-   propos rapporté, document non signé, date déduite → callout
-   `> [!warning]` dans cette note, permanent : il décrit la pièce, il n'y a
-   rien à trancher. **Jamais de `> [!question]` ici** (voir 2).
-2. Pour chaque concept ou entité touché : créer ou mettre à jour la page dans
+Une même pièce produit **deux notes**, qui partagent le slug
+`YYYY-MM-DD-<slug>` et se pointent mutuellement en wikilink. Elles ne font pas
+double emploi : l'une est fidèle, l'autre est utile.
+
+1. `$VAULT/wiki/sources/YYYY-MM-DD-<slug>.md` — **le texte intégral
+   standardisé** de la pièce. Frontmatter conforme au modèle de note
+   d'`INSTRUCTIONS-CLAUDE.md` (`type: source`, `date`, `auteur` — repérable
+   dans les notes existantes du vault, sinon le demander —, `description`,
+   `origine` = chemin archivé/URL/« conversation », `original` seulement si la
+   pièce d'origine diffère de la copie pointée par `origine` — **jamais un
+   chemin absolu de la machine**).
+   Corps : le fichier standardisé que le lecteur a déposé dans `inbox/` —
+   **déplacée telle quelle**, jamais relue ni réécrite en contexte principal
+   (le seul frontmatter est ajouté en tête). Elle contient tout le texte de la
+   pièce en markdown structuré : titres pour ses sections réelles, listes,
+   tableaux. Fidèle et sans tri — on ne résume pas, on ne choisit pas, on
+   reporte. C'est cette couche qui garantit qu'aucune information ingérée
+   n'est perdue, et c'est elle qu'on fouille quand l'enseignement ne suffit
+   plus.
+   Plusieurs tranches (gros volume) → les concaténer dans l'ordre, ou en faire
+   autant de notes numérotées si l'ensemble reste trop gros pour une seule.
+   Réserve constatée sur la pièce — OCR partiel, capture non datée, propos
+   rapporté, document non signé, date déduite → callout `> [!warning]` ici,
+   permanent : il décrit la pièce, il n'y a rien à trancher. **Jamais de
+   `> [!question]`** dans cette couche ni dans la suivante, toutes deux
+   immuables.
+   Note trop volumineuse → la découper par la structure réelle de la pièce
+   (`YYYY-MM-DD-<slug>-1.md`, `-2.md`…), chacune renvoyant à la suivante en
+   wikilink ; jamais par une coupe arbitraire au milieu d'une section.
+   **Ingestion abandonnée** (l'utilisateur refuse) → supprimer les fichiers
+   `*.standardise*.md` du sas : rien ne reste en attente.
+2. `$VAULT/wiki/enseignements/YYYY-MM-DD-<slug>.md` — **ce qu'on en retient**.
+   Frontmatter `type: enseignements`, même `origine`, wikilink vers la note de
+   source. Corps : **un titre `###` par enseignement**, chacun suivi de sa
+   citation verbatim ≤ 125 caractères et des wikilinks vers les
+   concepts/entités concernés.
+   Le `###` n'est pas cosmétique : le découpage sémantique se fait par titre,
+   donc un enseignement devient exactement un extrait indexé — ni dilué dans
+   ses voisins, ni coupé en deux.
+3. Pour chaque concept ou entité touché : créer ou mettre à jour la page dans
    `$VAULT/wiki/concepts/` ou `$VAULT/wiki/entites/` (frontmatter `type: concept`
    ou `type: entite` + `date` + `auteur` + `description` à la création,
-   paraphrase, wikilink retour vers la note source). **Avant de créer** : vérifier qu'aucune page
+   paraphrase, **wikilink retour vers la note d'enseignements** — c'est elle
+   qui porte l'affirmation et sa citation ; le texte intégral se rejoint
+   ensuite d'un saut, depuis cette note).
+   Ces pages sont la **seule couche organisée par sujet** : `sources/` et
+   `enseignements/` sont organisées par pièce, et aucune ne peut répondre à
+   une question qui traverse plusieurs pièces. Ce sont aussi les seules
+   **vivantes** — elles se réécrivent au fil des ingestions, alors que les
+   deux couches d'origine sont figées —, et donc le seul endroit où une
+   contradiction s'arbitre.
+   **Avant de créer** : vérifier qu'aucune page
    vivante existante ne couvre déjà le sujet — nom normalisé (casse, accents,
    tirets), alias `aliases:`, libellé proche — et en cas de doute enrichir
    l'existante plutôt que créer un doublon.
@@ -161,19 +240,21 @@ jamais rouvrir la source en contexte principal)
    d'`INSTRUCTIONS-CLAUDE.md` : la trancher avec l'utilisateur (la validation
    est le bon moment) → valeur courante mise à jour dans le corps + entrée
    `## Historique` en fin de note ; impossible à trancher → callout
-   `> [!question]` **sur cette page** (jamais sur la note source, immuable :
-   on ne pourrait plus l'en retirer une fois tranché), décrivant les deux
+   `> [!question]` **sur cette page** (jamais dans `sources/` ni
+   `enseignements/`, immuables : on ne pourrait plus l'en retirer une fois
+   tranché), décrivant les deux
    versions et pointant chacune vers sa source en wikilink, signalé à
    l'utilisateur.
-3. Mettre à jour `$VAULT/INDEX.md` : ajouter chaque nouvelle note dans sa
+4. Mettre à jour `$VAULT/INDEX.md` : ajouter chaque nouvelle note dans sa
    section, sous forme `- [[<slug>]] — <description>` — la même `description`
    que le frontmatter (INDEX est un dérivé du frontmatter, mêmes mots aux
-   deux endroits).
-4. Ajouter en fin de `$VAULT/LOG/YYYY-MM-DD.md` (le fichier du jour — le créer
+   deux endroits). Les deux notes d'une même pièce y figurent, chacune dans sa
+   section.
+5. Ajouter en fin de `$VAULT/LOG/YYYY-MM-DD.md` (le fichier du jour — le créer
    au besoin ; jamais dans un `LOG.md` racine hérité, gelé) :
    `## [YYYY-MM-DD] ingest | <titre de la source>`
    suivi d'une ligne listant les fichiers créés/modifiés.
-5. Archiver la pièce d'origine — pour TOUTE source qui est un fichier local :
+6. Archiver la pièce d'origine — pour TOUTE source qui est un fichier local :
    venue de `$VAULT/inbox/` → la **déplacer** vers `$VAULT/archives/` ; venue
    d'ailleurs sur la machine → l'y **copier** (le fichier de l'utilisateur
    n'est jamais déplacé ni supprimé). PDF passé par OCR : archiver les deux —
@@ -186,9 +267,9 @@ jamais rouvrir la source en contexte principal)
    vault — **jamais un chemin absolu de la machine** (`/home/...`,
    `/mnt/...`, `C:\...`) : il meurt avec la machine, le vault doit rester
    auto-porteur.
-6. Indexation sémantique — **seulement les dossiers touchés par cette
-   ingestion** : `sources`, et `concepts`/`entites` si des pages y ont été
-   touchées. Chacun a son propre index (la liste des dossiers indexables est
+7. Indexation sémantique — **seulement les dossiers touchés par cette
+   ingestion** : `sources` et `enseignements`, plus `concepts`/`entites` si
+   des pages y ont été touchées. Chacun a son propre index (la liste des dossiers indexables est
    donnée par
    `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index-targets.sh"`).
    Outil MCP `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` avec

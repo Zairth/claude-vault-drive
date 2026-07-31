@@ -15,7 +15,11 @@ régénère le tout — un conflit de synchro sur ce fichier ne coûte rien.
 
 ## Sources
 
-*(vide pour l'instant)*
+*(vide pour l'instant — le texte intégral d'une pièce)*
+
+## Enseignements
+
+*(vide pour l'instant — ce qu'on retient d'une pièce)*
 
 ## Synthèses
 
