@@ -56,21 +56,38 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
    note elle-même). Les deux formes existent — un slug partagé entre deux
    dossiers oblige à préfixer —, et ne chercher que la première déclarerait
    orphelines des notes correctement pointées.
-3. **Wikilinks pendants** : recenser les cibles de tous les `[[...]]` des
-   notes de `wiki/` — la cible est ce qui précède un éventuel `|` (texte
-   affiché) ou `#` (section).
+3. **Wikilinks pendants et ambigus** : recenser les cibles de tous les
+   `[[...]]` des notes de `wiki/` — la cible est ce qui précède un éventuel
+   `|` (texte affiché) ou `#` (section).
    Une cible peut être un **nom nu** (`note-a`) ou **préfixée du dossier**
-   (`sources/2026-06-23-x`) : les deux sont valides, et la seconde est
-   OBLIGATOIRE entre `sources/` et `enseignements/`, dont les notes partagent
-   leur slug. Résoudre les deux formes avant de conclure — traiter une cible
-   préfixée comme un nom nu introuvable ferait passer pour pendants tous les
-   liens croisés du vault.
-   Une cible qui ne correspond à aucun fichier du
-   vault (nom sans extension, chemin relatif à `wiki/` compris) ni à aucun
-   alias déclaré dans un frontmatter `aliases:` est pendante → lister note +
-   lien. C'est le miroir de la
-   vérification 2 : l'orpheline n'est pas pointée, le lien pendant pointe
-   dans le vide.
+   (`sources/2026-06-23-x`). Résoudre les deux formes avant de conclure —
+   traiter une cible préfixée comme un nom nu introuvable ferait passer pour
+   pendants tous les liens croisés du vault.
+   Deux défauts distincts, à lister séparément :
+   - **pendant** — la cible ne correspond à aucun fichier du vault (nom sans
+     extension, chemin relatif à `wiki/` compris) ni à aucun alias déclaré
+     dans un frontmatter `aliases:` → lister note + lien. C'est le miroir de
+     la vérification 2 : l'orpheline n'est pas pointée, le lien pendant
+     pointe dans le vide.
+   - **ambigu** — la cible est un **nom nu** dont le slug existe dans
+     **plusieurs dossiers** de `wiki/`. C'est le cas de tout le corpus, où
+     chaque pièce a sa note dans `sources/` ET dans `enseignements/` : un
+     `[[<slug>]]` nu y désigne deux fichiers. Obsidian n'avertit pas, il en
+     choisit un silencieusement — le lien n'est donc jamais compté pendant,
+     et la moitié du graphe peut pointer sur la mauvaise couche sans que rien
+     ne le signale. Ne pas se contenter d'inspecter les deux notes de la
+     paire : ces liens nus viennent surtout de `concepts/` et `entites/`,
+     qui citent une pièce sans se préoccuper de sa couche. Lister note +
+     lien + les deux cibles possibles → à préfixer.
+     La règle : un renvoi à ce que dit une pièce vise
+     `[[enseignements/<slug>]]` ; seul un renvoi au texte intégral vise
+     `[[sources/<slug>]]`.
+   Vérifier enfin que `$VAULT/INSTRUCTIONS-CLAUDE.md` énonce bien cette règle
+   pour **tout** lien vers une pièce, et pas seulement entre les deux notes
+   de la paire : les vaults créés avant 1.21.1 portent une version qui
+   déclarait le nom nu valable « partout ailleurs », ce qui reproduit le
+   défaut à chaque écriture. Formulation ancienne → le signaler (remède dans
+   les corrections).
 4. **Trous d'INDEX** : chaque note de `wiki/` doit apparaître dans `INDEX.md` —
    lister les absentes. Inversement, lister les entrées d'`INDEX.md` pointant
    vers des fichiers disparus.
@@ -221,6 +238,13 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      leur durée de vie, `[!warning]` permanent et documentaire, `[!question]`
      temporaire et hors des couches immuables) — une seule édition, le reste du
      fichier n'est pas touché.
+     Si `INSTRUCTIONS-CLAUDE.md` restreint encore le préfixe aux deux notes de
+     la paire (« partout ailleurs … le nom nu reste la règle ») : proposer d'y
+     remplacer ce passage par la version en vigueur — tout lien vers une pièce
+     se préfixe, d'où qu'il parte, et le nom nu ne vaut que pour `concepts/`,
+     `entites/` et `syntheses/`. Sans cette édition, la prochaine ingestion
+     réécrira des liens ambigus quel que soit le nombre de liens corrigés
+     aujourd'hui.
    - Pour chaque paire de doublons que l'utilisateur confirme — **fusion
      assistée**, dans cet ordre : il choisit la page survivante ; rapatrier le
      contenu utile de la page absorbée ; ajouter le nom de l'absorbée aux
@@ -258,6 +282,13 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      corriger le lien vers la page existante ; page réellement manquante →
      proposer sa création ou le délier (texte simple) — jamais de page coquille
      créée juste pour éteindre le compteur.
+   - Pour chaque wikilink **ambigu** : préfixer la cible du dossier voulu, en
+     laissant le texte affiché intact — `[[x|la pièce]]` devient
+     `[[enseignements/x|la pièce]]`, et le rendu ne bouge pas. Choisir la
+     couche sur ce que la phrase fait dire au lien : « ce que la pièce
+     affirme » → `enseignements/`, « le texte intégral » → `sources/`. Puis
+     réindexer les dossiers touchés : le corps des notes a changé, donc leurs
+     chunks aussi.
    - Pour les frontmatters non conformes : proposer une valeur déduite du
      contenu de la note ou du journal (`date` : à défaut, la première mention
      de la note dans `LOG/` ou un `LOG.md` racine hérité ; `description`

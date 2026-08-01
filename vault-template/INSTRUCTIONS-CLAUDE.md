@@ -71,11 +71,20 @@ Les deux notes portent le même `<slug>` et se pointent mutuellement en
 wikilink ; leur `origine` désigne la pièce d'`archives/`. Un doute se remonte
 donc toujours dans le même sens : enseignement → texte → pièce.
 
-**Ce slug partagé impose la forme du wikilink entre elles** : `[[sources/<slug>]]`
-et `[[enseignements/<slug>]]`, **préfixés du dossier**. Un `[[<slug>]]` nu
-désignerait deux fichiers à la fois et Obsidian choisirait pour vous. Cette
-forme vaut pour ces deux couches et pour l'`INDEX.md` ; partout ailleurs, les
-noms étant uniques, le nom nu reste la règle.
+**Ce slug partagé impose la forme du wikilink** : `[[sources/<slug>]]` et
+`[[enseignements/<slug>]]`, **préfixés du dossier**. Un `[[<slug>]]` nu
+désignerait deux fichiers à la fois et Obsidian choisirait pour vous, sans
+rien signaler — le lien résout, il n'apparaît donc jamais comme cassé.
+
+La règle ne se limite pas aux deux notes de la paire : **tout lien vers une
+pièce se préfixe, d'où qu'il parte**, et c'est depuis `concepts/` et
+`entites/` qu'on l'oublie, en citant une pièce par son nom sans penser à sa
+couche. Le préfixe se choisit sur ce que la phrase fait dire au lien : un
+renvoi à ce que la pièce **affirme** vise `[[enseignements/<slug>]]`, un
+renvoi à son **texte intégral** vise `[[sources/<slug>]]`.
+
+Le nom nu ne reste la règle que là où le nom est effectivement unique :
+`concepts/`, `entites/`, `syntheses/`.
 
 **Un index sémantique par dossier**, dans le dossier lui-même
 (un `.index/` dans chacun des cinq dossiers — dérivés jetables, ne pas y

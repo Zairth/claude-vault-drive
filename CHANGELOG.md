@@ -9,6 +9,33 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.21.1] — 2026-08-01
+
+**Raison de l'update** : une convention mal bornée faisait écrire des wikilinks ambigus vers les pièces, et aucune vérification ne pouvait les voir — ils résolvent, donc ils ne sont jamais pendants.
+
+### Corrigé
+- **Wikilinks ambigus vers les pièces.** Une pièce a deux notes de même slug,
+  l'une dans `sources/`, l'autre dans `enseignements/` : un `[[<slug>]]` nu
+  en désigne donc deux à la fois. Obsidian n'avertit pas, il en choisit une
+  silencieusement — et comme le lien résout, aucun contrôle de lien pendant ne
+  le signale. La convention du vault n'imposait le préfixe qu'**entre les deux
+  notes de la paire** et déclarait le nom nu valable « partout ailleurs » : les
+  pages de `concepts/` et `entites/`, qui citent une pièce sans se préoccuper
+  de sa couche, reproduisaient donc le défaut à chaque écriture.
+  Corrigé aux trois endroits : le modèle `INSTRUCTIONS-CLAUDE.md` étend la
+  règle à **tout lien vers une pièce, d'où qu'il parte** ; `/doc-ingest`
+  l'applique à l'écriture et la contrôle en auto-vérification ; `/doc-lint`
+  la vérifie sur tout le vault.
+
+### Modifié
+- `/doc-lint` : la vérification des wikilinks distingue désormais deux
+  défauts, **pendant** (la cible n'existe pas) et **ambigu** (la cible est un
+  nom nu porté par plusieurs dossiers), listés séparément. Elle signale aussi
+  un `INSTRUCTIONS-CLAUDE.md` resté sur l'ancienne formulation — les fichiers
+  racine d'un vault n'étant jamais écrasés par `/vault-init`, un vault créé
+  avant cette version continuerait sinon à produire des liens ambigus quel que
+  soit le nombre de liens corrigés.
+
 ## [1.21.0] — 2026-08-01
 
 **Raison de l'update** : les défauts d'écriture — lien pendant, note absente de l'INDEX, appariement rompu — n'étaient découverts qu'au `/doc-lint` suivant, donc parfois plusieurs ingestions plus tard, quand le contexte qui aurait permis de les comprendre avait disparu.

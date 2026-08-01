@@ -249,6 +249,12 @@ Une même pièce produit **deux notes**, qui partagent le même slug et se
 pointent mutuellement en wikilink — **préfixé du dossier**
 (`[[sources/<slug>]]`, `[[enseignements/<slug>]]`) : le slug étant partagé, un
 lien nu désignerait les deux à la fois.
+**La règle vaut pour TOUT lien vers une pièce, d'où qu'il parte** — et c'est
+depuis `concepts/` et `entites/` qu'on l'oublie, en citant une pièce par son
+nom sans penser à sa couche. Un `[[<slug>]]` nu n'est pas signalé comme
+pendant, puisqu'il résout : Obsidian choisit silencieusement l'une des deux
+notes. Un renvoi à ce que la pièce **dit** vise `[[enseignements/<slug>]]` ;
+seul un renvoi à son **texte intégral** vise `[[sources/<slug>]]`.
 Le slug préfixe la **date de la pièce** (`YYYY-MM-DD-`), jamais celle de
 l'ingestion. Pièce non datée → pas de préfixe, et surtout aucune date inventée
 ni déduite : l'absence est une information, à doubler d'un `> [!warning]`. Elles ne font pas
@@ -372,9 +378,14 @@ double emploi : l'une est fidèle, l'autre est utile.
    seules notes touchées, et on corrige immédiatement :
    - **wikilinks pendants** — chaque `[[cible]]` des nouvelles notes désigne-t-il
      un fichier existant ou un alias déclaré ? La cible peut être un nom nu ou
-     préfixée du dossier (`sources/<slug>`), les deux sont valides. Une cible
-     morte → créer la page manquante, corriger le lien, ou le délier ; jamais
-     une page coquille pour éteindre le compteur ;
+     préfixée du dossier (`sources/<slug>`). Une cible morte → créer la page
+     manquante, corriger le lien, ou le délier ; jamais une page coquille pour
+     éteindre le compteur ;
+   - **wikilinks ambigus** — un `[[cible]]` **nu** dont le slug existe dans
+     plusieurs dossiers de `wiki/` résout quand même, mais vers l'une des deux
+     notes au hasard : le contrôle précédent ne le verra jamais. Le préfixer
+     (`enseignements/` pour ce que la pièce dit, `sources/` pour son texte
+     intégral) en laissant le texte affiché intact ;
    - **appariement** — chaque nouvelle note de `sources/` a-t-elle son
      `enseignements/` de même slug, et se pointent-elles mutuellement ?
    - **entrées d'INDEX** — chaque note écrite y figure-t-elle, dans sa section ?
