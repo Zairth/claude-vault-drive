@@ -47,13 +47,24 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      commande qui fait foi** : elle vient du plugin, donc de la version
      installée.
 2. **Pages orphelines** : pour chaque note de `wiki/concepts/` et `wiki/entites/`,
-   chercher `[[<nom-du-fichier-sans-extension>` dans tout le vault (hors la note
-   elle-même). Aucune occurrence = orpheline.
+   chercher `[[<nom-du-fichier-sans-extension>` **et**
+   `[[<dossier>/<nom-du-fichier-sans-extension>` dans tout le vault (hors la
+   note elle-même). Les deux formes existent — un slug partagé entre deux
+   dossiers oblige à préfixer —, et ne chercher que la première déclarerait
+   orphelines des notes correctement pointées.
 3. **Wikilinks pendants** : recenser les cibles de tous les `[[...]]` des
    notes de `wiki/` — la cible est ce qui précède un éventuel `|` (texte
-   affiché) ou `#` (section). Une cible qui ne correspond à aucun fichier du
-   vault (nom sans extension) ni à aucun alias déclaré dans un frontmatter
-   `aliases:` est pendante → lister note + lien. C'est le miroir de la
+   affiché) ou `#` (section).
+   Une cible peut être un **nom nu** (`note-a`) ou **préfixée du dossier**
+   (`sources/2026-06-23-x`) : les deux sont valides, et la seconde est
+   OBLIGATOIRE entre `sources/` et `enseignements/`, dont les notes partagent
+   leur slug. Résoudre les deux formes avant de conclure — traiter une cible
+   préfixée comme un nom nu introuvable ferait passer pour pendants tous les
+   liens croisés du vault.
+   Une cible qui ne correspond à aucun fichier du
+   vault (nom sans extension, chemin relatif à `wiki/` compris) ni à aucun
+   alias déclaré dans un frontmatter `aliases:` est pendante → lister note +
+   lien. C'est le miroir de la
    vérification 2 : l'orpheline n'est pas pointée, le lien pendant pointe
    dans le vide.
 4. **Trous d'INDEX** : chaque note de `wiki/` doit apparaître dans `INDEX.md` —
@@ -112,9 +123,16 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
    Enfin, dans `enseignements/`, une note **sans aucun titre `###`** : ses
    enseignements seraient indexés en un seul bloc au lieu d'un par
    enseignement — la granularité de recherche est perdue.
+   Le wikilink croisé attendu est **préfixé du dossier**
+   (`[[sources/<slug>]]`) : un lien croisé en nom nu est ambigu, les deux
+   notes portant le même slug — le signaler comme à corriger.
 10. **Parasites hors `wiki/`** — les autres vérifications ne regardent que
    `wiki/`, or Obsidian indexe TOUT le vault : ce qui traîne ailleurs pollue
    le graphe humain (l'index sémantique, lui, ne couvre que `wiki/`).
+   Vérifier d'abord que `.obsidian/app.json` exclut bien **`archives/` et
+   `inbox/`** : sans ces deux filtres, les pièces d'origine et la matière brute
+   en attente apparaissent dans le graphe comme s'il s'agissait de notes.
+   Filtre manquant → le signaler (remède dans les corrections).
    - `.md` inattendu à la **racine** du vault : tout sauf `INDEX.md`,
      `INSTRUCTIONS-CLAUDE.md`, `BENCH.md` et un `LOG.md` hérité → lister.
      Cas typique : un clic sur un nœud fantôme du graphe Obsidian crée une
@@ -129,14 +147,18 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      dossier cherche justement à éviter.
    - **notes vides** (0 octet, ou frontmatter seul sans corps) n'importe où
      dans le vault → lister.
-   - **nœuds fantômes venus d'`archives/`** : les markdown OCR y référencent
-     des images qui n'ont pas été extraites
-     (`![img-0.jpeg](img-0.jpeg)`, `[[piece-jointe]]`…). Obsidian affiche ces
-     cibles introuvables comme des ronds dans le graphe, et un clic dessus
-     **crée** la note vide correspondante. Compter les cibles distinctes de ce
-     type dans `archives/` et, s'il y en a, rappeler le remède durable dans
-     les corrections. Ne jamais modifier un fichier d'`archives/` : la couche
-     est immuable.
+   - **nœuds fantômes — d'abord dans `wiki/`, ensuite dans `archives/`.**
+     Une référence de fichier qui ne pointe nulle part
+     (`![img-0.jpeg](…)`, `[[piece-jointe]]`…) apparaît dans le graphe
+     Obsidian comme un rond, et un clic dessus **crée** la note vide
+     correspondante — d'où des dossiers et des fichiers qui poussent à la
+     racine du vault sans que personne ne les ait écrits.
+     Dans **`wiki/`** c'est un défaut à corriger : un markdown converti par un
+     outil tiers puis ingéré y apporte ses liens morts, et cette couche-là est
+     dans le graphe. Lister chaque occurrence avec sa note.
+     Dans **`archives/`** c'est sans conséquence tant que l'exclusion Obsidian
+     est en place : compter seulement, et ne jamais modifier un fichier
+     archivé — la couche est immuable.
 11. **Doublons suspectés (pages vivantes)** : sur l'ensemble `wiki/concepts/`
    + `wiki/entites/` — les doublons traversent les deux dossiers
    (`Docker.md` dans l'un, `conteneurisation-docker.md` dans l'autre) :
@@ -208,6 +230,12 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      purge les vecteurs de la page absorbée et vectorise la survivante
      enrichie ; moteur indisponible → noter « indexation à rattraper » (le
      prochain `/doc-query` la fera).
+   - Pour un nœud fantôme dans `wiki/` : remplacer la référence morte par un
+     marqueur textuel inerte (`[figure N — non extraite]`), et supprimer la
+     note vide que le clic a créée. Sur une couche immuable, c'est une
+     exception justifiée et à journaliser : cette couche est fidèle au texte de
+     la pièce, pas aux liens brisés du convertisseur qui l'a produite, et le
+     marqueur conserve l'information que la référence portait.
    - Pour les parasites : `.md` inattendu à la racine ou note vide →
      proposer la suppression (rien à sauver dans un fichier vide), ou son
      déplacement dans `wiki/` avec un frontmatter conforme si l'utilisateur
@@ -216,7 +244,8 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      l'indexation de ce dossier : tant qu'elle reste là, la note est
      introuvable en recherche sémantique. Nœuds fantômes d'`archives/` →
      le remède n'est pas dans le vault mais dans **Obsidian** : Paramètres →
-     Fichiers et liens → Filtres d'exclusion → ajouter `archives/`. Les
+     Fichiers et liens → Filtres d'exclusion → ajouter `archives/` **et**
+     `inbox/`. Les
      archives sortent alors du graphe et de la recherche Obsidian, sans être
      touchées ni perdues — c'est exactement leur statut (pièces d'origine
      conservées, hors index). Sans cette exclusion, chaque clic sur un rond

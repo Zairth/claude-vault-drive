@@ -9,6 +9,45 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.19.1] — 2026-08-01
+
+**Raison de l'update** : deux règles manquaient à la structure livrée en 1.19.0, et la première rendait `/doc-lint` faux. Les deux notes d'une pièce partageant leur slug, un wikilink en nom nu entre elles désigne deux fichiers à la fois : la forme correcte est préfixée du dossier — mais le lint cherchait des cibles en nom nu, et aurait donc compté pendants tous les liens croisés d'un vault conforme, et orphelines des notes correctement pointées.
+
+### Corrigé
+- `/doc-lint`, vérifications 2 et 3 : les cibles de wikilink existent sous deux
+  formes — **nom nu** (`note-a`) et **préfixée du dossier**
+  (`sources/2026-06-23-x`) —, et la seconde est obligatoire entre `sources/` et
+  `enseignements/`. Les deux sont désormais résolues avant de conclure. La
+  vérification d'appariement signale à l'inverse un lien croisé écrit en nom
+  nu, qui serait ambigu.
+- `INSTRUCTIONS-CLAUDE.md` et `/doc-ingest` énoncent cette forme au lieu de la
+  laisser deviner.
+
+- **`inbox/` était visible dans le graphe Obsidian.** Seul `archives/` en était
+  exclu, alors que le sas relève exactement de la même règle : ni les pièces
+  d'origine ni la matière brute en attente ne sont des notes. `/vault-init`
+  exclut désormais les deux, et `/doc-lint` vérifie que les deux filtres sont
+  bien en place.
+
+- **Les références de fichier mortes étaient recopiées dans `wiki/`.** Un
+  markdown déjà converti par un outil tiers y apporte ses `![img-0.jpeg](…)`
+  vers des images jamais extraites ; la couche de texte intégral les
+  transcrivait fidèlement, et comme `wiki/` est dans le graphe Obsidian —
+  contrairement à `archives/` —, chacune y devenait un nœud fantôme dont un
+  clic crée une note vide. `/doc-ingest` les remplace désormais par un marqueur
+  textuel inerte (`[figure N — non extraite]`) dès la standardisation :
+  l'information est conservée, le lien mort disparaît. Cette couche est fidèle
+  au texte, pas aux liens brisés de son convertisseur. `/doc-lint` cherche
+  maintenant ces nœuds **dans `wiki/` en priorité**, où ils sont un défaut à
+  corriger, et non plus seulement dans `archives/`, où l'exclusion Obsidian
+  suffit.
+
+### Modifié
+- Règle de nommage : le préfixe `YYYY-MM-DD-` porte la **date de la pièce**,
+  jamais celle de l'ingestion. Une pièce **non datée** n'est pas préfixée —
+  aucune date n'est inventée ni déduite pour satisfaire la forme, et l'absence
+  devient elle-même une information, doublée d'un `> [!warning]`.
+
 ## [1.19.0] — 2026-08-01
 
 **Raison de l'update** : le moteur agentic-toolbox avait retiré sa ligne de commande à sa version 2.0.0 (recentrage MCP-only). Le plugin l'appelait pourtant encore à trois endroits — ses wrappers d'indexation et de recherche, et le repli OCR — qui étaient donc **morts depuis des mois**. Le hook `UserPromptSubmit` en dépendait : il échouait à chaque prompt et ses gardes silencieuses avalaient l'échec, si bien qu'il n'a jamais rien fait. Le moteur expose de nouveau une porte en ligne de commande (4.1.0), et sa recherche prend désormais plusieurs dossiers en un seul appel (4.0.0).

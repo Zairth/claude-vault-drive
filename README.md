@@ -161,7 +161,9 @@ Puis dans chaque projet qui doit avoir son vault :
    `[[...]]` (les chemins bruts et propriétés `origine`/`original` n'en créent
    pas) ; pour colorer les nœuds par type, créer un groupe par dossier dans
    les paramètres du graphe — `path:wiki/concepts`, `path:wiki/entites`,
-   `path:wiki/sources`, `path:wiki/enseignements`, `path:wiki/syntheses`. **Exclure `archives/`**
+   `path:wiki/sources`, `path:wiki/enseignements`, `path:wiki/syntheses`.
+   `/vault-init` exclut déjà `archives/` et `inbox/` du graphe — ni les pièces
+   d'origine ni la matière brute en attente ne sont des notes. **Exclure `archives/`**
    (Paramètres → Fichiers et liens → Filtres d'exclusion) : Obsidian indexe
    tout le vault, et les markdown OCR archivés référencent des images non
    extraites qui apparaissent en nœuds fantômes — cliquer sur l'un d'eux crée

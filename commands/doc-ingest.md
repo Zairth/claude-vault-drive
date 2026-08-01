@@ -88,7 +88,16 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
      markdown structuré, fidèle et sans tri. Il l'**écrit sur disque**, il ne
      la retourne pas — c'est ce qui permet de garder le texte intégral sans
      qu'il traverse aucun contexte. Le fichier reste dans le sas tant que
-     l'ingestion n'est pas validée ;
+     l'ingestion n'est pas validée.
+     **Une seule chose n'est jamais transcrite telle quelle : une référence de
+     fichier qui ne pointe nulle part.** Un markdown déjà converti par un outil
+     tiers contient souvent des `![img-0.jpeg](…)` vers des images jamais
+     extraites. Recopiées, elles deviennent des **nœuds fantômes du graphe
+     Obsidian** — et un clic dessus crée une note vide. Remplacer chacune par un
+     marqueur textuel inerte (`[figure 1 — non extraite]`, numéroté dans
+     l'ordre) : l'information « il y avait une figure ici » est conservée, le
+     lien mort disparaît. Cette couche est fidèle au **texte**, pas aux liens
+     brisés de son convertisseur ;
   3. rédiger le **dossier d'ingestion** : les enseignements clés (une ligne
      chacun), **autant qu'en porte la source** — pas de plafond : un article
      en donne deux, un document de cent pages en donne trente, et les brider
@@ -181,8 +190,13 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
 ## Écriture (dans cet ordre — à partir du dossier d'ingestion validé, sans
 jamais rouvrir la source en contexte principal)
 
-Une même pièce produit **deux notes**, qui partagent le slug
-`YYYY-MM-DD-<slug>` et se pointent mutuellement en wikilink. Elles ne font pas
+Une même pièce produit **deux notes**, qui partagent le même slug et se
+pointent mutuellement en wikilink — **préfixé du dossier**
+(`[[sources/<slug>]]`, `[[enseignements/<slug>]]`) : le slug étant partagé, un
+lien nu désignerait les deux à la fois.
+Le slug préfixe la **date de la pièce** (`YYYY-MM-DD-`), jamais celle de
+l'ingestion. Pièce non datée → pas de préfixe, et surtout aucune date inventée
+ni déduite : l'absence est une information, à doubler d'un `> [!warning]`. Elles ne font pas
 double emploi : l'une est fidèle, l'autre est utile.
 
 1. `$VAULT/wiki/sources/YYYY-MM-DD-<slug>.md` — **le texte intégral

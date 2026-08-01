@@ -86,12 +86,16 @@ if [[ -z "$(ls -A "$vault_path/LOG")" && ! -f "$vault_path/LOG.md" ]]; then
     echo "OK : LOG/$today.md créé (entrée init)."
 fi
 
-# Obsidian : exclure archives/ de son index. Obsidian avale TOUS les .md du
-# vault (contrairement à l'index sémantique, limité à wiki/) — les markdown
-# OCR archivés y référencent des images non extraites, qui apparaissent en
-# nœuds fantômes dans le graphe ; un clic dessus crée une note vide à la
-# racine. Fusion sans écrasement : les autres réglages sont préservés, et un
-# `archives/` déjà présent n'est pas dupliqué.
+# Obsidian : exclure archives/ ET inbox/ de son index. Obsidian avale TOUS les
+# .md du vault (contrairement à l'index sémantique, limité à wiki/), or ces
+# deux dossiers ne contiennent pas de savoir : `archives/` garde les pièces
+# d'origine — dont des markdown OCR qui référencent des images non extraites,
+# lesquelles apparaissent en nœuds fantômes dans le graphe, et un clic dessus
+# crée une note vide à la racine — et `inbox/` n'est qu'un sas de matière brute
+# en attente, y compris les dépôts automatiques de fin de session. Les laisser
+# indexés fait apparaître dans le graphe des nœuds qui ne sont pas des notes.
+# Fusion sans écrasement : les autres réglages sont préservés, et un filtre
+# déjà présent n'est pas dupliqué.
 # Le fichier est pris en compte même si Obsidian n'a jamais ouvert ce vault :
 # il préserve un .obsidian/ existant à la première ouverture. Sans Obsidian,
 # ces quelques octets sont inertes — le vault reste auto-porteur.
@@ -99,8 +103,8 @@ obsidian_config="$vault_path/.obsidian/app.json"
 mkdir -p "$vault_path/.obsidian"
 if [[ ! -f "$obsidian_config" ]]; then
     # Rien à préserver : écriture directe, sans dépendre de python3.
-    printf '{\n  "userIgnoreFilters": [\n    "archives/"\n  ]\n}\n' > "$obsidian_config"
-    echo "OK : archives/ exclu de l'index Obsidian (.obsidian/app.json créé)."
+    printf '{\n  "userIgnoreFilters": [\n    "archives/",\n    "inbox/"\n  ]\n}\n' > "$obsidian_config"
+    echo "OK : archives/ et inbox/ exclus de l'index Obsidian (.obsidian/app.json créé)."
 elif command -v python3 >/dev/null 2>&1; then
     if OBSIDIAN_CONFIG="$obsidian_config" python3 - <<'PY'
 import json, os, sys
@@ -115,22 +119,23 @@ except Exception:
 filters = config.get("userIgnoreFilters", [])
 if not isinstance(filters, list):
     sys.exit(1)
-if "archives/" in filters:
-    sys.exit(2)  # déjà exclu
-filters.append("archives/")
+missing = [wanted for wanted in ("archives/", "inbox/") if wanted not in filters]
+if not missing:
+    sys.exit(2)  # déjà exclus
+filters.extend(missing)
 config["userIgnoreFilters"] = filters
 with open(path, "w", encoding="utf-8") as f:
     json.dump(config, f, ensure_ascii=False, indent=2)
 PY
     then
-        echo "OK : archives/ exclu de l'index Obsidian (.obsidian/app.json) — si Obsidian est ouvert, le redémarrer."
+        echo "OK : archives/ et inbox/ exclus de l'index Obsidian (.obsidian/app.json) — si Obsidian est ouvert, le redémarrer."
     else
         status=$?
-        (( status == 2 )) && echo "Conservé (déjà présent) : archives/ dans les exclusions Obsidian." \
-                          || echo "Ignoré : .obsidian/app.json existant et non fusionnable — exclure archives/ à la main (Paramètres → Fichiers et liens → Fichiers exclus)."
+        (( status == 2 )) && echo "Conservé (déjà présent) : archives/ et inbox/ dans les exclusions Obsidian." \
+                          || echo "Ignoré : .obsidian/app.json existant et non fusionnable — exclure archives/ et inbox/ à la main (Paramètres → Fichiers et liens → Fichiers exclus)."
     fi
 else
-    echo "Ignoré : .obsidian/app.json existant et python3 absent — exclure archives/ à la main (Paramètres → Fichiers et liens → Fichiers exclus)."
+    echo "Ignoré : .obsidian/app.json existant et python3 absent — exclure archives/ et inbox/ à la main (Paramètres → Fichiers et liens → Fichiers exclus)."
 fi
 
 # Vérification finale par le portier officiel.

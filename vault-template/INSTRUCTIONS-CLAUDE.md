@@ -48,6 +48,12 @@ Les deux notes portent le même `<slug>` et se pointent mutuellement en
 wikilink ; leur `origine` désigne la pièce d'`archives/`. Un doute se remonte
 donc toujours dans le même sens : enseignement → texte → pièce.
 
+**Ce slug partagé impose la forme du wikilink entre elles** : `[[sources/<slug>]]`
+et `[[enseignements/<slug>]]`, **préfixés du dossier**. Un `[[<slug>]]` nu
+désignerait deux fichiers à la fois et Obsidian choisirait pour vous. Cette
+forme vaut pour ces deux couches et pour l'`INDEX.md` ; partout ailleurs, les
+noms étant uniques, le nom nu reste la règle.
+
 **Un index sémantique par dossier**, dans le dossier lui-même
 (un `.index/` dans chacun des cinq dossiers — dérivés jetables, ne pas y
 toucher). Ce n'est pas un détail d'implémentation : chaque dossier est un
@@ -66,7 +72,12 @@ indexée par rien** — toute note vit dans un de ces dossiers.
 
 - **Français.** Notes courtes et denses : une idée par note, aucun remplissage,
   aucun distracteur.
-- Nommage : `kebab-case.md` ; sources préfixées `YYYY-MM-DD-`.
+- Nommage : `kebab-case.md`. Une pièce datée préfixe ses deux notes de la
+  **date de la pièce**, `YYYY-MM-DD-` — jamais la date d'ingestion, qui ne dit
+  rien d'elle. Une pièce **non datée** (lettre sans date, capture sans
+  horodatage) n'est pas préfixée : ne jamais inventer ni déduire une date pour
+  satisfaire la forme. L'absence de préfixe est alors une information, et elle
+  s'accompagne d'un `> [!warning]` sur la note de source.
 - **Modèle de note — frontmatter obligatoire** (une note sans ces propriétés
   n'est pas conforme ; `/doc-lint` les vérifie) :
   - toutes les notes : `type` (source | enseignements | concept | entite |
@@ -180,8 +191,9 @@ indexée par rien** — toute note vit dans un de ces dossiers.
 - `archives/` est immuable comme `wiki/sources/`. Les fichiers archivés
   gardent leur nom et leur extension ; l'index sémantique ne couvre que
   `wiki/`, les archives restent donc hors index (zéro coût, zéro bruit).
-  **Obsidian, lui, indexe tout le vault** : exclure `archives/` dans
-  Paramètres → Fichiers et liens → Filtres d'exclusion, sinon les markdown
+  **Obsidian, lui, indexe tout le vault** : exclure `archives/` **et
+  `inbox/`** dans Paramètres → Fichiers et liens → Filtres d'exclusion
+  (`/vault-init` le fait), sinon les markdown
   OCR y référencent des images non extraites, qui apparaissent en nœuds
   fantômes dans le graphe — et un clic sur l'un d'eux crée une note vide à la
   racine du vault.
