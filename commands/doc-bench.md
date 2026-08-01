@@ -5,6 +5,13 @@ argument-hint: "[creer | reel [Q3 Q7 ...]]"
 
 # /doc-bench — le mètre étalon de la recherche
 
+**Instrument facultatif.** Rien dans le plugin ne l'exige : le vault
+s'initialise, s'alimente et s'interroge sans jamais l'ouvrir, et aucun réglage
+n'attend d'être calibré. Il sert à qui veut **vérifier ou améliorer** la
+qualité de recherche sur son propre corpus — repérer une régression après une
+mise à jour du moteur, ou décider si un changement vaut d'être gardé. La
+plupart des vaults n'en auront jamais besoin.
+
 Le banc est une liste de questions figée (`BENCH.md`, à la racine du vault),
 chacune avec les notes qu'une bonne recherche doit remonter. Trois modes :
 

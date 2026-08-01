@@ -9,6 +9,22 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.18.1] — 2026-07-29
+
+**Raison de l'update** : `/doc-bench` apparaissait au même rang que les autres commandes, ce qui laissait croire qu'établir un banc de mesure faisait partie du parcours d'installation. Rien ne l'exige — le vault s'initialise, s'alimente et s'interroge sans jamais l'ouvrir, et aucun réglage n'attend d'être calibré sur le corpus de l'utilisateur.
+
+### Ajouté
+- Badges en tête du README : nature du dépôt, **version lue directement dans
+  `plugin.json`** (donc jamais périmée — rien à mettre à jour à la main),
+  licence, et mode d'installation.
+
+### Modifié
+- `/doc-bench` est présenté comme un **instrument facultatif** — dans la
+  commande, dans le README et dans le message de fin de `/vault-init`, qui le
+  sort de la liste des commandes du parcours. Il sert à qui veut vérifier une
+  régression après une mise à jour du moteur, ou décider si un changement vaut
+  d'être gardé.
+
 ## [1.18.0] — 2026-07-29
 
 **Raison de l'update** : trois corrections de fond. Le vectoriel avait pris toute la place dans la cascade de recherche, au point de reléguer le grep au rang de repli — or les deux couches ne trouvent pas la même chose, l'une rapproche par le sens et rate le terme exact, l'autre touche le terme exact et rate la reformulation. `/doc-ingest` plafonnait par ailleurs chaque source à 2-5 enseignements, bridage hérité d'un temps où une note longue inondait le classement avec plusieurs de ses extraits : le regroupement des résultats par fichier règle ce point à la recherche, il n'y a plus de raison de jeter de l'information à l'écriture. Enfin, une couche de notes introduite en 1.16.0 dépassait le périmètre d'un outil générique.

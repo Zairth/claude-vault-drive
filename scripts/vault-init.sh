@@ -138,4 +138,5 @@ bash "$script_directory/vault-check.sh" >/dev/null
 echo ""
 echo "✅ Vault initialisé et vérifié : $vault_path"
 echo "→ Facultatif : ouvrir ce dossier comme coffre dans Obsidian (vitrine humaine)."
-echo "→ Commandes disponibles : /doc-ingest, /doc-query, /doc-lint, /doc-repair, /doc-bench."
+echo "→ Commandes disponibles : /doc-ingest, /doc-query, /doc-lint, /doc-repair."
+echo "→ Instrument facultatif : /doc-bench (mesurer la qualité de recherche — rien ne l'exige)."

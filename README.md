@@ -1,5 +1,10 @@
 # claude-vault-drive
 
+[![plugin Claude Code](https://img.shields.io/badge/plugin-Claude%20Code-d97757)](https://code.claude.com/docs/en/plugins)
+[![version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FZairth%2Fclaude-vault-drive%2Fmain%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=blue)](CHANGELOG.md)
+[![licence MIT](https://img.shields.io/github/license/Zairth/claude-vault-drive?color=green)](LICENSE)
+[![sans service ni clone](https://img.shields.io/badge/install-sans%20clone%2C%20sans%20service-lightgrey)](#installation)
+
 Un vault Obsidian partagé (Google Drive ou tout dossier synchronisé), consultable
 et maintenu par Claude Code — distribué comme **plugin Claude Code** : s'installe
 en deux commandes dans n'importe quel projet, **sans clone, sans service qui
@@ -232,7 +237,11 @@ commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
   refaire et les dossiers à réindexer ; l'agent principal n'applique que ce
   que l'utilisateur valide. `archives/` n'est jamais modifié : on corrige ce
   que le vault a dit de la pièce, jamais la pièce.
-- `/doc-bench` — le mètre étalon de la recherche, en trois modes. `creer`
+- `/doc-bench` — **instrument facultatif**, le mètre étalon de la recherche.
+  Rien ne l'exige : le vault fonctionne sans, et aucun réglage n'attend d'être
+  calibré sur votre corpus. Il sert à qui veut vérifier une régression après
+  une mise à jour du moteur, ou décider si un changement vaut d'être gardé.
+  Trois modes. `creer`
   (ou premier lancement) : propose ~20 questions de référence tirées du
   contenu du vault, chacune avec ses notes attendues — validées puis figées
   dans `BENCH.md` (racine du vault, hors index). Sans argument : run
