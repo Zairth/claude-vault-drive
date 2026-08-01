@@ -52,12 +52,14 @@ claude-vault-drive/
 ├── scripts/
 │   ├── vault-check.sh       # portier : vérifie l'accès au vault, imprime son chemin
 │   ├── vault-init.sh        # initialisation du vault en une commande, idempotente
-│   ├── toolbox-env.sh       # résolution du moteur sémantique (dossier + venv)
+│   ├── toolbox-env.sh       # résolution du moteur : dossier (cache des plugins) + invocation uv
 │   ├── vault-index-targets.sh   # les dossiers de wiki/ à indexer séparément (un index par dossier)
-│   ├── vault-index.sh       # indexation sémantique incrémentale (repli CLI, sans plugin toolbox)
-│   ├── vault-search.sh      # recherche sémantique dans un ou tous les dossiers indexés (repli CLI)
+│   ├── vault-index.sh       # indexation sémantique incrémentale (porte CLI du moteur)
+│   ├── vault-search.sh      # recherche sémantique, un appel pour tous les dossiers (porte CLI)
+│   ├── vault-lexical.sh     # recherche par mots-clés BM25 — zéro appel API, aucun index requis
+│   ├── vault-ocr.sh         # conversion OCR d'un document (porte CLI, repli de l'outil MCP)
 │   ├── hook-session-start.sh    # hook : INDEX.md injecté à l'ouverture de session
-│   ├── hook-prompt-context.sh   # hook : pistes sémantiques sous chaque prompt
+│   ├── hook-prompt-context.sh   # hook : pistes par mots-clés sous chaque prompt (gratuit)
 │   └── hook-precompact-inbox.sh # hook : transcript déposé dans inbox/ avant compactage
 └── vault-template/          # fichiers copiés à la racine d'un nouveau vault
     ├── INSTRUCTIONS-CLAUDE.md   # le schéma du vault — toute commande le lit d'abord
@@ -96,7 +98,9 @@ vault par projet**.
   intégral de trois cents, et surtout **on peut chercher dans une couche sans
   l'autre** — interroger les enseignements, puis descendre au texte si le
   doute persiste. Le nombre d'index ne dépend pas du nombre de sources : cinq,
-  quelle que soit la taille du vault.
+  quelle que soit la taille du vault. Et la séparation ne coûte rien à la
+  requête : un seul appel porte les cinq dossiers, la question n'étant
+  vectorisée qu'une fois.
 - **Le grep ne disparaît jamais derrière le vectoriel** : `/doc-query` lance
   toujours les deux. Le sub-agent **ouvre toutes les touches, puis trie** et ne
   remonte que ce qui répond : son contexte est jetable, lire large et rendre
@@ -277,15 +281,19 @@ nommer un fichier est filtré et confiné au vault.
   suivis du chemin de l'INDEX complet : une carte entière vaut mieux qu'un
   début de carte. Vault configuré mais inaccessible → une seule ligne
   d'avertissement (Drive pas monté ?).
-- **UserPromptSubmit** — recherche sémantique directe sur chaque prompt
-  (`vault-search.sh`, appel du moteur sans fork) : le top 3 est injecté comme
-  pistes — des extraits, pas une réponse, `/doc-query` reste la vraie
-  recherche. Jamais d'indexation ici (index jamais construit → silence).
+- **UserPromptSubmit** — recherche **par mots-clés (BM25)** sur chaque prompt
+  (`vault-lexical.sh`) : quelques pistes injectées — des extraits, pas une
+  réponse, `/doc-query` reste la vraie recherche.
+  **Gratuit et sans prérequis** : aucun appel API, aucune clé, aucun index à
+  construire au préalable, et rien du prompt ne quitte la machine. C'est ce
+  qui permet à un hook déclenché à chaque prompt d'exister sans devenir un
+  poste de dépense — une recherche sémantique y coûterait un embedding à
+  chaque fois. Contrepartie : il trouve le terme exact, pas la reformulation.
   Filtres : commandes slash/`!`/`#` et prompts de moins de 12 caractères
-  ignorés. Requiert le **clone local** d'agentic-toolbox (un hook est un
-  process shell : il ne peut pas appeler les outils MCP) — sans clone,
-  silence. À savoir : chaque prompt éligible est envoyé à l'API Mistral pour
-  être vectorisé, comme toute question `/doc-query`.
+  ignorés ; silence si rien ne ressort. Un hook est un process shell, il ne
+  peut pas appeler les outils MCP : il passe donc par la porte en ligne de
+  commande du moteur (agentic-toolbox 4.1.0 ou plus, résolu automatiquement
+  dans le cache des plugins).
 - **PreCompact** — avant qu'un compactage n'écrase la conversation, dépose sa
   partie textuelle (tours utilisateur/assistant, jamais les sorties d'outils
   ni les rappels système) dans `inbox/session-YYYY-MM-DD-<id>.md`
@@ -335,17 +343,22 @@ Les commandes `/doc-*` l'atteignent par deux portes, dans cet ordre :
    plugin. Les commandes passent toujours le dossier du vault **explicitement**
    (celui du projet, via `vault-check.sh`) — jamais de dossier implicite :
    un vault par projet, garanti.
-2. **Wrappers `scripts/vault-index.sh` / `vault-search.sh`** (repli : plugin
-   agentic-toolbox absent, mais clone local présent) — exécutés depuis le venv
-   du clone, aucun service qui tourne. Résolution du chemin :
-   `.claude/toolbox-path.local` du projet (une ligne, gitignoré), à défaut
-   `~/projects/agentic-toolbox`. Tout moteur respectant le même contrat CLI
-   (`index <dossier>` / `search "question" --dir <dossier>`, JSON sur stdout)
-   s'y substitue en éditant les deux wrappers, sans toucher aux commandes.
+2. **Wrappers `scripts/vault-index.sh`, `vault-search.sh`,
+   `vault-lexical.sh`** — la porte en **ligne de commande** du même moteur
+   (`python -m cli`, agentic-toolbox 4.1.0+), pour les appelants qui ne peuvent
+   pas être clients MCP : les **hooks sont des scripts shell**, sans session ni
+   client MCP. Aucun service qui tourne, aucun venv à maintenir — `uv` résout
+   les dépendances et met en cache.
+   Résolution du moteur, dans cet ordre : `.claude/toolbox-path.local` du
+   projet (une ligne, gitignoré), puis le plugin agentic-toolbox **dans le
+   cache des plugins** (déduit de `CLAUDE_PLUGIN_ROOT`, version la plus haute),
+   puis un clone en `~/projects/agentic-toolbox`. Tout moteur respectant le
+   même contrat (JSON sur stdout, message sur stderr et code non nul en cas
+   d'échec) s'y substitue en éditant les wrappers, sans toucher aux commandes.
 
-Sans moteur (ni plugin ni clone), tout fonctionne : `/doc-query` dégrade vers
-grep avec un avertissement explicite, `/doc-ingest` note l'indexation « à
-rattraper ». Installation du moteur (plugin, ou clone + venv + clé Mistral) :
+Sans moteur, tout fonctionne : `/doc-query` dégrade vers grep avec un
+avertissement explicite, `/doc-ingest` note l'indexation « à rattraper », et le
+hook de contexte se tait. Installation du moteur :
 [PREREQUIS.md](PREREQUIS.md).
 
 **Ce qui sort du vault** : indexer envoie le texte de `wiki/` au fournisseur

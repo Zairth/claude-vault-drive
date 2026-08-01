@@ -156,31 +156,34 @@ remplir `MISTRAL_API_KEY`, le reste peut rester vide. Chaque outil reçoit son
 dossier en argument — les commandes `/doc-*` passent toujours le vault du
 projet explicitement.
 
-### Alternative : le clone + venv (wrappers CLI)
+### La porte en ligne de commande (hooks et wrappers)
 
-Utile sans `uv`, ou pour développer le moteur — les wrappers
-`vault-index.sh`/`vault-search.sh` du plugin l'utilisent en repli quand les
-outils MCP sont absents. Prérequis : Python ≥ 3.10 (3.12 recommandé) ; sous
-Ubuntu/Debian le module venv est packagé à part :
+Le plugin installé ci-dessus suffit — **rien de plus à faire**. Cette section
+explique seulement d'où vient la seconde voie d'accès au moteur, celle
+qu'empruntent les hooks.
 
-```bash
-sudo apt install python3-venv
-```
+Un hook Claude Code est un script shell : pas de session, pas de client MCP.
+Cette catégorie d'appelants ne peut donc pas passer par les outils MCP, et le
+moteur expose pour elle une porte en ligne de commande (`python -m cli`, depuis
+sa version 4.1.0). Les wrappers `vault-index.sh`, `vault-search.sh` et
+`vault-lexical.sh` du plugin l'utilisent.
 
-Installation (emplacement par défaut attendu par les wrappers :
-`~/projects/agentic-toolbox`) :
+Deux conséquences pratiques :
+
+- **`uv` est nécessaire** pour cette voie (il l'était déjà pour le serveur
+  MCP). Absent → les wrappers échouent avec un message explicite, `/doc-query`
+  dégrade vers grep et le hook de contexte se tait ;
+- **aucun venv à créer** : `uv` résout les dépendances depuis le
+  `requirements.txt` du moteur et les met en cache.
+
+Le moteur est trouvé automatiquement dans le cache des plugins. Pour pointer
+un clone (développement du moteur), écrire son chemin — une seule ligne — dans
+le `.claude/toolbox-path.local` **du projet**, fichier gitignoré :
 
 ```bash
 git clone https://github.com/Zairth/agentic-toolbox ~/projects/agentic-toolbox
-cd ~/projects/agentic-toolbox
-cp .env.example .env         # puis remplir les clés API (MISTRAL_API_KEY)
-python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-.venv/bin/python -m providers.cli_parser check   # état de la chaîne (zéro réseau)
+echo "$HOME/projects/agentic-toolbox" > .claude/toolbox-path.local
 ```
-
-Cloné ailleurs que `~/projects/agentic-toolbox` ? Écrire son chemin (une seule
-ligne) dans le `.claude/toolbox-path.local` **du projet** — fichier gitignoré,
-jamais versionné.
 
 > **Version minimale** : commit `97b2dac` (« logs CLI sur stderr, stdout
 > réservé au JSON »). Depuis ce commit, stdout des CLI est du JSON pur,
@@ -235,7 +238,7 @@ Rien d'autre n'en dépend : les commandes `/doc-*` fonctionnent intégralement.
 | 2 | Claude Code | oui | `claude --version` |
 | 3 | Google Drive pour Desktop | vault partagé seulement | lecteur `G:` visible côté Windows |
 | 4 | Montage Drive dans WSL | vault partagé sous WSL | `ls "/mnt/g/Mon Drive"` |
-| 5 | agentic-toolbox (plugin + `uv`, ou clone) + `MISTRAL_API_KEY` | recherche sémantique/OCR seulement | outil MCP `llm_check` (plugin) ou `providers.cli_parser check` (clone) |
+| 5 | agentic-toolbox (plugin) + `uv` + `MISTRAL_API_KEY` | recherche sémantique/OCR seulement | outil MCP `llm_check`, ou `/doc-query` qui annonce son repli grep |
 | 6 | Obsidian | non (vitrine humaine) | ouvrir le vault comme coffre |
 | 7 | `python3` | non (hooks + fusion de config Obsidian ; dégradation silencieuse) | `python3 --version` |
 

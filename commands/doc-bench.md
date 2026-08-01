@@ -109,8 +109,9 @@ ni les recherches ni les notes. Sa mission :
    « ⚠ sémantique indisponible (<raison>) — score grep seul » et sauter les
    mesures sémantiques.
 2. Pour chaque question, mécaniquement :
-   - **sémantique** : `semantic_search` top 3 **sur chaque cible**
-     (`question` telle quelle, `directory: $VAULT/wiki/<cible>` explicite).
+   - **sémantique** : `semantic_search` top 3, **un seul appel** portant
+     `directories: [toutes les cibles]` (`question` telle quelle) — la réponse
+     rend un groupe par dossier.
      Les espaces vectoriels étant disjoints, **les scores ne se comparent pas
      d'une cible à l'autre** : le rang d'une attendue est son rang **dans
      l'index de son propre dossier**, jamais dans un classement global

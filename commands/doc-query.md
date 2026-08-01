@@ -44,12 +44,15 @@ dossier parent (ex. autoriser `<parent>` plutôt que `<parent>/<vault>` seul).
 
 ## Recherche sémantique
 
-**Un index par dossier.** `concepts/`, `entites/`, `syntheses/` et `sources/`
-portent chacun son `.index/embeddings.jsonl`, donc son propre espace
-vectoriel : les notes ne concourent qu'entre semblables, ce qui empêche une
-entité de dix lignes d'être écrasée par un extrait d'une source de trois
-cents. En contrepartie, chaque index interrogé coûte un embedding de la
-question.
+**Un index par dossier.** Les cinq dossiers de `wiki/` portent chacun leur
+`.index/embeddings.jsonl`, donc leur propre espace vectoriel : les notes ne
+concourent qu'entre semblables, ce qui empêche une entité de dix lignes d'être
+écrasée par un extrait d'un texte intégral de trois cents. Et surtout, ça
+permet de **chercher dans une couche sans l'autre**.
+Cette séparation ne coûte rien à la requête : depuis agentic-toolbox 4.1.0, un
+seul appel porte plusieurs dossiers et **la question n'est vectorisée qu'une
+fois**. Interroger cinq index coûte exactement le même appel réseau qu'un
+seul.
 
 1. Si `$ARGUMENTS` contient le jeton `--no-index`, le retirer de la question et
    sauter l'étape 2 (échappatoire : interroger sans réindexer).
@@ -71,13 +74,22 @@ question.
      `## <cible>` par dossier).
 3. Chercher — même cascade, dans **chaque dossier indexé** (ou le seul dossier
    voisin, pour `dans:`) :
-   - **MCP** : `mcp__plugin_agentic-toolbox_toolbox__semantic_search` par
-     cible (`question`, `directory` explicite), `top_k` 3 par défaut — quatre
-     index à cinq résultats noieraient le signal sous le volume ;
+   - **MCP** : `mcp__plugin_agentic-toolbox_toolbox__semantic_search` en **un
+     seul appel**, avec `directories: ["$VAULT/wiki/<cible1>", …]` — la
+     question n'est vectorisée qu'une fois quel que soit le nombre de
+     dossiers, et c'est le seul coût API d'une recherche. Ne jamais appeler
+     l'outil une fois par dossier. `top_k` 3 par défaut : cinq index à cinq
+     résultats noieraient le signal sous le volume.
+     La réponse est une **liste de groupes** `{directory, results}`, dans
+     l'ordre demandé — le résultat d'un dossier se lit donc dans le groupe
+     dont le `directory` est le sien, jamais dans un classement global ;
    - **wrapper** sinon :
      `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-search.sh" "<question>" "" 3`
-     (2e argument vide = toutes les cibles ; le renseigner pour une cible
-     `dans:` ou pour restreindre volontairement à une catégorie).
+     (2e argument vide = toutes les cibles en un appel ; le renseigner pour une
+     cible `dans:` ou pour restreindre volontairement à une catégorie).
+   - **Restreindre le périmètre est un geste utile**, pas une optimisation :
+     une question sur une personne se cherche dans `entites/`, une question
+     sur une notion dans `concepts/`. Élargir ensuite si ça ne suffit pas.
 4. Repli grep explicite : si l'étape 2 ou 3 échoue (moteur indisponible — ni
    outils MCP dans la session ni clone local —, index absent — cas normal d'un
    voisin `dans:` jamais indexé), continuer SANS résultats sémantiques et
@@ -87,8 +99,9 @@ question.
    Une cible en échec sur plusieurs n'est pas un repli : poursuivre avec les
    autres et le signaler en une ligne (« index <cible> indisponible »).
 5. Les résultats (`relative_path`, `section`, `score`, `excerpt`) constituent
-   les « pistes sémantiques ». **`relative_path` est relatif à la cible**, pas
-   à `wiki/` : le chemin réel est `wiki/<cible>/<relative_path>`.
+   les « pistes sémantiques ». **`relative_path` est relatif au `directory` de
+   son groupe**, pas à `wiki/` : le chemin réel est
+   `wiki/<cible>/<relative_path>`.
    **Ne jamais fusionner ni comparer les scores entre deux index** — ce sont
    des classements distincts sur des corpus disjoints, et les mêler
    reviendrait à inventer une fusion que rien ne justifie. Garder les pistes

@@ -143,8 +143,8 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
    - collision de **noms normalisés** (casse, accents, tirets/underscores,
      pluriel final) entre noms de fichiers et alias `aliases:` ;
    - moteur sémantique disponible → pour chaque page vivante, `semantic_search`
-     avec son titre + sa première phrase, sur `directory: $VAULT/wiki/concepts`
-     **et** `directory: $VAULT/wiki/entites` (les deux, explicitement : un
+     avec son titre + sa première phrase, en un seul appel
+     `directories: ["$VAULT/wiki/concepts", "$VAULT/wiki/entites"]` (les deux : un
      doublon traverse les deux dossiers, et chacun a son propre index) : une
      AUTRE page vivante en tête des résultats avec un score nettement détaché
      du reste = paire suspectée. Ne comparer les scores qu'à l'intérieur d'un

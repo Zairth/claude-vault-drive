@@ -28,8 +28,8 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
 
   - **PDF, scan, document multi-pages** → conversion markdown par OCR
     (outil MCP `mcp__plugin_agentic-toolbox_toolbox__ocr_convert` si
-    disponible, sinon le CLI `services.document_ocr.cli_parser convert` depuis
-    le clone local), dépôt dans `$VAULT/inbox/`, puis mesure du markdown
+    disponible, sinon la porte en ligne de commande du moteur :
+    `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-ocr.sh" <fichier> [<sortie>]`), dépôt dans `$VAULT/inbox/`, puis mesure du markdown
     obtenu. C'est son terrain : mise en page structurée, texte au fil des
     pages.
   - **Capture d'écran** (`.png`, `.jpg`, `.jpeg`, `.webp`, `.heic`…) →

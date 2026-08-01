@@ -9,21 +9,48 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
-## [1.18.1] — 2026-07-29
+## [1.19.0] — 2026-08-01
 
-**Raison de l'update** : `/doc-bench` apparaissait au même rang que les autres commandes, ce qui laissait croire qu'établir un banc de mesure faisait partie du parcours d'installation. Rien ne l'exige — le vault s'initialise, s'alimente et s'interroge sans jamais l'ouvrir, et aucun réglage n'attend d'être calibré sur le corpus de l'utilisateur.
+**Raison de l'update** : le moteur agentic-toolbox avait retiré sa ligne de commande à sa version 2.0.0 (recentrage MCP-only). Le plugin l'appelait pourtant encore à trois endroits — ses wrappers d'indexation et de recherche, et le repli OCR — qui étaient donc **morts depuis des mois**. Le hook `UserPromptSubmit` en dépendait : il échouait à chaque prompt et ses gardes silencieuses avalaient l'échec, si bien qu'il n'a jamais rien fait. Le moteur expose de nouveau une porte en ligne de commande (4.1.0), et sa recherche prend désormais plusieurs dossiers en un seul appel (4.0.0).
 
 ### Ajouté
 - Badges en tête du README : nature du dépôt, **version lue directement dans
   `plugin.json`** (donc jamais périmée — rien à mettre à jour à la main),
   licence, et mode d'installation.
+- `scripts/vault-lexical.sh` — recherche **par mots-clés (BM25)** dans les
+  dossiers de `wiki/`. **Aucun appel API, aucune clé, aucun index préalable**,
+  et rien ne quitte la machine : l'index se construit en mémoire à la requête
+  et se jette. Complémentaire du sémantique — il trouve le terme exact, pas la
+  reformulation — et pondère par IDF, donc un mot présent dans la moitié du
+  corpus n'y pèse presque rien.
+- `scripts/vault-ocr.sh` — conversion OCR d'un document, repli de l'outil MCP.
 
 ### Modifié
+- **Le hook `UserPromptSubmit` fonctionne enfin**, et passe au lexical. Une
+  recherche sémantique sous chaque prompt coûtait un embedding à chaque fois —
+  un poste de dépense permanent — et exigeait un index déjà construit. BM25 ne
+  coûte rien et répond dès le premier prompt d'un vault neuf. Il interroge donc
+  les cinq dossiers au lieu de deux. Réserve connue : sur un corpus de quelques
+  fichiers, l'IDF s'écrase et le classement ne discrimine rien — le hook se
+  tait plutôt que d'injecter du bruit.
+- **Recherche sémantique en un seul appel** : `directories` (liste) remplace
+  `directory`, et la réponse est une liste de groupes `{directory, results}`.
+  La question n'est vectorisée **qu'une fois** quel que soit le nombre de
+  dossiers — c'est le seul coût API d'une recherche. Interroger les cinq index
+  coûte donc exactement le même appel réseau qu'un seul, et restreindre le
+  périmètre (`entites/` pour une question sur une personne) devient un geste
+  utile plutôt qu'une économie.
 - `/doc-bench` est présenté comme un **instrument facultatif** — dans la
   commande, dans le README et dans le message de fin de `/vault-init`, qui le
-  sort de la liste des commandes du parcours. Il sert à qui veut vérifier une
-  régression après une mise à jour du moteur, ou décider si un changement vaut
-  d'être gardé.
+  sort de la liste des commandes du parcours. Rien ne l'exige : le vault
+  fonctionne sans, et aucun réglage n'attend d'être calibré sur le corpus de
+  l'utilisateur.
+- `toolbox-env.sh` : le moteur est résolu **dans le cache des plugins**, déduit
+  de `CLAUDE_PLUGIN_ROOT` plutôt que codé en dur — un hook reçoit la racine de
+  CE plugin, pas celle du moteur. Ordre : chemin imposé par le projet, puis
+  plugin voisin (version la plus haute), puis clone local. L'invocation passe
+  par `uv` : **aucun venv à créer ni à maintenir**, le dossier du moteur étant
+  de toute façon un cache réécrit à chaque mise à jour.
 
 ## [1.18.0] — 2026-07-29
 

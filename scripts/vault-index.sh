@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # claude-vault-drive/scripts/vault-index.sh
-# Indexation sémantique incrémentale via le venv d'agentic-toolbox.
+# Indexation sémantique incrémentale via la porte en ligne de commande
+# d'agentic-toolbox.
 #
-# Sans argument : chaque dossier de wiki/ listé par vault-index-targets.sh est
-# indexé SÉPARÉMENT, dans son propre `.index/embeddings.jsonl`. Sortie : un
-# bloc `## <cible>` par dossier, suivi du rapport JSON du moteur.
-# Avec un argument : ce dossier seul (échappatoire), rapport JSON brut.
+# Sans argument : chaque dossier listé par vault-index-targets.sh est indexé
+# dans SON propre `.index/embeddings.jsonl`. Sortie : un bloc `## <cible>` par
+# dossier, suivi du rapport JSON du moteur.
+# Avec un argument : ce dossier seul, rapport JSON brut.
 #
 # Ne revectorise que les chunks au hash inconnu ; réécrit l'index complet de
 # chaque cible (la purge des vecteurs orphelins est automatique).
@@ -17,7 +18,7 @@ source "$script_directory/toolbox-env.sh"
 index_directory() {
     local target_directory
     target_directory="$(cd "$1" && pwd)"  # absolu : on change de dossier juste après
-    (cd "$toolbox_directory" && "$toolbox_python" -m services.semantic_index.cli_parser index "$target_directory")
+    (cd "$toolbox_directory" && "${toolbox_run[@]}" index --dir "$target_directory")
 }
 
 if [[ $# -ge 1 && -n "${1:-}" ]]; then
