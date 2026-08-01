@@ -9,6 +9,31 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.21.0] — 2026-08-01
+
+**Raison de l'update** : les défauts d'écriture — lien pendant, note absente de l'INDEX, appariement rompu — n'étaient découverts qu'au `/doc-lint` suivant, donc parfois plusieurs ingestions plus tard, quand le contexte qui aurait permis de les comprendre avait disparu.
+
+### Ajouté
+- `/doc-ingest` : **auto-vérification en fin d'écriture**, bornée aux seules
+  notes que l'ingestion vient de produire — wikilinks pendants, appariement
+  `sources`/`enseignements`, entrées d'INDEX, références de fichier mortes,
+  présence des titres `###`. Les écarts sont corrigés avant le compte rendu et
+  mentionnés dedans.
+  Ce n'est **pas** un `/doc-lint` automatique : celui-là balaie tout le vault,
+  coûte un fork entier et ne fait que rapporter. Ici le contrôle porte sur ce
+  que cette ingestion pouvait casser, l'agent a déjà ces fichiers sous la main,
+  et il corrige au lieu de signaler. C'est le moment le moins cher — le défaut
+  n'a pas eu le temps de se propager aux ingestions suivantes.
+
+### Modifié
+- `/doc-ingest`, compte rendu : **quatre lignes au plus, et rien à faire après
+  l'avoir lu.** Il confirme, il ne fait pas travailler — plus de liste de
+  fichiers, plus de tableau de callouts, plus de question posée. Ce qui est
+  entré en nombres, les contradictions en attente en un chiffre (`/doc-lint`
+  les listera le jour venu), ce que l'auto-vérification a corrigé si elle a
+  corrigé quelque chose, et l'indexation. Le détail reste disponible sur
+  demande. Une ingestion qui s'est bien passée est un non-événement.
+
 ## [1.20.1] — 2026-08-01
 
 **Raison de l'update** : le hook `UserPromptSubmit` parlait sous chaque message, y compris quand la conversation n'avait rien à voir avec le vault — au point de donner l'impression que le vault était le sujet permanent de la session. Premier défaut observé depuis qu'il fonctionne réellement (1.19.0).

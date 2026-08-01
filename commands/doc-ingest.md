@@ -63,9 +63,11 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
       de la première entrée — et la reporter en frontmatter. Ne jamais la
       déduire : une année devinée dans une couche immuable ne se verra plus
       jamais ;
-    - c'est l'**image elle-même** qui est archivée et que pointe `origine:`.
-      Aucun markdown intermédiaire n'est produit, donc aucune référence
-      d'image pendante à traîner ensuite dans le graphe.
+    - ce sont les **images elles-mêmes** qui sont archivées, avec la
+      transcription fidèle qu'en a faite le lecteur — même règle que pour un
+      document et sa sortie d'OCR. Aucune référence d'image n'est écrite dans
+      la note : la pièce se rejoint par `origine:`, jamais par un lien qui
+      deviendrait un nœud fantôme du graphe.
   - **Texte lisible tel quel** — `.md`, `.txt`, `.csv`, `.tsv`, `.json`,
     `.xml`, `.html`, `.eml`, code source, export brut → transmis au lecteur
     sans conversion, mesure par `wc -c`.
@@ -363,11 +365,52 @@ double emploi : l'une est fidèle, l'autre est utile.
    API. **Échec = non bloquant** : l'ingestion reste valide ; noter que
    l'indexation se rattrapera au prochain `/doc-query`.
 
+8. **Auto-vérification, bornée aux fichiers que tu viens d'écrire.** Pas un
+   `/doc-lint` : celui-là balaie tout le vault et coûte un fork entier, ce qui
+   est disproportionné après une ingestion — et il rapporte sans corriger.
+   Ici on contrôle uniquement ce que CETTE ingestion pouvait casser, sur les
+   seules notes touchées, et on corrige immédiatement :
+   - **wikilinks pendants** — chaque `[[cible]]` des nouvelles notes désigne-t-il
+     un fichier existant ou un alias déclaré ? La cible peut être un nom nu ou
+     préfixée du dossier (`sources/<slug>`), les deux sont valides. Une cible
+     morte → créer la page manquante, corriger le lien, ou le délier ; jamais
+     une page coquille pour éteindre le compteur ;
+   - **appariement** — chaque nouvelle note de `sources/` a-t-elle son
+     `enseignements/` de même slug, et se pointent-elles mutuellement ?
+   - **entrées d'INDEX** — chaque note écrite y figure-t-elle, dans sa section ?
+   - **références de fichier mortes** — un `![...](...)` dont la cible n'existe
+     pas s'est-il glissé dans une note ? Le remplacer par `[figure N — non
+     extraite]` ;
+   - **titres `###`** — la note d'enseignements en porte-t-elle au moins un ?
+     Sans eux ses enseignements sont indexés en un seul bloc.
+   Tout écart est corrigé **avant** le compte rendu, et mentionné dedans. C'est
+   le moment le moins cher : le contexte de l'ingestion est encore là, et le
+   défaut n'a pas eu le temps de se propager aux ingestions suivantes.
+
 ## Compte rendu
 
-Lister les fichiers créés/modifiés (chemins relatifs au vault) et les callouts
-posés, le cas échéant, **en séparant les deux natures** : `> [!warning]`
-(réserves documentaires, définitives) et `> [!question]` (contradictions en
-attente d'arbitrage). Terminer par l'état de l'indexation, **par dossier** :
-`<dossier> : <embedded_chunks>/<reused_chunks>`, ou « ⚠ indexation sémantique
-échouée (<raison>) — à rattraper » si l'étape 7 a échoué.
+**Court.** L'ingestion est finie, tout est écrit, vérifié et indexé : ce compte
+rendu confirme, il ne fait pas travailler. Aucune liste de fichiers, aucun
+tableau, aucune question posée — l'utilisateur n'a rien à faire après l'avoir
+lu. Il a déjà validé les enseignements ; le reste est de la mécanique qui s'est
+bien passée.
+
+Quatre lignes au plus :
+
+1. **Ce qui est entré** : `<n> source(s) → <n> enseignements · <n> concepts et
+   entités touchés`. Des nombres, pas des chemins.
+2. **Ce qui attendra**, seulement s'il y en a : `<n> contradiction(s) à
+   trancher` — sans les détailler. Elles ne sont pas urgentes, elles vivent
+   dans le vault, et `/doc-lint` les listera quand l'utilisateur voudra s'en
+   occuper. Les réserves documentaires ne se mentionnent pas : elles sont
+   définitives, il n'y a rien à en faire.
+3. **Ce que l'auto-vérification a corrigé**, seulement si elle a corrigé
+   quelque chose. Rien trouvé → ne pas le dire.
+4. **L'indexation** : `<n> extraits vectorisés`. Détail par dossier seulement
+   si l'utilisateur le demande. Échec → là, le dire franchement :
+   « ⚠ indexation sémantique échouée (<raison>) — sera rattrapée au prochain
+   `/doc-query` ».
+
+Tout le reste — chemins, callouts posés, ce que les pièces apportent — se donne
+**sur demande**, jamais spontanément. Une ingestion qui s'est bien passée est un
+non-événement.
