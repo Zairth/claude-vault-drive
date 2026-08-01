@@ -9,6 +9,23 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.21.2] — 2026-08-01
+
+**Raison de l'update** : le modèle de vault réclamait encore une réserve « sur la note de source » alors que sa propre convention des callouts l'interdit — chaque pièce non datée reposait donc un commentaire éditorial dans la couche de texte pur.
+
+### Corrigé
+- **`INSTRUCTIONS-CLAUDE.md` se contredisait sur la place des réserves.** La
+  convention des callouts pose qu'un `> [!warning]` vit dans
+  `wiki/enseignements/`, sous son propre `###`, et jamais dans
+  `wiki/sources/` — une réserve n'est pas ce que la pièce dit, c'est ce qu'on
+  en constate. La règle de nommage, elle, demandait encore un `> [!warning]`
+  « sur la note de source » pour une pièce non datée. Les deux phrases sont
+  alignées, et `/doc-ingest` précise la même chose au moment d'écrire.
+  L'enjeu n'est pas cosmétique : dans `sources/`, la réserve est noyée dans le
+  préambule d'un texte intégral et n'est pas retrouvable seule ; sous son
+  `###` dans `enseignements/`, elle devient un extrait indexé, et « quelles
+  pièces ne sont pas datées ? » a une réponse.
+
 ## [1.21.1] — 2026-08-01
 
 **Raison de l'update** : une convention mal bornée faisait écrire des wikilinks ambigus vers les pièces, et aucune vérification ne pouvait les voir — ils résolvent, donc ils ne sont jamais pendants.

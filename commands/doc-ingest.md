@@ -257,7 +257,8 @@ notes. Un renvoi à ce que la pièce **dit** vise `[[enseignements/<slug>]]` ;
 seul un renvoi à son **texte intégral** vise `[[sources/<slug>]]`.
 Le slug préfixe la **date de la pièce** (`YYYY-MM-DD-`), jamais celle de
 l'ingestion. Pièce non datée → pas de préfixe, et surtout aucune date inventée
-ni déduite : l'absence est une information, à doubler d'un `> [!warning]`. Elles ne font pas
+ni déduite : l'absence est une information, à doubler d'un `> [!warning]` dans
+la note d'**enseignements**, jamais dans celle de `sources/`. Elles ne font pas
 double emploi : l'une est fidèle, l'autre est utile.
 
 1. `$VAULT/wiki/sources/YYYY-MM-DD-<slug>.md` — **le texte intégral

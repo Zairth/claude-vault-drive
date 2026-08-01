@@ -109,7 +109,9 @@ indexée par rien** — toute note vit dans un de ces dossiers.
   rien d'elle. Une pièce **non datée** (lettre sans date, capture sans
   horodatage) n'est pas préfixée : ne jamais inventer ni déduire une date pour
   satisfaire la forme. L'absence de préfixe est alors une information, et elle
-  s'accompagne d'un `> [!warning]` sur la note de source.
+  s'accompagne d'un `> [!warning]` — dans **`wiki/enseignements/`**, sous son
+  propre titre `###`, jamais dans `wiki/sources/` : c'est un constat sur la
+  pièce, pas ce qu'elle dit (voir la convention des callouts plus bas).
 - **Modèle de note — frontmatter obligatoire** (une note sans ces propriétés
   n'est pas conforme ; `/doc-lint` les vérifie) :
   - toutes les notes : `type` (source | enseignements | concept | entite |
