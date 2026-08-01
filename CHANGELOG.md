@@ -9,6 +9,25 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.20.1] — 2026-08-01
+
+**Raison de l'update** : le hook `UserPromptSubmit` parlait sous chaque message, y compris quand la conversation n'avait rien à voir avec le vault — au point de donner l'impression que le vault était le sujet permanent de la session. Premier défaut observé depuis qu'il fonctionne réellement (1.19.0).
+
+### Corrigé
+- La cause : BM25 rend **toujours** quelque chose, un top-K n'ayant aucun
+  plancher de pertinence. Et — mesuré sur un corpus réel — **le score ne
+  distingue pas** une question sur le vault d'une phrase de conversation :
+  « je fais quoi maintenant du coup » y obtient 6,44 quand « qui détient quelle
+  part du capital » n'obtient que 5,27, un mot rare et hors sujet pesant autant
+  qu'un mot rare et pertinent. Aucun seuil ni rapport de scores ne les sépare.
+  Ce qui les sépare est le **vocabulaire** : le hook exige désormais qu'au moins
+  un mot long du prompt figure dans `INDEX.md` **et y soit caractéristique** —
+  présent dans au plus un dixième des entrées. Ce plafond se recalcule sur
+  l'INDEX du moment, donc rien à régler, et il écarte les mots que le vault
+  emploie partout sans écarter ceux qui le désignent. Vérifié sur dix prompts :
+  neuf classés correctement, et la porte s'exécute **avant** tout appel au
+  moteur. Trois pistes au plus, contre six.
+
 ## [1.20.0] — 2026-08-01
 
 **Raison de l'update** : une ingestion de douze pièces a demandé une heure. La cause n'était pas la lecture ni l'analyse, mais la standardisation : le sub-agent **retapait en jetons produits** un texte déjà présent sur le disque. Pour un document de soixante-dix kilo-octets, c'est le recopier mot pour mot — et c'était le poste de dépense principal de chaque ingestion.

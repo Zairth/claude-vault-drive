@@ -34,6 +34,45 @@ case "$prompt" in
 esac
 (( ${#prompt} >= 12 )) || exit 0
 
+vault="$(bash "$script_directory/vault-check.sh" 2>/dev/null)" || exit 0
+
+# Porte de vocabulaire, AVANT d'appeler le moteur — et c'est le seul filtre
+# qui marche. Mesuré : le score BM25 ne distingue PAS une question sur le vault
+# d'une phrase de conversation. « je fais quoi maintenant du coup » y score plus
+# haut que « qui détient quelle part du capital », parce qu'un mot rare et hors
+# sujet pèse autant qu'un mot rare et pertinent. Aucun seuil, aucun rapport de
+# scores ne sépare les deux — vérifié sur un corpus réel.
+#
+# Ce qui les sépare, c'est le VOCABULAIRE : une question sur le vault emploie
+# les mots de ses notes. On exige donc qu'au moins un mot long du prompt
+# figure dans `INDEX.md` ET y soit CARACTÉRISTIQUE — présent dans au plus un
+# dixième des entrées. Ce plafond relatif se recalcule sur l'INDEX du moment :
+# rien à régler, et il écarte les mots que le vault emploie partout (« travail »
+# dans un vault de travail) sans écarter ceux qui le désignent (« leaver »).
+# Local, gratuit, et exécuté avant tout appel au moteur.
+index_file="$vault/INDEX.md"
+[[ -f "$index_file" ]] || exit 0
+INDEX_FILE="$index_file" PROMPT="$prompt" python3 -c '
+import collections, os, re, sys, unicodedata
+
+def fold(text):
+    text = unicodedata.normalize("NFD", text.lower())
+    return "".join(c for c in text if unicodedata.category(c) != "Mn")
+
+def long_words(text):
+    return set(re.findall(r"[a-z0-9]{5,}", fold(text)))
+
+entries = [line for line in open(os.environ["INDEX_FILE"], encoding="utf-8").read().splitlines()
+           if line.startswith("- [[")]
+if not entries:
+    sys.exit(1)
+frequency = collections.Counter()
+for entry in entries:
+    frequency.update(long_words(entry))
+ceiling = max(1, len(entries) // 10)
+sys.exit(0 if any(0 < frequency[w] <= ceiling for w in long_words(os.environ["PROMPT"])) else 1)
+' 2>/dev/null || exit 0
+
 results="$(bash "$script_directory/vault-lexical.sh" "$prompt" "" 3 2>/dev/null)" || exit 0
 
 printf '%s' "$results" | python3 -c '
@@ -45,20 +84,27 @@ except Exception:
 if not isinstance(groups, list):
     sys.exit(0)
 
-lines = []
+hits = []
 for group in groups:
     layer = str(group.get("directory", "")).rstrip("/").rsplit("/", 1)[-1]
-    for hit in (group.get("results") or [])[:2]:
-        path = hit.get("relative_path", "?")
-        excerpt = " ".join(str(hit.get("excerpt", "")).split())
-        if len(excerpt) > 200:
-            excerpt = excerpt[:200] + "\u2026"
-        lines.append("- wiki/" + layer + "/" + str(path) + " : " + excerpt)
-
-# Rien de pertinent, ou un corpus trop petit pour que BM25 discrimine : mieux
-# vaut se taire que dinjecter du bruit sous chaque prompt.
-if not lines:
+    for hit in (group.get("results") or []):
+        score = hit.get("score")
+        if isinstance(score, (int, float)):
+            hits.append((float(score), layer, hit))
+if not hits:
     sys.exit(0)
-print("Pistes du vault (recherche par mots-cles automatique sur ce prompt - des extraits, pas une reponse ; /doc-query pour une recherche complete et citee) :")
-print("\n".join(lines[:6]))
+hits.sort(key=lambda h: h[0], reverse=True)
+
+# Trois pistes au plus : ce hook propose, il ne repond pas. Le score BM25 sert
+# a ordonner, jamais a filtrer — mesure : il ne distingue pas une question
+# pertinente dune phrase de conversation.
+lines = []
+for score, layer, hit in hits[:3]:
+    excerpt = " ".join(str(hit.get("excerpt", "")).split())
+    if len(excerpt) > 160:
+        excerpt = excerpt[:160] + "\u2026"
+    lines.append("- wiki/" + layer + "/" + str(hit.get("relative_path", "?")) + " : " + excerpt)
+
+print("Pistes du vault (mots-cles, automatique — des extraits, pas une reponse ; /doc-query pour une recherche complete et citee) :")
+print("\n".join(lines))
 '
