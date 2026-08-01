@@ -29,6 +29,10 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      une action.
    - `> [!warning]` dans `wiki/` = **mise en garde documentaire**,
      permanente → compter seulement, et le dire ; ne rien réclamer.
+     Sa place est `wiki/enseignements/`. Un `[!warning]` trouvé dans
+     `wiki/sources/` est **mal placé** : cette couche porte le texte de la
+     pièce, pas le commentaire qu'on en fait, et l'y laisser fait remonter de
+     l'éditorial sur une recherche de contenu → lister à part.
    - `> [!question]` trouvé dans `wiki/sources/` ou `wiki/enseignements/` =
      **défaut de placement** : ces couches sont immuables, le callout ne
      pourra jamais y être retiré une fois tranché → lister à part (remède dans

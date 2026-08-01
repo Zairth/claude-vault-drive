@@ -48,7 +48,21 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
     - mission de lecture explicite : restituer la structure lisible à
       l'écran, l'ordre, les dates visibles ; et **signaler tout passage
       illisible, coupé ou ambigu plutôt que de le deviner** — ce sera un
-      `> [!warning]` sur la note source ;
+      `> [!warning]` dans la note d'enseignements ;
+    - **une série d'entrées datées** (relevé, journal, suite d'échanges) se
+      standardise avec **un titre `###` par entrée**, portant son auteur et
+      son horodatage quand ils sont lisibles. C'est ce qui fait de chaque
+      entrée un extrait indexé à elle seule, donc retrouvable
+      individuellement ; sans ces titres, tout l'écran part en un seul
+      extrait. **Chaque titre porte le fichier dont l'entrée vient** : une
+      série reste UNE note — la découper en une note par fichier donnerait des
+      notes de trois lignes qui ne veulent rien dire seules —, et cette
+      mention y rétablit la traçabilité, plus finement qu'un découpage ne le
+      ferait. Les dates ne portant souvent ni l'année ni le jour,
+      **demander l'ancrage à l'utilisateur avant de standardiser** — la date
+      de la première entrée — et la reporter en frontmatter. Ne jamais la
+      déduire : une année devinée dans une couche immuable ne se verra plus
+      jamais ;
     - c'est l'**image elle-même** qui est archivée et que pointe `origine:`.
       Aucun markdown intermédiaire n'est produit, donc aucune référence
       d'image pendante à traîner ensuite dans le graphe.
@@ -83,12 +97,51 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
   lecteur** (outil Agent, en avant-plan — `run_in_background: false`) avec
   pour mission :
   1. lire la source — fichier local (chemin transmis), URL (WebFetch) ;
-  2. **écrire lui-même la version standardisée** dans
-     `$VAULT/inbox/<slug>.standardise.md` : tout le texte de la pièce en
-     markdown structuré, fidèle et sans tri. Il l'**écrit sur disque**, il ne
-     la retourne pas — c'est ce qui permet de garder le texte intégral sans
+  2. **obtenir la version standardisée** dans
+     `$VAULT/inbox/<slug>.standardise.md`. Elle est **écrite sur disque**,
+     jamais retournée — c'est ce qui permet de garder le texte intégral sans
      qu'il traverse aucun contexte. Le fichier reste dans le sas tant que
      l'ingestion n'est pas validée.
+     **Ce que « standardiser » veut dire, précisément.** Le découpage
+     sémantique se fait **par titre markdown**, et retombe sur un découpage
+     par paragraphes au-delà d'environ 2 000 caractères. Une source bien
+     standardisée est donc celle où **aucun bloc dépassant cette taille ne
+     reste sans titre** : la structure réelle de la pièce — ses articles, ses
+     chapitres, ses sections, ses entrées datées — devient la hiérarchie de
+     titres, et chaque unité de sens devient un extrait indexé. Sans ça, le
+     moteur coupe où il peut, au milieu d'un article, et l'extrait remonté ne
+     veut plus rien dire.
+     C'est le seul objectif de cette étape. On ne réécrit pas le texte, on ne
+     le résume pas, on ne le corrige pas : on lui donne les titres qui
+     permettront de le retrouver par morceaux.
+
+     **La chaîne est la même pour toute source, sans exception :**
+     `pièce → transcription fidèle → standardisation → wiki/sources/`.
+     Seule la première flèche change de nature — la transcription est
+     **donnée** pour un markdown déposé, produite par l'**OCR** pour un
+     document paginé, écrite par le **lecteur** pour une image. Les deux
+     suivantes sont identiques pour tout le monde : copie, titres, dépôt.
+     **Ce qui décide du coût de l'ingestion, c'est de ne jamais confondre la
+     deuxième flèche avec la première.**
+     - **Le texte existe déjà** (markdown déposé, sortie d'OCR, export
+       converti) → le **copier**, puis le retoucher par éditions ciblées :
+       hiérarchie de titres, références mortes neutralisées, frontmatter.
+       **Ne jamais le réécrire intégralement.** Régénérer un document de
+       soixante-dix kilo-octets, c'est le retaper mot pour mot en jetons
+       produits — pour un fichier qui est déjà sur le disque. C'est le poste
+       de dépense principal d'une ingestion, et il est évitable.
+     - **Le texte n'existe pas** (image, capture) → le lecteur écrit d'abord
+       la **transcription fidèle** dans `$VAULT/inbox/<slug>.transcription.md`,
+       à plat, telle qu'il lit l'écran. Elle sera archivée avec les images.
+       Puis il la **copie** et y pose les titres, comme pour n'importe quelle
+       autre source : la standardisation ne régénère rien, même ici.
+       Deux passes, mais une seule génération — c'est ce qui donne à une
+       capture les mêmes trois degrés de fidélité qu'à un PDF. Sans cette
+       transcription, vérifier la version structurée exigerait de **relire
+       toutes les images**, bien plus cher que de relancer un OCR.
+     Un fichier déjà propre ne demande alors qu'un frontmatter. Le lecteur ne
+     doit pas confondre « standardiser » et « reproduire » : son travail est
+     de rendre la structure exploitable, pas de recopier ce qui l'est déjà.
      **Une seule chose n'est jamais transcrite telle quelle : une référence de
      fichier qui ne pointe nulle part.** Un markdown déjà converti par un outil
      tiers contient souvent des `![img-0.jpeg](…)` vers des images jamais
@@ -203,9 +256,10 @@ double emploi : l'une est fidèle, l'autre est utile.
    standardisé** de la pièce. Frontmatter conforme au modèle de note
    d'`INSTRUCTIONS-CLAUDE.md` (`type: source`, `date`, `auteur` — repérable
    dans les notes existantes du vault, sinon le demander —, `description`,
-   `origine` = chemin archivé/URL/« conversation », `original` seulement si la
-   pièce d'origine diffère de la copie pointée par `origine` — **jamais un
-   chemin absolu de la machine**).
+   `origine` = ce dont la note a été faite (chemin archivé, URL, mention
+   libre) ; `original` seulement si la pièce qui fait foi en diffère — le PDF
+   dont la transcription est tirée — **jamais un chemin absolu de la
+   machine**).
    Corps : le fichier standardisé que le lecteur a déposé dans `inbox/` —
    **déplacée telle quelle**, jamais relue ni réécrite en contexte principal
    (le seul frontmatter est ajouté en tête). Elle contient tout le texte de la
@@ -216,11 +270,11 @@ double emploi : l'une est fidèle, l'autre est utile.
    plus.
    Plusieurs tranches (gros volume) → les concaténer dans l'ordre, ou en faire
    autant de notes numérotées si l'ensemble reste trop gros pour une seule.
-   Réserve constatée sur la pièce — OCR partiel, capture non datée, propos
-   rapporté, document non signé, date déduite → callout `> [!warning]` ici,
-   permanent : il décrit la pièce, il n'y a rien à trancher. **Jamais de
-   `> [!question]`** dans cette couche ni dans la suivante, toutes deux
-   immuables.
+   **Aucun commentaire éditorial dans cette note** : elle porte le texte de la
+   pièce, et rien d'autre. Les réserves constatées vont dans la note
+   d'enseignements (voir 2) — sans quoi une recherche sur les sources
+   remonterait du commentaire au lieu du contenu des pièces. Jamais de
+   `> [!question]` non plus : la couche est immuable.
    Note trop volumineuse → la découper par la structure réelle de la pièce
    (`YYYY-MM-DD-<slug>-1.md`, `-2.md`…), chacune renvoyant à la suivante en
    wikilink ; jamais par une coupe arbitraire au milieu d'une section.
@@ -234,6 +288,13 @@ double emploi : l'une est fidèle, l'autre est utile.
    Le `###` n'est pas cosmétique : le découpage sémantique se fait par titre,
    donc un enseignement devient exactement un extrait indexé — ni dilué dans
    ses voisins, ni coupé en deux.
+   **Les réserves sur la pièce vont ici**, sous leur propre `###` (un callout
+   `> [!warning]` par réserve, ou un seul les regroupant). Une réserve n'est
+   pas ce que la pièce dit, c'est ce qu'on en constate : c'est un enseignement.
+   Critère : **ce qui change ce que la pièce vaut** — tronquée, non datée, non
+   signée, signataire manquant, OCR partiel, en-tête d'une autre société,
+   propos rapporté. Pas les coquilles ni les fautes d'accord, qui n'enlèvent
+   rien à ce qu'elle prouve.
 3. Pour chaque concept ou entité touché : créer ou mettre à jour la page dans
    `$VAULT/wiki/concepts/` ou `$VAULT/wiki/entites/` (frontmatter `type: concept`
    ou `type: entite` + `date` + `auteur` + `description` à la création,
@@ -271,10 +332,15 @@ double emploi : l'une est fidèle, l'autre est utile.
 6. Archiver la pièce d'origine — pour TOUTE source qui est un fichier local :
    venue de `$VAULT/inbox/` → la **déplacer** vers `$VAULT/archives/` ; venue
    d'ailleurs sur la machine → l'y **copier** (le fichier de l'utilisateur
-   n'est jamais déplacé ni supprimé). PDF passé par OCR : archiver les deux —
-   le markdown OCR et le PDF d'origine. Captures d'écran : archiver **les
-   images elles-mêmes**, toutes celles de la série, dans leur ordre — elles
-   sont la pièce d'origine, il n'y a rien d'autre à conserver. Les fichiers archivés gardent leur
+   n'est jamais déplacé ni supprimé).
+   **Archiver la pièce ET sa transcription fidèle** — le PDF et sa sortie
+   d'OCR, les images et la transcription qu'en a faite le lecteur. Ce ne sont pas deux exemplaires du même objet : la transcription est
+   ce que la machine a lu, `wiki/sources/` en est la version structurée. Garder
+   la première permet de vérifier la seconde sans relancer un OCR, qui coûterait
+   un appel et rendrait un texte peut-être différent.
+   Captures d'écran : archiver **les images elles-mêmes**, toutes celles de
+   l'ensemble, dans leur ordre — elles sont la pièce, il n'y a rien d'autre à
+   conserver. Les fichiers archivés gardent leur
    nom et leur extension — `archives/` est hors index par construction, seul
    `$VAULT/wiki` est indexé. Renseigner `origine:`
    (et `original:` le cas échéant) avec ces chemins archivés, relatifs au

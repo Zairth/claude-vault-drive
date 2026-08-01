@@ -39,10 +39,33 @@ persiste :
    titre `###`, avec sa citation courte. C'est ce qu'on lit ;
 2. `wiki/sources/<slug>.md` — le **texte intégral** de la pièce, converti en
    markdown structuré, fidèle et sans tri. C'est ce qu'on fouille quand
-   l'enseignement ne suffit pas ;
+   l'enseignement ne suffit pas.
+   « Structuré » a un sens précis : le découpage sémantique se fait **par
+   titre**, et retombe sur les paragraphes au-delà d'environ 2 000 caractères.
+   Une source bien standardisée est donc celle où **aucun bloc de cette taille
+   ne reste sans titre** — la structure réelle de la pièce devient la
+   hiérarchie de titres, et chaque unité de sens devient un extrait
+   retrouvable. Sans ça, le moteur coupe où il peut, au milieu d'un article ;
+**Une série d'entrées datées** — un relevé, un journal, une suite de captures
+d'un même écran — se standardise avec **un titre `###` par entrée**, comme les
+enseignements : chacune devient alors un extrait indexé à elle seule, et se
+retrouve individuellement. Sans ces titres, tout le fichier part en un ou deux
+extraits et l'entrée précise devient introuvable.
+Quand les entrées ne portent qu'une date partielle — une heure sans jour, un
+jour sans année —, **demander l'ancrage à l'utilisateur** avant de
+standardiser, et le noter en frontmatter. Ne jamais le déduire : une année
+devinée dans une couche immuable est une erreur qu'on ne verra plus jamais.
+
 3. `archives/<nom d'origine>` — la **pièce elle-même**, telle qu'elle est
    arrivée. Jamais indexée, jamais modifiée. C'est ce qui fait foi quand le
    texte standardisé est mis en doute.
+   La **transcription fidèle** y est archivée avec la pièce : ce ne sont pas
+   deux exemplaires du même objet — l'une est ce qui a été lu, le degré 2 en
+   est la version structurée. La garder permet de vérifier le degré 2 sans
+   relire la pièce. Vrai pour un document, dont l'OCR fournit la
+   transcription ; vrai aussi pour une image, dont le lecteur l'écrit — et là
+   c'est encore plus décisif, relire une série de captures coûtant bien plus
+   qu'un OCR.
 
 Les deux notes portent le même `<slug>` et se pointent mutuellement en
 wikilink ; leur `origine` désigne la pièce d'`archives/`. Un doute se remonte
@@ -87,15 +110,12 @@ indexée par rien** — toute note vit dans un de ces dossiers.
     demander une fois si inconnue, puis réutiliser — ou le nom de l'équipe
     tierce pour une note importée) et `description` (la note en quelques
     mots — c'est elle qui alimente l'entrée `INDEX.md` de la note) ;
-  - `type: source` : `origine` — provenance de la note : chemin archivé
-    relatif au vault (pièce dans `archives/`), URL, ou mention libre
-    (« conversation », …) ; `original` en plus, seulement si la pièce
-    d'origine diffère de la copie pointée par `origine` (ex. le PDF dont la
-    note vient par OCR) : chemin de sa copie dans `archives/`, ou emplacement
-    durable hors vault (URL, dossier partagé). **Jamais de chemin absolu de
-    la machine** (`/home/...`, `/mnt/...`, `C:\...`) dans `origine`/`original` :
-    un fichier local ingéré est copié dans `archives/` et référencé
-    relativement au vault ;
+  - `type: source` : `origine` — ce dont la note a été faite : chemin archivé
+    relatif au vault, URL, ou mention libre. `original` en plus, seulement si
+    la pièce qui fait foi en diffère — le PDF dont la transcription est tirée,
+    ou un emplacement durable hors vault. **Jamais de chemin absolu de la
+    machine** — un fichier local ingéré est copié dans `archives/` et
+    référencé relativement au vault ;
   - `type: enseignements` : `origine` (même pièce que la note de source
     correspondante) et un wikilink vers cette note ; le corps est une suite de
     titres `###`, un par enseignement, chacun suivi de sa citation verbatim et
@@ -132,16 +152,27 @@ indexée par rien** — toute note vit dans un de ces dossiers.
   définitif, l'autre est une tâche en attente. Ne jamais les confondre :
   `/doc-lint` les compte séparément et ne réclame que le second.
   - `> [!warning]` — **mise en garde documentaire** : une réserve sur la pièce
-    elle-même (OCR partiel ou illisible, capture non datée, propos rapporté,
-    document non signé, expéditeur non identifié, date déduite). Rien à
-    trancher : c'est un fait constaté sur la source. **Permanente** — elle vit
-    surtout dans `wiki/sources/`, immuable, et n'est jamais retirée.
+    elle-même. Rien à trancher : c'est un fait constaté. **Permanente**, elle
+    n'est jamais retirée.
+    Sa place est dans **`wiki/enseignements/`**, sous son propre titre `###`,
+    jamais dans `wiki/sources/`. Une réserve n'est pas ce que la pièce *dit*,
+    c'est ce qu'on en *constate* — donc un enseignement comme un autre, et
+    c'est bien la couche du constat. La conséquence est double : `sources/`
+    reste du texte de pièce pur, cherchable comme tel sans qu'un commentaire
+    éditorial s'y mêle ; et la réserve devient un extrait indexé à elle seule,
+    donc retrouvable — « quelles pièces ne sont pas signées ? » a une réponse.
+    Le critère : **ce qui change ce que la pièce vaut**. Document tronqué, non
+    daté, non signé, signataire manquant, expéditeur non identifié, OCR partiel
+    ou illisible, en-tête d'une autre société, propos rapporté, date déduite.
+    Pas les coquilles ni les fautes d'accord : ce sont des défauts du texte,
+    pas de la pièce, et ils n'enlèvent rien à ce qu'elle prouve.
   - `> [!question]` — **contradiction non tranchée** : deux affirmations
     incompatibles sans savoir laquelle fait foi. Appelle un arbitrage de
     l'utilisateur et **disparaît** une fois tranchée. Elle ne se pose donc
-    **jamais dans `wiki/sources/`** : la couche est immuable, un callout posé
-    là ne pourrait plus jamais être retiré. Sa place est sur la page
-    `concepts/`, `entites/` ou `syntheses/` qui porte l'affirmation.
+    **jamais dans `wiki/sources/` ni `wiki/enseignements/`** : ces couches sont
+    immuables, un callout posé là ne pourrait plus jamais être retiré. Sa place
+    est sur la page `concepts/`, `entites/` ou `syntheses/` qui porte
+    l'affirmation.
 - Contradiction entre une nouvelle information et l'existant — jamais résolue
   silencieusement, deux issues :
   - **tranchée** (l'utilisateur confirme que la nouvelle version fait foi) →

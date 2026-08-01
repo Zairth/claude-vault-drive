@@ -9,6 +9,70 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.20.0] — 2026-08-01
+
+**Raison de l'update** : une ingestion de douze pièces a demandé une heure. La cause n'était pas la lecture ni l'analyse, mais la standardisation : le sub-agent **retapait en jetons produits** un texte déjà présent sur le disque. Pour un document de soixante-dix kilo-octets, c'est le recopier mot pour mot — et c'était le poste de dépense principal de chaque ingestion.
+
+### Modifié
+- **Les réserves documentaires quittent `wiki/sources/` pour
+  `wiki/enseignements/`**, sous leur propre titre `###`. Une réserve — pièce
+  tronquée, non signée, non datée — n'est pas ce que la pièce *dit*, c'est ce
+  qu'on en *constate* : elle était du mauvais côté. Deux effets : `sources/`
+  redevient du texte de pièce pur, donc cherchable comme tel sans qu'un
+  commentaire éditorial s'y mêle — mesuré, ce bloc pesait jusqu'à un cinquième
+  d'une note et fabriquait quinze extraits quasi identiques d'une note à
+  l'autre ; et la réserve devient un extrait indexé à elle seule, donc
+  retrouvable, là où elle se noyait dans un préambule. `/doc-lint` signale
+  désormais un `> [!warning]` resté dans `sources/`.
+  Le critère reste : ce qui change ce que la pièce vaut, pas les coquilles ni
+  les fautes d'accord.
+- **Une seule chaîne pour toute source** :
+  `pièce → transcription fidèle → standardisation → wiki/sources/`. Seule la
+  première flèche change de nature — transcription **donnée** pour un markdown
+  déposé, produite par l'**OCR** pour un document paginé, écrite par le
+  **lecteur** pour une image. Les deux suivantes sont identiques : copie,
+  titres, dépôt. Une image reçoit donc elle aussi sa transcription fidèle
+  archivée, là où elle n'en avait aucune : vérifier sa version structurée
+  exigeait jusqu'ici de **relire toutes les captures**, bien plus cher que de
+  relancer un OCR. Deux passes, mais une seule génération.
+- `/doc-ingest` : **le texte déjà disponible est copié, plus jamais
+  régénéré.** Markdown déposé, sortie d'OCR, export converti → copie, puis
+  retouches ciblées (hiérarchie de titres, références mortes, frontmatter). La
+  génération ne subsiste que là où il n'y a rien à copier : une image. Un
+  fichier déjà propre ne demande plus qu'un frontmatter. « Standardiser » n'est
+  pas « reproduire » : le travail est de rendre la structure exploitable, pas
+  de recopier ce qui l'est déjà.
+- **Le critère du `> [!warning]` est resserré** à ce qui change la valeur de la
+  pièce — tronquée, non datée, non signée, signataire manquant, OCR partiel,
+  en-tête d'une autre société, propos rapporté. Plus de fautes d'accord, de
+  coquilles ni de guillemets non fermés : ce sont des défauts du texte, pas de
+  la pièce. Ce bloc étant vectorisé comme le reste, une relecture typographique
+  recopiée dans chaque note y fabriquait un extrait quasi identique d'une note
+  à l'autre, qui remontait sur des questions sans rapport. Mesuré : quinze
+  extraits sur quatre cent vingt, jusqu'à un cinquième d'une note.
+
+### Ajouté
+- **« Standardiser » reçoit un critère vérifiable** : le découpage sémantique
+  se faisant par titre markdown, une source bien standardisée est celle où
+  **aucun bloc dépassant la taille de chunk ne reste sans titre**. La structure
+  réelle de la pièce devient la hiérarchie de titres, et chaque unité de sens
+  un extrait retrouvable — sinon le moteur coupe où il peut, au milieu d'un
+  article. C'est le seul objectif de l'étape : on ne réécrit pas, on ne résume
+  pas, on ne corrige pas ; on donne les titres qui permettront de retrouver le
+  texte par morceaux.
+- **Séries d'entrées datées** — relevé, journal, suite d'échanges : la
+  standardisation pose **un titre `###` par entrée**, ce qui en fait un extrait
+  indexé à elle seule et donc retrouvable individuellement ; sans ces titres,
+  toute la série part en un ou deux extraits. Chaque titre porte **le fichier
+  dont l'entrée vient** : une série reste UNE note — la découper en une note
+  par fichier donnerait des notes de trois lignes qui ne veulent rien dire
+  seules —, et cette mention y rétablit la traçabilité plus finement qu'un
+  découpage ne le ferait. Et quand les entrées ne portent
+  qu'une date partielle — une heure sans jour, un jour sans année —,
+  **l'ancrage est demandé à l'utilisateur** avant standardisation et reporté en
+  frontmatter, jamais déduit : une année devinée dans une couche immuable ne se
+  verra plus jamais.
+
 ## [1.19.1] — 2026-08-01
 
 **Raison de l'update** : deux règles manquaient à la structure livrée en 1.19.0, et la première rendait `/doc-lint` faux. Les deux notes d'une pièce partageant leur slug, un wikilink en nom nu entre elles désigne deux fichiers à la fois : la forme correcte est préfixée du dossier — mais le lint cherchait des cibles en nom nu, et aurait donc compté pendants tous les liens croisés d'un vault conforme, et orphelines des notes correctement pointées.
