@@ -71,6 +71,11 @@ seul.
      dossiers à indexer —
      `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index-targets.sh"` (une cible
      par ligne, relative à `wiki/`) —, puis un appel
+     **Script indisponible** (refusé par les permissions, introuvable) → ne pas
+     renoncer à indexer : la liste se retrouve en listant les sous-dossiers de
+     `$VAULT/wiki/` qui contiennent au moins un `.md`. C'est exactement ce que
+     le script calcule ; il existe pour centraliser la règle, pas pour la
+     détenir. Le signaler en une ligne, et continuer.
      `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` par cible,
      avec `directory: $VAULT/wiki/<cible>` **explicite** — jamais de dossier
      implicite, et jamais `$VAULT/wiki` seul : le moteur indexe

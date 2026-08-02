@@ -9,6 +9,20 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.36.0] — 2026-08-02
+
+**Raison de l'update** : le script listant les dossiers à indexer a été refusé par les permissions en pleine recherche — la commande s'en est sortie en improvisant, ce qui n'est pas une garantie.
+
+### Ajouté
+- **`/doc-query` sait se passer du script de listing des cibles.** Refusé par
+  les permissions ou introuvable, il ne fait plus renoncer à l'indexation : la
+  liste se retrouve en listant les sous-dossiers de `wiki/` qui contiennent au
+  moins un `.md` — c'est exactement ce que le script calcule. Il existe pour
+  **centraliser** la règle, pas pour la détenir.
+  Constaté en usage réel : le repli avait été improvisé correctement, en
+  lisant la liste dans `INSTRUCTIONS-CLAUDE.md`. Il est désormais spécifié,
+  pour ne plus dépendre du jugement du moment.
+
 ## [1.35.0] — 2026-08-02
 
 **Raison de l'update** : deux tentatives d'interdire l'affichage du bloc de consignes ont échoué — dans une commande en fork, la sortie du sub-agent EST ce que l'utilisateur lit.
