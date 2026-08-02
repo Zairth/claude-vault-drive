@@ -115,7 +115,14 @@ ni les recherches ni les notes. Sa mission :
    mesures sémantiques.
 2. Pour chaque question, mécaniquement :
    - **sémantique** : `semantic_search` top 3, **un seul appel** portant
-     `directories: [toutes les cibles]` (`question` telle quelle) — la réponse
+     `directories: [toutes les cibles]`. **La question part
+     CARACTÈRE POUR CARACTÈRE telle qu'elle est écrite dans `BENCH.md`** :
+     ni reformulée, ni corrigée, ni « rendue plus naturelle ». Pas de virgule
+     ajoutée, pas d'inversion sujet-verbe. Un banc est un étalon : deux runs
+     qui n'envoient pas la même chaîne ne mesurent pas la même chose, et
+     l'écart qu'on cherche à lire — un rang, parfois moins — est plus petit
+     que celui qu'une reformulation introduit. Copier la ligne du fichier,
+     ne rien en faire d'autre. La réponse
      rend un groupe par dossier.
      Les espaces vectoriels étant disjoints, **les scores ne se comparent pas
      d'une cible à l'autre** : le rang d'une attendue est son rang **dans

@@ -9,6 +9,18 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.24.1] — 2026-08-02
+
+**Raison de l'update** : un run de banc a reformulé les questions au lieu de les envoyer telles quelles — un étalon dont la question change d'un run à l'autre ne mesure plus rien de comparable.
+
+### Corrigé
+- **`/doc-bench` envoie la question caractère pour caractère.** La consigne
+  disait « question telle quelle » entre parenthèses ; un run l'a lue comme
+  une indication de sens et a « rendu les questions plus naturelles »
+  (inversions sujet-verbe, virgules ajoutées). L'écart qu'un banc doit lire —
+  un rang, parfois moins — est plus petit que celui qu'une reformulation
+  introduit. La règle est désormais explicite et motivée.
+
 ## [1.24.0] — 2026-08-02
 
 **Raison de l'update** : le vault vit sur un dossier synchronisé, donc un jeton d'accès oublié dans `inbox/` part avec lui — rien ne le cherchait. Et une partie de ce qui attendait une autorisation n'avait rien à perdre.
