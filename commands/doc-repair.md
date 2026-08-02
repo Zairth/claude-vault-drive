@@ -59,10 +59,50 @@ trois degrés de fidélité, et la correction doit être **vérifiée** avant d'
 proposée :
 
 1. la note visée et toutes celles qui portent la même affirmation ;
-2. `wiki/sources/<slug>.md` — le **texte intégral** de la pièce. Le passage y
+2. `wiki/sources/<slug>.md` — le **texte intégral standardisé**. Le passage y
    figure-t-il ? Sous quelle forme ?
-3. `archives/<pièce>` — **la pièce elle-même**, désignée par `origine`. La
-   rouvrir et lire le passage à la source.
+3. **La pièce archivée, et il y en a souvent DEUX.** Le frontmatter des notes
+   d'origine porte jusqu'à deux chemins, et ils ne disent pas la même chose :
+   - `origine:` — ce dont la note a été faite : la **transcription** archivée
+     (sortie d'OCR, lecture d'une capture, export markdown) ;
+   - `original:` — **la pièce qui fait foi**, quand elle diffère : le PDF, le
+     scan, l'image. Absent = la transcription est la pièce.
+
+   **Ouvrir les deux quand les deux existent, et dans cet ordre : d'abord la
+   transcription, puis l'original.** L'original ne s'ouvre pas n'importe
+   comment : **router selon son format**, exactement comme `/doc-ingest` le
+   fait en entrée — un fichier ne se lit pas de la même façon selon ce qu'il
+   est, et se tromper de voie donne un contrôle qui ne contrôle rien.
+   - **Capture d'écran** (`.png`, `.jpg`, `.webp`, `.heic`…) → l'**ouvrir
+     directement** avec l'outil Read, qui affiche les images. Jamais d'OCR :
+     réglé pour un document, il aplatit une interface en flux linéaire et fait
+     disparaître la disposition — c'est même souvent là qu'est née l'erreur
+     qu'on vérifie.
+   - **PDF, scan** → attention, c'est le cas piégeux. La transcription
+     archivée **est déjà la sortie d'OCR de ce PDF** : la relancer rendrait le
+     même texte, avec la même erreur. Un OCR ne se contrôle pas par lui-même.
+     Passer par une **voie de lecture différente** — un extracteur de texte
+     local (`pdftotext`, `pdftk`, `pandoc`) s'il est présent sur la machine.
+     Rien de tel disponible → **ne pas relancer l'OCR** : le dire, et déclarer
+     la vérification **partielle** en précisant que l'original n'a pas pu être
+     lu autrement que par le moteur qui a produit la transcription.
+   - **Bureautique binaire** (`.docx`, `.xlsx`, `.pptx`…) → convertir avec ce
+     qui est présent (`libreoffice --headless --convert-to txt|csv`,
+     `pandoc`), lire la conversion. Aucun convertisseur → vérification
+     partielle.
+   - **Texte** (`.md`, `.txt`, `.csv`, `.eml`, code…) → lire tel quel.
+   - **Audio, vidéo** → hors périmètre : vérification partielle, le dire. Une transcription est une lecture
+   automatique : elle saute une ligne, confond un caractère, aplatit un
+   tableau. Vérifier une correction contre elle seule, c'est vérifier contre la
+   même machine qui a peut-être produit l'erreur — le contrôle ne prouve rien.
+   Et si la transcription et l'original divergent sur le passage, **c'est
+   l'original qui tranche**, et cette divergence est elle-même une trouvaille :
+   elle affecte tout ce que la transcription a produit, pas seulement ce
+   passage → le dire dans le rapport et proposer un `> [!warning]` sur la note
+   d'enseignements.
+   `original:` illisible pour toi (format non ouvrable, PDF non converti) → le
+   dire, et traiter la vérification comme **partielle** : confirmée par la
+   transcription, non confirmée par la pièce.
 
 Puis conclure, et **le dire explicitement dans le rapport** :
 
@@ -73,9 +113,8 @@ Puis conclure, et **le dire explicitement dans le rapport** :
   restitution : convention `## Historique` (voir 4) ;
 - **la pièce ne dit ni l'un ni l'autre**, ou est illisible sur ce point →
   **le signaler comme tel** et ne rien affirmer. Proposer quand même la
-  correction si l'utilisateur la demande, mais accompagnée d'un
-  `> [!warning]` disant que la pièce ne la confirme pas. On ne fabrique pas
-  une certitude qu'on n'a pas.
+  correction demandée, mais accompagnée d'un `> [!warning]` disant que la
+  pièce ne la confirme pas. On ne fabrique pas une certitude qu'on n'a pas.
 
 Pièce d'origine inaccessible (Drive non monté, fichier disparu) → le dire, et
 traiter la correction comme non vérifiée.
@@ -98,8 +137,12 @@ Deux natures, deux traitements — c'est le point qui décide de ce qu'on écrit
   changé, c'est la page de concept ou d'entité qui porte la valeur courante,
   et la note d'origine reste telle quelle.
 
-Doute entre les deux → ne pas trancher : présenter les deux lectures dans le
-rapport et laisser l'utilisateur choisir.
+Doute entre les deux → **trancher quand même**, en disant sur quoi tu te
+fondes : la pièce est datée et le vault ne l'est pas, la valeur nouvelle est
+attestée ailleurs, la formulation fautive n'a jamais eu de support. Renvoyer
+le choix à l'utilisateur ne l'aide pas — il n'a pas lu la pièce, c'est toi qui
+viens de la rouvrir. Vraiment indépartageable → le dire, retenir la lecture la
+mieux étayée, et proposer un `> [!question]` qui garde l'autre en mémoire.
 
 ### 5. Recenser ce qu'il faut rebrancher
 
@@ -141,8 +184,11 @@ Exactement ces blocs, dans cet ordre :
    justifiées une par une.
 4. Un bloc `Pour l'agent principal`, avec le chemin `$VAULT` résolu écrit en
    clair :
-   - présenter le verdict et le plan à l'utilisateur, et **n'appliquer que
-     ce qu'il valide** — étape par étape s'il touche une couche immuable ;
+   - appliquer d'office ce qui est **mécanique et réversible** (une valeur
+     corrigée dans une page vivante, un wikilink, une entrée d'INDEX) ;
+     demander l'autorisation pour ce qui **touche une couche immuable ou
+     supprime quelque chose**, en une fois, verdict à l'appui — jamais en
+     demandant à l'utilisateur de choisir à ta place ;
    - après application : réindexer les seuls dossiers modifiés (outil MCP
      `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` avec
      `directory: $VAULT/wiki/<dossier>` explicite, un appel par dossier ;

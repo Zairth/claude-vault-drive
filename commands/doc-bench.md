@@ -73,12 +73,17 @@ garder le contexte principal propre. Sa mission :
    répond (un détail qu'aucun enseignement n'a retenu).
 4. Retourner le banc complet.
 
-Puis, en contexte principal : faire valider les questions à l'utilisateur
-(retirer/reformuler/ajouter), écrire `$VAULT/BENCH.md` au format ci-dessous, et
+Puis, en contexte principal : **écrire directement** `$VAULT/BENCH.md` au
+format ci-dessous — l'utilisateur n'a pas lu le corpus, faire valider vingt
+questions qu'il n'a pas les moyens de juger ne vérifie rien. Contrôler
+soi-même, avant d'écrire, que chaque attendue existe et qu'aucune question ne
+reprend les mots exacts de sa note (elle serait trouvée par un grep et ne
+mesurerait rien). Puis
 ajouter en fin de `$VAULT/LOG/YYYY-MM-DD.md` (fichier du jour, créé au besoin) :
 `## [YYYY-MM-DD] bench | banc créé : <n> questions`. Un `BENCH.md` existant
-(relance avec `creer`) → proposer complément ou refonte, jamais d'écrasement
-sans validation.
+(relance avec `creer`) → jamais d'écrasement : le banc est un étalon, le
+remplacer rendrait incomparables tous les runs passés. Compléter, et signaler
+les questions dont une attendue a disparu.
 
 Format de `BENCH.md` (racine du vault — hors index sémantique par
 construction) :
@@ -150,9 +155,10 @@ ni les recherches ni les notes. Sa mission :
 `$ARGUMENTS` peut restreindre le run à un sous-ensemble (`reel Q3 Q7 Q17`).
 
 1. **Annoncer le coût et attendre l'accord** : « <n> questions → <n> sub-agents
-   lecteurs, chacun ouvre plusieurs notes ». Au-delà de ~10 questions,
-   proposer aussi un sous-ensemble : les questions en échec au dernier run
-   mécanique, plus quelques réussies comme témoin.
+   lecteurs, chacun ouvre plusieurs notes ». C'est la seule question de cette
+   commande, et elle porte sur une dépense, pas sur un jugement. Au-delà de
+   ~10 questions, proposer aussi un sous-ensemble : les questions en échec au
+   dernier run mécanique, plus quelques réussies comme témoin.
 2. Indexer **une seule fois** pour tout le run (mêmes outils qu'au mode
    mécanique). Moteur indisponible → prévenir que le run mesurerait
    `/doc-query` en repli grep, donc incomparable à un run normal, et demander

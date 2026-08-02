@@ -1,5 +1,5 @@
 ---
-description: Ingérer une source dans le vault Obsidian (validation conversationnelle, wiki, INDEX, LOG)
+description: Ingérer une source dans le vault Obsidian — lecture, standardisation, wiki, INDEX, LOG, vérification
 argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
 ---
 
@@ -18,7 +18,7 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
 - Argument vide ou ambigu → demander à l'utilisateur ce qu'il veut ingérer
   (lister le contenu de `$VAULT/inbox/` s'il n'est pas vide).
 - Texte bref fourni directement dans `$ARGUMENTS` → il est déjà en contexte :
-  pas de sub-agent, passer directement à la validation.
+  pas de sub-agent, passer directement au contrôle avant écriture.
 - Fichier local, élément d'`inbox/`, URL, PDF, capture d'écran → **NE JAMAIS
   lire la source en contexte principal** (anti-saturation : sur un gros
   volume, l'ingestion ferait déborder la session).
@@ -58,11 +58,15 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
       série reste UNE note — la découper en une note par fichier donnerait des
       notes de trois lignes qui ne veulent rien dire seules —, et cette
       mention y rétablit la traçabilité, plus finement qu'un découpage ne le
-      ferait. Les dates ne portant souvent ni l'année ni le jour,
-      **demander l'ancrage à l'utilisateur avant de standardiser** — la date
-      de la première entrée — et la reporter en frontmatter. Ne jamais la
-      déduire : une année devinée dans une couche immuable ne se verra plus
-      jamais ;
+      ferait. Les dates ne portant souvent ni l'année ni le jour, chercher
+      l'ancrage dans le vault (une note existante qui date le même événement)
+      ou dans la pièce voisine du même lot. Introuvable → **demander l'ancrage
+      à l'utilisateur**, la date de la première entrée : c'est un fait qu'il
+      détient et que la pièce ne porte pas — l'une des deux seules questions
+      que cette commande a le droit de poser, avec `auteur`. Sans réponse,
+      **ne pas bloquer** : ingérer sans date, avec un `> [!warning]` qui dit
+      l'ancrage manquant. Ne jamais la déduire : une année devinée dans une
+      couche immuable ne se verra plus jamais ;
     - ce sont les **images elles-mêmes** qui sont archivées, avec la
       transcription fidèle qu'en a faite le lecteur — même règle que pour un
       document et sa sortie d'OCR. Aucune référence d'image n'est écrite dans
@@ -188,7 +192,8 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
   **Lot de fichiers (plusieurs chemins, un dossier, inbox/ entier)** : le
   modèle reste « une note par source » — mais **une source n'est pas
   forcément un fichier**. Avant de répartir les lecteurs, **regrouper le lot
-  en sources**, et le faire valider :
+  en sources** — décision qui t'appartient, elle se prend en ouvrant les
+  fichiers :
   - plusieurs fichiers qui forment **un même ensemble** comptent pour UNE
     source, qu'un seul lecteur ouvre dans l'ordre. Le nom de fichier est un
     indice **faible** — un préfixe commun ou une numérotation continue ne
@@ -196,51 +201,63 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
     tranche, c'est le **contenu** : ouvrir le premier fichier de chaque groupe
     pressenti et vérifier qu'ils se poursuivent réellement l'un l'autre. Un
     sous-dossier dédié reste le seul indice de nom qui vaille. Dans le doute,
-    **demander** plutôt que découper — mais un mauvais découpage n'est plus
-    fatal : `/doc-repair` corrige après coup sans tout refaire ;
+    **séparer** plutôt que regrouper : deux notes qu'il faudra fusionner sont
+    plus faciles à rattraper qu'une note qui mélange deux pièces. Ne pas
+    bloquer sur ce choix — `/doc-repair` corrige après coup sans tout
+    refaire ;
   - un document, un export, un article = une source chacun.
 
-  Annoncer le regroupement retenu avant de lancer quoi que ce soit
-  (« <n> fichiers → <m> sources : … »), puis un lecteur par **source**
-  (parallèle, 4 au plus), validation présentée source par source (l'affichage
-  peut être groupé, l'accord est explicite par source) et écriture par source.
+  Annoncer le regroupement retenu (« <n> fichiers → <m> sources : … ») — pour
+  information, pas pour accord —, puis un lecteur par **source** (parallèle,
+  4 au plus) et écriture par source.
   Une source du lot dépasse le seuil → lui appliquer le montage gros volume.
 
   Cas particulier — `inbox/session-*.md` (`type: session` : transcript de
   session Claude Code déposé automatiquement avant compactage) : densité utile
   faible — la mission du lecteur devient « extraire les décisions prises et
   les faits durables, jamais le déroulé de la session ». Aucun enseignement
-  durable → proposer l'archivage direct (déplacement vers `archives/`), sans
-  note source.
+  durable → archivage direct (déplacement vers `archives/`), sans note source
+  ni question posée : un transcript sans enseignement n'a rien à faire valider.
 
-  Dans tous les montages, l'interlocuteur de validation (lecteur, ou
-  synthétiseur en gros volume) garde son contexte : le conserver pour toute
-  la phase de validation ci-dessous.
+  Dans tous les montages, le lecteur (ou le synthétiseur en gros volume) garde
+  son contexte : le conserver pour tout le contrôle ci-dessous.
 
-## Validation conversationnelle (OBLIGATOIRE avant toute écriture)
+## Contrôle avant écriture (le tien, pas celui de l'utilisateur)
 
-1. Proposer les enseignements extraits de la source, **écrits en clair dans le
-   corps de la réponse** (liste numérotée, une ligne chacun). Au-delà d'une
-   dizaine, **valider par tranches** — présenter les enseignements d'une partie
-   de la source, recueillir l'accord, passer à la suivante : une liste de
-   quarante lignes validée d'un bloc n'est plus une validation.
-   INTERDIT de les reléguer dans les options ou descriptions d'un outil de
-   question (AskUserQuestion ou équivalent) : l'utilisateur doit avoir lu
-   chaque enseignement intégralement AVANT qu'on lui demande de se prononcer.
-   Un outil de question ne peut servir qu'à recueillir l'accord (valider /
-   modifier / abandonner) — jamais à porter le contenu.
-2. En discuter : l'utilisateur peut en retirer, corriger, reformuler, ajouter.
-   Retrait ou retouche de forme → se fait en contexte principal. Toute
-   demande qui exige de **retourner à la source** (reformuler sur le fond,
-   vérifier, ajouter un enseignement manqué) → la relayer via SendMessage à
-   l'interlocuteur de validation du montage (le lecteur — contexte, source
-   comprise, conservé ; en gros volume le synthétiseur, qui passe par un
-   lecteur de tranche relancé si la source est requise) — puis présenter sa
-   nouvelle version en clair. Autant d'allers-retours que nécessaire.
-   Interlocuteur perdu ou SendMessage indisponible → relancer le montage
-   concerné avec la source ET le cumul des retours utilisateur déjà exprimés.
-3. N'écrire dans le vault QU'APRÈS son accord explicite — l'écriture se fait
-   en contexte principal, à partir du seul dossier d'ingestion validé.
+**L'ingestion ne demande son avis à personne.** Ce qui arrive dans `inbox/` y
+est déposé pour que le vault s'en serve, le plus souvent **sans que
+l'utilisateur ait lu la pièce** : lui faire valider des enseignements tirés
+d'un texte qu'il n'a pas ouvert ne vérifie rien, ça déplace seulement la charge
+sur celui qui a le moins de contexte. Le contexte est dans la pièce, et la
+pièce, c'est toi qui viens de la lire. Tu décides.
+
+Relis donc toi-même le dossier d'ingestion avant d'écrire :
+
+1. **Chaque enseignement est-il porté par la source ?** Un enseignement qui ne
+   se rattache à aucun passage est une invention — le retirer. Dans le doute,
+   relancer le lecteur (SendMessage : son contexte, source comprise, est
+   conservé ; en gros volume, le synthétiseur, qui relancera un lecteur de
+   tranche si la source est requise). Interlocuteur perdu ou SendMessage
+   indisponible → relancer le montage concerné sur la tranche en cause.
+2. **Ce qui est douteux se consigne, il ne se demande pas.** Une pièce qui se
+   contredit, une date qu'aucun passage n'établit, deux lectures possibles d'un
+   même passage : écrire la lecture la mieux étayée et poser un
+   `> [!question]` sur la page de concept concernée, en disant ce qui manque
+   pour trancher. C'est ce qui remonte au `/doc-lint` suivant. Bloquer
+   l'ingestion sur une ambiguïté serait le pire des deux mondes : rien n'est
+   ingéré, et la question reste posée.
+3. **Ne rien inventer pour combler.** Une date absente reste absente
+   (`> [!warning]`), un auteur inconnu se demande — c'est l'une des rares
+   choses que l'utilisateur sait et que la pièce ne dit pas.
+
+Puis écrire, en contexte principal, à partir du seul dossier d'ingestion —
+sans jamais rouvrir la source.
+
+Ce filet-là n'est pas le seul : l'auto-vérification de l'étape 8 contrôle ce
+que l'écriture pouvait casser, `/doc-lint` balaie l'ensemble ensuite, et
+`/doc-repair` corrige après coup sans tout refaire. Une erreur d'ingestion se
+rattrape ; une ingestion qui n'a pas eu lieu parce qu'elle attendait une
+réponse, non.
 
 ## Écriture (dans cet ordre — à partir du dossier d'ingestion validé, sans
 jamais rouvrir la source en contexte principal)
@@ -287,8 +304,8 @@ double emploi : l'une est fidèle, l'autre est utile.
    Note trop volumineuse → la découper par la structure réelle de la pièce
    (`YYYY-MM-DD-<slug>-1.md`, `-2.md`…), chacune renvoyant à la suivante en
    wikilink ; jamais par une coupe arbitraire au milieu d'une section.
-   **Ingestion abandonnée** (l'utilisateur refuse) → supprimer les fichiers
-   `*.standardise*.md` du sas : rien ne reste en attente.
+   **Ingestion interrompue** (échec de lecture, source illisible) → supprimer
+   les fichiers `*.standardise*.md` du sas : rien ne reste en attente.
 2. `$VAULT/wiki/enseignements/YYYY-MM-DD-<slug>.md` — **ce qu'on en retient**.
    Frontmatter `type: enseignements`, même `origine`, wikilink vers la note de
    source. Corps : **un titre `###` par enseignement**, chacun suivi de sa
@@ -321,9 +338,11 @@ double emploi : l'une est fidèle, l'autre est utile.
    tirets), alias `aliases:`, libellé proche — et en cas de doute enrichir
    l'existante plutôt que créer un doublon.
    Contradiction avec le contenu existant → convention
-   d'`INSTRUCTIONS-CLAUDE.md` : la trancher avec l'utilisateur (la validation
-   est le bon moment) → valeur courante mise à jour dans le corps + entrée
-   `## Historique` en fin de note ; impossible à trancher → callout
+   d'`INSTRUCTIONS-CLAUDE.md`. La trancher **toi-même** quand les pièces le
+   permettent : la plus récente, la plus directe, ou celle qui fait foi
+   l'emporte → valeur courante mise à jour dans le corps + entrée
+   `## Historique` en fin de note, disant ce qui a départagé. Aucune pièce ne
+   départage → callout
    `> [!question]` **sur cette page** (jamais dans `sources/` ni
    `enseignements/`, immuables : on ne pourrait plus l'en retirer une fois
    tranché), décrivant les deux
@@ -399,13 +418,33 @@ double emploi : l'une est fidèle, l'autre est utile.
    le moment le moins cher : le contexte de l'ingestion est encore là, et le
    défaut n'a pas eu le temps de se propager aux ingestions suivantes.
 
+9. **Contrôle complet du vault, enchaîné automatiquement.** L'étape 8 ne voit
+   que les notes écrites ; certains défauts ne se voient qu'à l'échelle du
+   vault (une orpheline créée par un renommage, une page vivante devenue
+   doublon d'une autre, un `INDEX.md` qui a dérivé). Lancer un **sub-agent**
+   (outil Agent, type `Explore`, avant-plan) avec cette mission :
+
+   > Lis `${CLAUDE_PLUGIN_ROOT}/commands/doc-lint.md` et exécute-le
+   > intégralement sur le vault `<$VAULT>`. Tu n'écris RIEN. Retourne ton
+   > rapport final tel que la commande le définit.
+
+   Une seule fois par ingestion, quel que soit le nombre de sources — jamais
+   par source. Puis **appliquer sans rien demander** tout ce qui est mécanique
+   et réversible : trous d'`INDEX.md`, liens pendants ou ambigus, frontmatters
+   incomplets, parasites, réindexation des dossiers touchés. Ce qui reste —
+   fusion de pages vivantes, édition d'une couche immuable, suppression d'un
+   fichier — n'est PAS appliqué et n'est PAS soumis : ce sont des actes
+   destructeurs, ils attendent un `/doc-lint` lancé exprès. Les compter, rien
+   de plus.
+   Échec du sub-agent (moteur absent, fork indisponible) → non bloquant :
+   l'ingestion reste valide, le noter en une ligne.
+
 ## Compte rendu
 
 **Court.** L'ingestion est finie, tout est écrit, vérifié et indexé : ce compte
 rendu confirme, il ne fait pas travailler. Aucune liste de fichiers, aucun
 tableau, aucune question posée — l'utilisateur n'a rien à faire après l'avoir
-lu. Il a déjà validé les enseignements ; le reste est de la mécanique qui s'est
-bien passée.
+lu.
 
 Quatre lignes au plus :
 
@@ -416,8 +455,8 @@ Quatre lignes au plus :
    dans le vault, et `/doc-lint` les listera quand l'utilisateur voudra s'en
    occuper. Les réserves documentaires ne se mentionnent pas : elles sont
    définitives, il n'y a rien à en faire.
-3. **Ce que l'auto-vérification a corrigé**, seulement si elle a corrigé
-   quelque chose. Rien trouvé → ne pas le dire.
+3. **Ce que les vérifications ont corrigé** — l'auto-vérification et le lint
+   enchaîné confondus, en un seul nombre. Rien trouvé → ne pas le dire.
 4. **L'indexation** : `<n> extraits vectorisés`. Détail par dossier seulement
    si l'utilisateur le demande. Échec → là, le dire franchement :
    « ⚠ indexation sémantique échouée (<raison>) — sera rattrapée au prochain

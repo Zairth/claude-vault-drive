@@ -9,6 +9,74 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.22.0] — 2026-08-02
+
+**Raison de l'update** : les commandes demandaient à l'utilisateur de trancher des questions dont la réponse est dans les pièces qu'il n'a pas lues — c'est à la commande de décider, et à elle seule d'enchaîner ses contrôles.
+
+### Modifié
+- **Plus aucune commande ne demande son avis à l'utilisateur.** Ce qui arrive
+  dans `inbox/` y est déposé pour que le vault s'en serve, le plus souvent sans
+  que l'utilisateur ait ouvert la pièce : lui faire valider des enseignements,
+  un regroupement de fichiers ou une paire de pages qu'il n'a pas lus ne
+  vérifie rien, ça déplace la charge sur celui qui a le moins de contexte.
+  Deux régimes désormais, partout :
+  - **mécanique et réversible** (INDEX, wikilinks, frontmatters, parasites,
+    réindexation, requalification d'un callout) → appliqué d'office ;
+  - **destructeur ou irréversible** (fusionner, supprimer, éditer une couche
+    immuable) → soumis **une fois**, avec le verdict et ce qui le motive. La
+    question porte sur l'autorisation d'agir, jamais sur la réponse.
+
+  Ne subsistent que les questions dont la réponse n'est nulle part dans le
+  vault : le chemin du vault, quoi ingérer, l'`auteur` d'une note, l'ancrage
+  d'une série de captures non datées, une version texte quand aucun
+  convertisseur n'est disponible. Et elles ne bloquent plus : sans réponse,
+  l'ingestion se poursuit avec un `> [!warning]`.
+- **`/doc-ingest` : la validation conversationnelle disparaît.** Elle est
+  remplacée par un contrôle que la commande fait elle-même — chaque
+  enseignement est-il porté par la source, ce qui est douteux se consigne en
+  `> [!question]` au lieu de bloquer, rien ne s'invente pour combler. Une
+  contradiction avec l'existant se tranche sur les pièces (la plus récente, la
+  plus directe, celle qui fait foi) et ne remonte en callout que si aucune ne
+  départage.
+- **`/doc-ingest` enchaîne `/doc-lint`** en fin de course, une fois par
+  ingestion : l'auto-vérification de la 1.21.0 ne voit que les notes écrites,
+  certains défauts ne se voient qu'à l'échelle du vault. Les corrections
+  mécaniques sont appliquées dans la foulée ; le reste est compté, pas soumis.
+  Échec non bloquant.
+- **`/doc-lint`** rend un **verdict** sur chaque paire de doublons suspectés —
+  doublon accidentel ou scission délibérée — au lieu de demander si la scission
+  est voulue. Deux pages traitant le même objet sous deux angles (ce qu'une
+  pièce affirme / ce que le corpus établit) ne sont pas un doublon, et une
+  réserve valable sur l'une deviendrait fausse au-dessus de l'autre.
+- **`/doc-repair`** tranche entre erreur de restitution et information périmée
+  au lieu de présenter les deux lectures ; indépartageable → la lecture la
+  mieux étayée, et un `> [!question]` qui garde l'autre en mémoire.
+- **`/doc-repair` vérifie contre la transcription ET contre l'original.** Le
+  frontmatter d'une note d'origine porte jusqu'à deux chemins : `origine:`,
+  ce dont la note a été faite (la transcription archivée), et `original:`, la
+  pièce qui fait foi quand elle diffère. La commande n'ouvrait que le premier —
+  or vérifier une correction contre une transcription seule, c'est la vérifier
+  contre la machine qui a peut-être produit l'erreur. Les deux sont ouverts
+  désormais, l'original tranche, et une divergence entre les deux devient
+  elle-même une trouvaille : elle affecte tout ce que la transcription a
+  produit. Original illisible → vérification déclarée **partielle**.
+  L'original est ouvert **selon son format**, comme `/doc-ingest` route ses
+  entrées : une capture se lit à l'œil (jamais d'OCR), un binaire bureautique
+  se convertit, un texte se lit tel quel. Cas piégeux traité à part, le PDF :
+  sa transcription archivée **est** sa sortie d'OCR, donc relancer l'OCR
+  rendrait la même erreur — un OCR ne se contrôle pas par lui-même. La
+  vérification passe par une voie différente (`pdftotext`, `pandoc`) ou se
+  déclare partielle.
+- **`/doc-lint` délègue à `/doc-repair`** pour trancher un `> [!question]`,
+  une contradiction à la fois : elle oppose deux affirmations, et savoir
+  laquelle la pièce porte suppose de remonter jusqu'à elle. Le reste des
+  vérifications n'y passe pas — un lien pendant ou un trou d'INDEX se constate
+  dans le vault, remonter à la pièce ne serait qu'une dépense.
+- **`/doc-bench creer`** écrit le banc directement, après avoir vérifié
+  lui-même que chaque attendue existe et qu'aucune question ne reprend les mots
+  exacts de sa note. Un `BENCH.md` existant n'est plus jamais écrasé : c'est un
+  étalon, le remplacer rendrait incomparables tous les runs passés.
+
 ## [1.21.2] — 2026-08-01
 
 **Raison de l'update** : le modèle de vault réclamait encore une réserve « sur la note de source » alors que sa propre convention des callouts l'interdit — chaque pièce non datée reposait donc un commentaire éditorial dans la couche de texte pur.

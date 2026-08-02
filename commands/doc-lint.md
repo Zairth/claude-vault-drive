@@ -10,7 +10,9 @@ background: false
 Cette commande s'exécute en fork : tout ce fichier s'adresse au sub-agent.
 Tu es un sub-agent isolé — l'agent principal ne voit que ton rapport final.
 Tu ne modifies RIEN dans le vault : les corrections sont appliquées par
-l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
+l'agent principal à partir de ton rapport — les mécaniques d'office, les
+destructrices après autorisation. Ton rapport porte donc un **verdict** sur
+chaque point, jamais une question ouverte.
 
 ## Préambule obligatoire
 
@@ -193,8 +195,15 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      du reste = paire suspectée. Ne comparer les scores qu'à l'intérieur d'un
      même index. Moteur indisponible → le noter, la normalisation des noms
      reste faite.
-   Lister chaque paire avec sa raison (nom / sémantique / les deux).
-   Détection seulement — aucune fusion sans validation (voir corrections).
+   Lister chaque paire avec sa raison (nom / sémantique / les deux), **et pour
+   chacune ton verdict motivé** : doublon accidentel à fusionner, ou scission
+   délibérée à conserver. Ouvrir les deux pages et le dire — deux pages qui
+   traitent le même objet sous deux angles (ce qu'une pièce affirme d'un côté,
+   ce que le corpus établit de l'autre) ne sont pas un doublon, et une réserve
+   valable sur l'une deviendrait fausse au-dessus du contenu de l'autre. La
+   convention « une idée par note » tranche la plupart des cas.
+   Détection et verdict seulement — aucune fusion sans validation (voir
+   corrections).
 
 ## Rapport final (ton retour à l'agent principal)
 
@@ -211,8 +220,32 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
    des `[!warning]` requalifiés — jamais les mises en garde documentaires,
    qui sont un état normal du vault et non une dette.
 3. Le rapport par catégorie (vide = le dire aussi : « rien à signaler »).
-4. Un bloc `Pour l'agent principal` — proposer les corrections à l'utilisateur
-   et n'appliquer QUE ce qu'il valide :
+4. Un bloc `Pour l'agent principal`. Deux régimes, à ne jamais confondre :
+
+   - **mécanique et réversible** — trous d'`INDEX.md`, liens pendants ou
+     ambigus, frontmatters incomplets, parasites, réindexation, requalification
+     d'un callout : **appliquer sans demander**. Rien de tout cela ne détruit
+     quoi que ce soit, et attendre un accord ne fait que reporter la même
+     correction ;
+   - **destructeur ou irréversible** — fusionner deux pages, supprimer un
+     fichier, éditer une couche immuable : soumettre. Une seule fois, avec ton
+     verdict et ce qui le motive, et la question porte sur l'**autorisation**,
+     jamais sur la réponse.
+
+   **Ne jamais demander à l'utilisateur une information qu'il n'a pas.** Ce qui arrive dans
+   `inbox/` y est déposé pour que le vault s'en serve, souvent sans que
+   l'utilisateur ait lu la pièce : le contexte d'une note est dans le vault et
+   dans les pièces, pas dans sa tête. Une question comme « cette scission est-elle
+   voulue ? » ou « ces deux pages disent-elles la même chose ? » se répond en
+   ouvrant les deux fichiers — c'est ton travail, pas le sien.
+   Chaque point soumis porte donc **ton verdict et ce qui le motive**, et ne
+   demande qu'une **autorisation d'agir** : « voici ce que j'ai constaté, voici
+   ce que j'en conclus, j'applique ? ». Une question ouverte n'est légitime que
+   si la réponse dépend de quelque chose que le vault ne contient pas — une
+   intention, une pièce non versée, une décision à venir — et il faut alors dire
+   pourquoi le vault ne suffit pas.
+
+   Les corrections :
    - trous d'INDEX → **régénérer `INDEX.md` en entier** plutôt que le
      rapiécer (fichier dérivé : sections du template, une entrée
      `- [[<slug>]] — <description du frontmatter>` par note de `wiki/`) ;
@@ -223,7 +256,20 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      rappeler les `> [!question]` à trancher — un callout tranché se
      résout par la convention d'`INSTRUCTIONS-CLAUDE.md` : valeur courante
      mise à jour dans le corps, ancienne version poussée en `## Historique`,
-     callout retiré. Pour un `[!warning]` requalifié : le retyper en
+     callout retiré.
+     **Un `[!question]` ne se tranche pas depuis le vault seul** : il oppose
+     deux affirmations, et savoir laquelle la pièce porte suppose de remonter
+     jusqu'à elle — transcription **et** original. C'est exactement le travail
+     de `/doc-repair`, et il ne se refait pas ici. C'est l'**agent principal**
+     qui délègue, une contradiction à la fois, à un sub-agent — le fork de lint
+     n'a pas l'outil Agent :
+     > Lis `${CLAUDE_PLUGIN_ROOT}/commands/doc-repair.md` et exécute-le sur le
+     > vault `<$VAULT>` pour : note `<chemin>`, passage `<le passage exact>`,
+     > valeur proposée `<l'autre affirmation du callout>`. Tu n'écris RIEN.
+     Aucune pièce ne départage → le callout reste, c'est sa raison d'être.
+     Le reste des vérifications ne passe PAS par là : un lien pendant, un trou
+     d'INDEX ou un frontmatter incomplet se constatent dans le vault, remonter
+     à la pièce pour eux ne serait qu'une dépense. Pour un `[!warning]` requalifié : le retyper en
      `[!question]` sur place, puis le traiter comme les autres. Pour un
      `[!question]` égaré dans une couche immuable : reporter le callout sur la
      page concept/entité concernée, puis **le retirer de la note source** —
@@ -245,8 +291,8 @@ l'agent principal, après validation de l'utilisateur, à partir de ton rapport.
      `entites/` et `syntheses/`. Sans cette édition, la prochaine ingestion
      réécrira des liens ambigus quel que soit le nombre de liens corrigés
      aujourd'hui.
-   - Pour chaque paire de doublons que l'utilisateur confirme — **fusion
-     assistée**, dans cet ordre : il choisit la page survivante ; rapatrier le
+   - Pour chaque paire que TON verdict a qualifiée de doublon accidentel et
+     dont l'utilisateur autorise la fusion — **fusion assistée**, dans cet ordre : il choisit la page survivante ; rapatrier le
      contenu utile de la page absorbée ; ajouter le nom de l'absorbée aux
      `aliases:` de la survivante (filet : tout wikilink oublié continue de
      résoudre dans Obsidian et n'est pas compté pendant) ; réécrire les
