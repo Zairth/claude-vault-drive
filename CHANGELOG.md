@@ -9,6 +9,40 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.25.0] — 2026-08-02
+
+**Raison de l'update** : le banc a trouvé une note introuvable — non pas parce que le moteur la classait mal, mais parce que sa page-parent ne la mentionnait pas. Aucune vérification ne regardait ça.
+
+### Ajouté
+- **`/doc-lint`, treizième vérification : renvois à sens unique.** Une note qui
+  se déclare le complément d'une autre — « page de regroupement complétant
+  `[[X]]` », « suite de `[[X]]` » — doit être pointée en retour par cette
+  page-parent. Le défaut échappe au contrôle des orphelines : la page
+  complémentaire est pointée par d'autres notes, donc elle passe pour saine.
+  Mais qui arrive sur la parente ne saura jamais que le complément existe, et
+  une recherche qui remonte la parente ne l'atteindra pas en suivant ses liens.
+  Mesuré : sur un banc de 22 questions, c'est la **seule** dont une attendue
+  était hors de portée, moteur hors de cause. Deux couples concernés sur un
+  vault de 148 notes — ce n'est pas un cas de figure exotique.
+  Correction mécanique, appliquée d'office : le lien manquant est ajouté dans
+  la phrase qui s'y prête, jamais en « Voir aussi » de fin de note, qui ne dit
+  pas ce que le complément apporte.
+
+### Corrigé
+- **`vault-check.sh` lit `CLAUDE_PROJECT_DIR`, plus `$PWD`.** Le script
+  résolvait la config du vault depuis le répertoire courant : appelé par un
+  sub-agent ou un wrapper qui avait changé de dossier, il déclarait le vault
+  absent alors qu'il était parfaitement accessible. Constaté sur
+  `vault-index-targets.sh` sans argument. Repli sur `$PWD` hors de Claude
+  Code, pour l'appel manuel.
+- **Le critère de `grep` du banc est figé** : mots de 5 caractères ou plus,
+  accents repliés, casse ignorée, cherchés dans le corps entier de la note ;
+  attendue touchée dès la moitié des mots. Il n'était pas écrit — deux runs
+  sur un corpus **strictement identique** ont rendu 11/22 puis 10/22, et
+  l'écart s'est lu comme une régression alors que le grep ne passe même pas
+  par le moteur. Un chiffre non reproductible est pire qu'absent : il se
+  compare quand même.
+
 ## [1.24.1] — 2026-08-02
 
 **Raison de l'update** : un run de banc a reformulé les questions au lieu de les envoyer telles quelles — un étalon dont la question change d'un run à l'autre ne mesure plus rien de comparable.

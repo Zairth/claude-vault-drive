@@ -22,7 +22,7 @@ chaque point, jamais une question ouverte.
 2. Lire intégralement `$VAULT/INSTRUCTIONS-CLAUDE.md` et s'y conformer
    (règles de maintenance : sources immuables, LOG append-only, INDEX à jour).
 
-## Vérifications (les douze)
+## Vérifications (les treize)
 
 1. **Callouts** — deux natures que la convention d'`INSTRUCTIONS-CLAUDE.md`
    sépare par leur durée de vie ; ne jamais les additionner :
@@ -90,16 +90,29 @@ chaque point, jamais une question ouverte.
    déclarait le nom nu valable « partout ailleurs », ce qui reproduit le
    défaut à chaque écriture. Formulation ancienne → le signaler (remède dans
    les corrections).
-4. **Trous d'INDEX** : chaque note de `wiki/` doit apparaître dans `INDEX.md` —
+4. **Renvois à sens unique** : une note qui se déclare **le complément
+   d'une autre** — « page de regroupement complétant `[[X]]` », « suite de
+   `[[X]]` », « détail de `[[X]]` », ou tout wikilink dans sa première phrase
+   qui la présente comme dépendant d'une page-parent — doit être pointée EN
+   RETOUR par cette page-parent. Vérifier la réciprocité, lister les couples
+   asymétriques.
+   Ce n'est pas de la symétrie pour la symétrie, et ce défaut échappe à la
+   vérification 2 : la page complémentaire est pointée par d'autres notes,
+   donc elle n'est pas orpheline. Mais quelqu'un — humain ou agent — qui
+   arrive sur la page-parent ne saura jamais que le complément existe, et une
+   recherche qui remonte la parente ne l'atteindra pas en suivant ses liens.
+   Mesuré au banc : c'est la seule question sur vingt-deux dont une attendue
+   était introuvable, moteur hors de cause.
+5. **Trous d'INDEX** : chaque note de `wiki/` doit apparaître dans `INDEX.md` —
    lister les absentes. Inversement, lister les entrées d'`INDEX.md` pointant
    vers des fichiers disparus.
-5. **Fichiers de conflit Drive** : chercher les motifs `* (1).md`, `* (2).md` et
+6. **Fichiers de conflit Drive** : chercher les motifs `* (1).md`, `* (2).md` et
    `*conflit*` dans tout le vault → lister. Chercher aussi les doublons du mapping
    vectoriel (`embeddings (1).jsonl`, `*conflit*`) dans **chaque**
    `wiki/<dossier>/.index/` → lister séparément (résolution spécifique, voir
    corrections).
-6. **inbox/ en attente** : lister les fichiers non ingérés (information, pas erreur).
-7. **Frontmatter obligatoire** (modèle de note d'`INSTRUCTIONS-CLAUDE.md`) :
+7. **inbox/ en attente** : lister les fichiers non ingérés (information, pas erreur).
+8. **Frontmatter obligatoire** (modèle de note d'`INSTRUCTIONS-CLAUDE.md`) :
    pour chaque note de `wiki/`, vérifier la présence de `type` + `date` +
    `auteur` + `description`, plus `origine` pour les sources et `question`
    pour les synthèses
@@ -108,7 +121,7 @@ chaque point, jamais une question ouverte.
    `entites/`, `type: source` sous `sources/`, `type: enseignements` sous
    `enseignements/`…) : un désaccord fausse l'INDEX et trahit une note écrite
    au mauvais endroit.
-8. **Cohérence vectorielle** — il y a **un index par dossier de `wiki/`**
+9. **Cohérence vectorielle** — il y a **un index par dossier de `wiki/`**
    (`concepts/`, `entites/`, `syntheses/`, `enseignements/`, `sources/`), pas
    un index global.
    La liste fait foi :
@@ -136,7 +149,7 @@ chaque point, jamais une question ouverte.
      vecteurs = indexation non suivie (le verdict définitif reste le hash,
      jamais les dates).
 
-9. **Appariement des couches d'origine** — toute pièce ingérée produit deux
+10. **Appariement des couches d'origine** — toute pièce ingérée produit deux
    notes de même slug, `sources/<slug>.md` et `enseignements/<slug>.md`.
    Lister les **orphelines d'appariement** : un texte intégral dont personne
    n'a tiré d'enseignement (pièce ingérée puis abandonnée), et surtout un
@@ -149,7 +162,7 @@ chaque point, jamais une question ouverte.
    Le wikilink croisé attendu est **préfixé du dossier**
    (`[[sources/<slug>]]`) : un lien croisé en nom nu est ambigu, les deux
    notes portant le même slug — le signaler comme à corriger.
-10. **Parasites hors `wiki/`** — les autres vérifications ne regardent que
+11. **Parasites hors `wiki/`** — les autres vérifications ne regardent que
    `wiki/`, or Obsidian indexe TOUT le vault : ce qui traîne ailleurs pollue
    le graphe humain (l'index sémantique, lui, ne couvre que `wiki/`).
    Vérifier d'abord que `.obsidian/app.json` exclut bien **`archives/` et
@@ -182,7 +195,7 @@ chaque point, jamais une question ouverte.
      Dans **`archives/`** c'est sans conséquence tant que l'exclusion Obsidian
      est en place : compter seulement, et ne jamais modifier un fichier
      archivé — la couche est immuable.
-11. **Doublons suspectés (pages vivantes)** : sur l'ensemble `wiki/concepts/`
+12. **Doublons suspectés (pages vivantes)** : sur l'ensemble `wiki/concepts/`
    + `wiki/entites/` — les doublons traversent les deux dossiers
    (`Docker.md` dans l'un, `conteneurisation-docker.md` dans l'autre) :
    - collision de **noms normalisés** (casse, accents, tirets/underscores,
@@ -204,7 +217,7 @@ chaque point, jamais une question ouverte.
    convention « une idée par note » tranche la plupart des cas.
    Détection et verdict seulement — aucune fusion sans validation (voir
    corrections).
-12. **Identifiants en clair dans le vault** — un vault vit sur un dossier
+13. **Identifiants en clair dans le vault** — un vault vit sur un dossier
    **synchronisé** : ce qui y traîne part avec lui, et un secret oublié n'est
    plus un secret. Chercher dans TOUT le vault, `inbox/` et `archives/`
    compris (ce sont eux qui reçoivent les exports bruts, donc eux qui les
@@ -224,7 +237,8 @@ chaque point, jamais une question ouverte.
    la sortie de vault-check).
 2. **La ligne de compteurs**, sur une seule ligne — l'état de santé du vault
    d'un coup d'œil, comparable d'un lint à l'autre :
-   `contradictions: n · liens pendants: n · doublons suspectés: n ·
+   `contradictions: n · liens pendants: n · renvois à sens unique: n ·
+   doublons suspectés: n ·
    orphelines: n · trous d'INDEX: n · conflits Drive: n · inbox: n ·
    frontmatters incomplets: n · parasites: n · index manquants: n ·
    appariements rompus: n · notes: n (concepts n · entites n · sources n ·
@@ -350,6 +364,10 @@ chaque point, jamais une question ouverte.
      corriger le lien vers la page existante ; page réellement manquante →
      proposer sa création ou le délier (texte simple) — jamais de page coquille
      créée juste pour éteindre le compteur.
+   - Pour un **renvoi à sens unique** : ajouter le lien manquant sur la
+     page-parent, dans la phrase qui s'y prête — jamais une ligne « Voir
+     aussi » posée en fin de note, qui ne dit pas ce que le complément
+     apporte. Mécanique et réversible : appliquer d'office.
    - Pour chaque wikilink **ambigu** : préfixer la cible du dossier voulu, en
      laissant le texte affiché intact — `[[x|la pièce]]` devient
      `[[enseignements/x|la pièce]]`, et le rendu ne bouge pas. Choisir la

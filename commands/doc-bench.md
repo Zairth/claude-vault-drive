@@ -130,8 +130,18 @@ ni les recherches ni les notes. Sa mission :
      reconstitué. Une attendue de `entites/` au rang 1 de `entites/` compte
      comme rang 1, quel que soit le score des pistes de `sources/`.
      → rang de la première attendue (1-3, ou absente) ;
-   - **grep** : les mots pleins de la question (sans articles ni mots-outils)
-     sur `wiki/` → attendues touchées ou non ;
+   - **grep** — critère FIGÉ, à appliquer à la lettre, sans quoi la ligne
+     n'est comparable à rien : les **mots de 5 caractères ou plus** de la
+     question, accents repliés et casse ignorée, cherchés dans le **corps
+     entier** de chaque note de `wiki/`. Une attendue est **touchée** dès
+     qu'**au moins la moitié** de ces mots y figurent (arrondi supérieur).
+     Ni pondération, ni proximité, ni racinisation.
+     Ce critère n'est pas le bon en soi — il n'y en a pas de bon — mais il
+     est **écrit**, donc reproductible. Mesuré : deux runs sur un corpus
+     strictement identique ont rendu 11/22 puis 10/22 faute de l'avoir figé,
+     et l'écart s'est lu comme une régression alors que le grep ne passe même
+     pas par le moteur. Un chiffre non reproductible est pire qu'absent : il
+     se compare quand même ;
    - **+1 saut** : les wikilinks `[[...]]` des notes remontées contiennent-ils
      une attendue absente de ces remontées ? C'est ce que la cascade de
      `/doc-query` fait gratuitement (elle suit les wikilinks des notes

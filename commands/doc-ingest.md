@@ -465,7 +465,7 @@ double emploi : l'une est fidèle, l'autre est utile.
    défont pas, le vault n'étant pas versionné, et une ingestion n'est pas le
    moment de les décider. Les compter, et **dire leur nombre au compte
    rendu** : reportés, pas oubliés.
-   Exception : un **identifiant en clair** trouvé dans le vault (contrôle 12)
+   Exception : un **identifiant en clair** trouvé dans le vault (contrôle 13)
    se dit immédiatement, quel que soit le reste. Ce n'est pas une dette de
    maintenance qui peut attendre le prochain lint, c'est une fuite en cours.
    Échec du sub-agent (moteur absent, fork indisponible) → non bloquant :
