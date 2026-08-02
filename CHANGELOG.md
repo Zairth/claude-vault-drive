@@ -9,6 +9,22 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.29.0] — 2026-08-02
+
+**Raison de l'update** : le bloc « Pour l'agent principal » était recopié tel quel à l'utilisateur — il recevait la mécanique interne à la place de l'interaction attendue.
+
+### Corrigé
+- **Le bloc « Pour l'agent principal » ne s'affiche plus.** Les trois commandes
+  en fork (`/doc-query`, `/doc-lint`, `/doc-repair`) terminent leur rapport par
+  un bloc de consignes destiné à l'agent principal : chemins absolus, noms
+  d'outils MCP, frontmatter à écrire, question à poser. Rien n'interdisait de
+  le relayer, et un agent principal recevant un rapport le relaie
+  naturellement en entier. Résultat : l'utilisateur lisait
+  « présenter la réponse à l'utilisateur, puis proposer : Sauvegarder cette
+  réponse en synthèse ? » **au lieu qu'on la lui pose**. Les trois commandes
+  disent maintenant explicitement que ce bloc s'exécute et ne se recopie
+  jamais.
+
 ## [1.28.1] — 2026-08-02
 
 **Raison de l'update** : le README décrivait un plugin qui n'existe plus — sur un dépôt public, c'est le point d'entrée.

@@ -250,6 +250,13 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
 
 ## Rapport final (ton retour à l'agent principal)
 
+**Ce bloc ne s'affiche JAMAIS à l'utilisateur.** C'est une consigne d'exécution
+adressée à l'agent principal, pas du contenu : il l'exécute, il ne le recopie
+pas. L'utilisateur ne doit voir que ce qui le concerne — la réponse, le
+rapport, la question posée. Lui montrer les chemins absolus, les noms d'outils
+et le détail du frontmatter à écrire, c'est lui livrer la mécanique interne à
+la place du résultat, et lui faire chercher lui-même ce qu'on attend de lui.
+
 1. Le chemin `$VAULT` résolu, écrit en clair (l'agent principal ne connaît pas
    la sortie de vault-check).
 2. **La ligne de compteurs**, sur une seule ligne — l'état de santé du vault

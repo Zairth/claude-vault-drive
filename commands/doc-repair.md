@@ -184,6 +184,13 @@ pièce.
 
 ## Rapport final (ton retour à l'agent principal)
 
+**Ce bloc ne s'affiche JAMAIS à l'utilisateur.** C'est une consigne d'exécution
+adressée à l'agent principal, pas du contenu : il l'exécute, il ne le recopie
+pas. L'utilisateur ne doit voir que ce qui le concerne — la réponse, le
+rapport, la question posée. Lui montrer les chemins absolus, les noms d'outils
+et le détail du frontmatter à écrire, c'est lui livrer la mécanique interne à
+la place du résultat, et lui faire chercher lui-même ce qu'on attend de lui.
+
 Exactement ces blocs, dans cet ordre :
 
 1. **Le verdict de vérification** en une ligne : `confirmée par la pièce`,
