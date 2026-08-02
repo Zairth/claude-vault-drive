@@ -26,12 +26,38 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
   **Router d'abord selon la nature de la source** — l'OCR n'est pas un passage
   obligé, c'est un outil à documents :
 
-  - **PDF, scan, document multi-pages** → conversion markdown par OCR
-    (outil MCP `mcp__plugin_agentic-toolbox_toolbox__ocr_convert` si
-    disponible, sinon la porte en ligne de commande du moteur :
-    `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-ocr.sh" <fichier> [<sortie>]`), dépôt dans `$VAULT/inbox/`, puis mesure du markdown
-    obtenu. C'est son terrain : mise en page structurée, texte au fil des
-    pages.
+  - **PDF** → **tester d'abord s'il porte une couche de texte**, avant toute
+    idée d'OCR. Un PDF produit par un logiciel (export tableur, traitement de
+    texte, facture générée) contient le texte tel que le logiciel l'a écrit :
+    l'extraire est **exact, gratuit et instantané**. Le passer à l'OCR revient
+    à le photographier pour deviner ce qu'on pouvait lire — et un OCR se
+    trompe : il confond des mots voisins, et il le fait **systématiquement**,
+    remplaçant partout la même valeur par la même autre. L'erreur est alors
+    invisible, parce que le résultat reste plausible et cohérent avec
+    lui-même.
+    Le plugin embarque l'extracteur, précisément pour que ce test ne dépende
+    d'aucune installation :
+    `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/pdf-text.py" <fichier> [<sortie>]`
+    — bibliothèque standard seule, aucun réseau, aucune clé. Il rend le texte
+    et sort en **0** ; il sort en **1** avec un message explicite quand le PDF
+    ne porte pas de couche de texte exploitable, et c'est ce code de sortie
+    qui décide : 0 → **c'est lui la transcription**, dépôt dans
+    `$VAULT/inbox/`, pas d'OCR, pas d'appel API ; 1 → passer à la ligne
+    suivante.
+    Il ne reconstruit pas la mise en page : la sortie est le texte dans
+    l'ordre où le PDF le dessine, cellule après cellule pour un tableau. C'est
+    la standardisation qui lui rend sa structure, comme pour toute autre
+    source.
+  - **Scan, photo de document, PDF sans couche de texte** → là seulement,
+    conversion markdown par OCR (outil MCP
+    `mcp__plugin_agentic-toolbox_toolbox__ocr_convert` si disponible, sinon la
+    porte en ligne de commande du moteur :
+    `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-ocr.sh" <fichier> [<sortie>]`),
+    dépôt dans `$VAULT/inbox/`, puis mesure du markdown obtenu. C'est son
+    terrain : une page dont il n'existe aucune autre lecture que l'image.
+    Le noter dans la note d'enseignements par un `> [!warning]` : une pièce
+    lue par OCR est une pièce lue par une machine faillible, et c'est une
+    réserve documentaire comme une autre.
   - **Capture d'écran** (`.png`, `.jpg`, `.jpeg`, `.webp`, `.heic`…) →
     **jamais d'OCR**. Un OCR documentaire est réglé pour une mise en page de
     document ; sur une capture d'interface, il rend un flux linéaire où la

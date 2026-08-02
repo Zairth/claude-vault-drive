@@ -225,10 +225,14 @@ s'en sert dans le plugin, et ce qui se passe s'il manque :
 - **`/vault-init`, fusion de la config Obsidian** — uniquement quand
   `.obsidian/app.json` existe déjà : sans `python3`, le script n'y touche pas
   et affiche la manipulation à faire à la main. Sur un vault neuf, le fichier
-  est écrit en bash pur, sans dépendance.
+  est écrit en bash pur, sans dépendance ;
+- **lecture des PDF à couche de texte** (`scripts/pdf-text.py`) → sans
+  `python3`, un PDF produit par un logiciel repart vers l'OCR, qui le lira
+  moins bien et à un coût d'API. Rien ne casse, la qualité baisse.
 
-Rien d'autre n'en dépend : les commandes `/doc-*` fonctionnent intégralement.
-(Le moteur sémantique, lui, a ses propres prérequis Python — section 5.)
+Bibliothèque standard seule dans les trois cas : aucun `pip install`, aucun
+accès réseau. (Le moteur sémantique, lui, a ses propres prérequis Python —
+section 5.)
 
 ## Récapitulatif
 
@@ -240,7 +244,7 @@ Rien d'autre n'en dépend : les commandes `/doc-*` fonctionnent intégralement.
 | 4 | Montage Drive dans WSL | vault partagé sous WSL | `ls "/mnt/g/Mon Drive"` |
 | 5 | agentic-toolbox (plugin) + `uv` + `MISTRAL_API_KEY` | recherche sémantique/OCR seulement | outil MCP `llm_check`, ou `/doc-query` qui annonce son repli grep |
 | 6 | Obsidian | non (vitrine humaine) | ouvrir le vault comme coffre |
-| 7 | `python3` | non (hooks + fusion de config Obsidian ; dégradation silencieuse) | `python3 --version` |
+| 7 | `python3` | non (hooks, fusion de config Obsidian, lecture des PDF à couche de texte ; dégradation silencieuse) | `python3 --version` |
 
 Ensuite, dans Claude Code ([README](README.md#installation)) :
 

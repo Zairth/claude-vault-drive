@@ -9,6 +9,52 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.23.0] — 2026-08-02
+
+**Raison de l'update** : un PDF produit par un logiciel était envoyé à l'OCR comme s'il n'avait pas de texte — mesuré sur un export tableur, une colonne entière inversée sans que rien ne le signale.
+
+### Ajouté
+- **`scripts/pdf-text.py`** — extraction de la couche de texte d'un PDF, en
+  bibliothèque standard seule : aucun `pip install`, aucun réseau, aucune clé.
+  Flux décompressés en zlib, glyphes traduits par les tables `/ToUnicode` que
+  le PDF embarque pour ses polices sous-ensemblées. Sort en 0 avec le texte,
+  en 1 avec un message explicite quand la couche est absente — c'est le code
+  de sortie qui aiguille vers l'OCR, pas une appréciation.
+  Deux refus, pas un seul : couche absente (scan), **et couche trop maigre pour
+  être le contenu**. Un diaporama exporté en PDF porte ses titres en texte
+  pendant que tout son fond est en images — mesuré, 348 caractères sur 11
+  pages, contre 4 736 par page pour un export tableur. Se fier au total seul
+  ferait déclarer « PDF texte » un document dont on perdrait l'essentiel,
+  silencieusement ; c'est la **densité par page** qui tranche.
+
+### Modifié
+- **Un PDF n'est plus envoyé à l'OCR par défaut.** `/doc-ingest` teste d'abord
+  la couche de texte. Un PDF produit par un logiciel — export tableur,
+  traitement de texte, facture générée — contient le texte tel que ce logiciel
+  l'a écrit : l'extraire est exact, gratuit et instantané. Le passer à l'OCR
+  revient à le photographier pour deviner ce qu'on pouvait lire.
+  Ce que ça coûtait, mesuré sur un export de 40 lignes : les **18 « Haute »**
+  d'une colonne de priorité lues **« Moyenne »**, soit 35 « Moyenne » pour 17
+  réelles — une colonne entière inversée. L'erreur est invisible parce que le
+  résultat reste plausible et cohérent avec lui-même. L'OCR garde son terrain :
+  le scan, la photo, la page dont il n'existe aucune autre lecture que l'image
+  — et cette lecture-là se signale désormais par un `> [!warning]` dans la note
+  d'enseignements.
+- **`/doc-repair` vérifie l'original par cette même voie.** La transcription
+  archivée d'un PDF **est** sa sortie d'OCR : la relancer rendrait la même
+  erreur, un OCR ne se contrôle pas par lui-même. Vrai scan ou `python3`
+  absent → vérification déclarée **partielle**, jamais un repli sur l'OCR.
+- **L'agent principal contre-vérifie le rapport de `/doc-repair`** avant
+  d'écrire un constat chiffré ou nominatif dans une couche immuable. Un
+  rapport de sub-agent est un témoignage, pas une preuve : rouvrir la pièce par
+  la voie indépendante et recompter soi-même. Écart → la pièce gagne. Mesuré
+  sur un rapport réel : deux affirmations fausses sur huit, dont celle qui
+  devait être gravée.
+- **Une divergence transcription/original déclenche une réingestion**, pas une
+  réécriture à la main : elle condamne tout ce que la transcription a produit.
+  `/doc-repair` pose le `> [!warning]` qui empêche l'erreur de remonter en
+  recherche, puis `/doc-ingest` relit la pièce par la voie correcte.
+
 ## [1.22.0] — 2026-08-02
 
 **Raison de l'update** : les commandes demandaient à l'utilisateur de trancher des questions dont la réponse est dans les pièces qu'il n'a pas lues — c'est à la commande de décider, et à elle seule d'enchaîner ses contrôles.

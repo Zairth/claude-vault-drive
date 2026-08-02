@@ -81,20 +81,28 @@ proposée :
    - **PDF, scan** → attention, c'est le cas piégeux. La transcription
      archivée **est déjà la sortie d'OCR de ce PDF** : la relancer rendrait le
      même texte, avec la même erreur. Un OCR ne se contrôle pas par lui-même.
-     Passer par une **voie de lecture différente** — un extracteur de texte
-     local (`pdftotext`, `pdftk`, `pandoc`) s'il est présent sur la machine.
-     Rien de tel disponible → **ne pas relancer l'OCR** : le dire, et déclarer
-     la vérification **partielle** en précisant que l'original n'a pas pu être
-     lu autrement que par le moteur qui a produit la transcription.
+     Passer par la **voie de lecture indépendante** que le plugin embarque :
+     `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/pdf-text.py" <le PDF>`
+     — il rend la couche de texte que le logiciel producteur a écrite, sans
+     dépendance ni réseau. Sortie 0 → c'est la lecture de référence, elle
+     prime sur l'OCR. Sortie 1 (aucune couche de texte : vrai scan) → **ne pas
+     relancer l'OCR**, le dire, et déclarer la vérification **partielle** en
+     précisant que l'original n'a pas pu être lu autrement que par le moteur
+     qui a produit la transcription.
    - **Bureautique binaire** (`.docx`, `.xlsx`, `.pptx`…) → convertir avec ce
      qui est présent (`libreoffice --headless --convert-to txt|csv`,
      `pandoc`), lire la conversion. Aucun convertisseur → vérification
      partielle.
    - **Texte** (`.md`, `.txt`, `.csv`, `.eml`, code…) → lire tel quel.
-   - **Audio, vidéo** → hors périmètre : vérification partielle, le dire. Une transcription est une lecture
-   automatique : elle saute une ligne, confond un caractère, aplatit un
-   tableau. Vérifier une correction contre elle seule, c'est vérifier contre la
-   même machine qui a peut-être produit l'erreur — le contrôle ne prouve rien.
+   - **Audio, vidéo** → hors périmètre : vérification partielle, le dire.
+   - `python3` absent de la machine → l'extracteur ne peut pas tourner. Ne pas
+     se rabattre sur l'OCR pour autant : vérification **partielle**, et le
+     dire.
+
+   Pourquoi cette insistance : une transcription est une lecture automatique.
+   Elle saute une ligne, confond un caractère, aplatit un tableau. Vérifier une
+   correction contre elle seule, c'est vérifier contre la même machine qui a
+   peut-être produit l'erreur — le contrôle ne prouve rien.
    Et si la transcription et l'original divergent sur le passage, **c'est
    l'original qui tranche**, et cette divergence est elle-même une trouvaille :
    elle affecte tout ce que la transcription a produit, pas seulement ce
@@ -184,11 +192,27 @@ Exactement ces blocs, dans cet ordre :
    justifiées une par une.
 4. Un bloc `Pour l'agent principal`, avec le chemin `$VAULT` résolu écrit en
    clair :
+   - **contre-vérifier avant d'écrire tout constat chiffré ou nominatif** que
+     ce rapport tire d'une pièce. Un rapport de sub-agent est un témoignage,
+     pas une preuve : il a lu vite, il a pu compter de travers, et ce qu'il
+     affirme d'une pièce va être **gravé**. Rouvrir la pièce par la même voie
+     indépendante (`pdf-text.py` pour un PDF, l'outil Read pour une image) et
+     recompter soi-même les chiffres, les noms, les occurrences. Un écart entre
+     le rapport et la pièce → **c'est la pièce qui gagne**, et le constat
+     s'écrit avec les valeurs vérifiées, jamais avec celles du rapport.
+     Mesuré : sur huit affirmations d'un rapport de réparation, deux étaient
+     fausses — dont celle qui devait être inscrite en couche immuable.
    - appliquer d'office ce qui est **mécanique et réversible** (une valeur
      corrigée dans une page vivante, un wikilink, une entrée d'INDEX) ;
      demander l'autorisation pour ce qui **touche une couche immuable ou
      supprime quelque chose**, en une fois, verdict à l'appui — jamais en
      demandant à l'utilisateur de choisir à ta place ;
+   - **une divergence transcription/original n'est pas une réparation, c'est
+     une réingestion.** Constater qu'un OCR a faussé une pièce condamne tout ce
+     qu'il en a produit, pas seulement le passage visé : poser le
+     `> [!warning]` qui empêche l'erreur de remonter en recherche, puis
+     enchaîner `/doc-ingest` sur la pièce — qui la relira par la voie
+     désormais correcte. Ne pas réécrire à la main quarante enseignements ;
    - après application : réindexer les seuls dossiers modifiés (outil MCP
      `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` avec
      `directory: $VAULT/wiki/<dossier>` explicite, un appel par dossier ;
