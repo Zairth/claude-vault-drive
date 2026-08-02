@@ -9,6 +9,34 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.26.0] — 2026-08-02
+
+**Raison de l'update** : la colonne lexicale du banc mesurait un grep artisanal, pas le bras BM25 du moteur — donc elle ne pouvait rien dire de la seule question qu'elle aurait dû trancher : est-ce qu'une fusion lexical/sémantique apporterait quelque chose.
+
+### Modifié
+- **Le banc mesure `bm25@3` au lieu d'un grep artisanal.** La colonne appelle
+  désormais `vault-lexical.sh` — le **vrai** bras lexical, celui que le hook et
+  `/doc-query` emploient — sur la même fenêtre que le bras sémantique : top 3
+  par dossier, rang lu dans son propre dossier. Les deux colonnes deviennent
+  donc directement comparables.
+  La différence n'est pas cosmétique. BM25 pondère par IDF et **normalise par
+  la longueur du document** ; le grep artisanal, lui, faisait remonter les
+  trois pièces les plus longues du vault, qui contiennent mécaniquement tous
+  les mots de n'importe quelle question. On avait failli conclure de ce défaut
+  que le bras lexical n'apportait rien — alors que c'est précisément ce que
+  BM25 corrige par construction.
+- **Deux chiffres de contribution marginale** accompagnent la colonne :
+  combien de questions bm25 touche que le sémantique rate (la couverture
+  qu'une fusion ajouterait), et combien elle classe mieux (le gain de rang).
+  Deux zéros tranchent la question de la fusion, qui n'a jamais été mesurée —
+  elle avait été écartée sur un raisonnement.
+- **La ligne `grep` sort du score.** Elle survit comme repli lisible quand le
+  moteur est absent, jamais comme mesure : appliquée implicitement puis figée,
+  elle a rendu 11, 10 puis 6 sur un corpus **strictement identique**. Un
+  chiffre non reproductible est pire qu'absent, il se compare quand même.
+  Le moteur portant les deux bras, son indisponibilité emporte désormais les
+  deux colonnes.
+
 ## [1.25.0] — 2026-08-02
 
 **Raison de l'update** : le banc a trouvé une note introuvable — non pas parce que le moteur la classait mal, mais parce que sa page-parent ne la mentionnait pas. Aucune vérification ne regardait ça.

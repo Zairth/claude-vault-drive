@@ -111,8 +111,10 @@ ni les recherches ni les notes. Sa mission :
    `directory: $VAULT/wiki/<cible>` **explicite** ; sinon
    `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"` sans argument, qui
    boucle lui-même. Moteur indisponible → ouvrir le rapport par
-   « ⚠ sémantique indisponible (<raison>) — score grep seul » et sauter les
-   mesures sémantiques.
+   « ⚠ sémantique indisponible (<raison>) — score partiel » et sauter les
+   mesures sémantiques. Le moteur portant AUSSI le bras bm25, son absence
+   emporte les deux colonnes : il ne reste que le `+1 saut` et le repli grep,
+   hors score.
 2. Pour chaque question, mécaniquement :
    - **sémantique** : `semantic_search` top 3, **un seul appel** portant
      `directories: [toutes les cibles]`. **La question part
@@ -130,18 +132,34 @@ ni les recherches ni les notes. Sa mission :
      reconstitué. Une attendue de `entites/` au rang 1 de `entites/` compte
      comme rang 1, quel que soit le score des pistes de `sources/`.
      → rang de la première attendue (1-3, ou absente) ;
-   - **grep** — critère FIGÉ, à appliquer à la lettre, sans quoi la ligne
-     n'est comparable à rien : les **mots de 5 caractères ou plus** de la
-     question, accents repliés et casse ignorée, cherchés dans le **corps
-     entier** de chaque note de `wiki/`. Une attendue est **touchée** dès
-     qu'**au moins la moitié** de ces mots y figurent (arrondi supérieur).
-     Ni pondération, ni proximité, ni racinisation.
-     Ce critère n'est pas le bon en soi — il n'y en a pas de bon — mais il
-     est **écrit**, donc reproductible. Mesuré : deux runs sur un corpus
-     strictement identique ont rendu 11/22 puis 10/22 faute de l'avoir figé,
-     et l'écart s'est lu comme une régression alors que le grep ne passe même
-     pas par le moteur. Un chiffre non reproductible est pire qu'absent : il
-     se compare quand même ;
+   - **bm25** : `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-lexical.sh"
+     "<la question, telle quelle>" "" 3` — **un seul appel**, toutes les
+     cibles, top 3 par dossier, exactement la même fenêtre que le bras
+     sémantique. Comme lui, le rang d'une attendue est son rang **dans son
+     propre dossier**. → rang de la première attendue (1-3, ou absente).
+     C'est le **vrai** bras lexical, celui que le hook et `/doc-query`
+     emploient — pas une approximation. La différence n'est pas cosmétique :
+     BM25 pondère par IDF et **normalise par la longueur du document**, donc
+     il ne souffre pas du défaut d'un grep naïf, où les pièces les plus
+     longues remontent en contenant mécaniquement tous les mots.
+     Ce qu'on cherche ici n'est pas son score propre — il est attendu plus bas
+     que le sémantique — mais sa **contribution marginale**, en deux chiffres
+     à reporter explicitement :
+     - les questions où bm25 touche une attendue que le sémantique **rate** :
+       c'est la couverture qu'une fusion ajouterait ;
+     - les questions où bm25 la classe **mieux** que le sémantique : c'est le
+       gain de rang qu'une fusion apporterait.
+     Deux zéros = la fusion lexical/sémantique n'a rien à offrir sur ce
+     corpus, et c'est la seule façon de trancher cette question, qui n'a
+     jamais été mesurée. Moteur indisponible → le dire, sauter la colonne, ne
+     pas lui substituer un grep maison : ce ne serait pas la même mesure.
+   - **grep** (facultatif, **hors score**) : si le moteur est indisponible,
+     un repli lisible — les mots de 5 caractères ou plus, accents repliés,
+     casse ignorée, attendue touchée dès la moitié d'entre eux. À reporter
+     comme tel, jamais dans la ligne de score : mesuré, ce critère appliqué
+     implicitement puis figé a rendu 11, 10 puis 6 sur un corpus **strictement
+     identique**. Un chiffre non reproductible est pire qu'absent — il se
+     compare quand même ;
    - **+1 saut** : les wikilinks `[[...]]` des notes remontées contiennent-ils
      une attendue absente de ces remontées ? C'est ce que la cascade de
      `/doc-query` fait gratuitement (elle suit les wikilinks des notes
@@ -155,13 +173,17 @@ ni les recherches ni les notes. Sa mission :
      dossier, et le rang moyen des touchées ;
    - `+1 saut` : x/n questions avec ≥ 1 attendue remontée **ou** dans les
      wikilinks des notes remontées ;
-   - `grep` : x/n questions avec ≥ 1 attendue touchée ;
+   - `bm25@3` : x/n questions avec ≥ 1 attendue dans le top 3 de son dossier,
+     et le rang moyen des touchées — mêmes définitions que `sémantique@3`,
+     donc directement comparables l'une à l'autre ;
    - `couverture` : x/n questions dont TOUTES les attendues sont trouvées
-     (remontées, wikilinks et grep confondus).
+     (remontées, wikilinks et bm25 confondus).
 4. **Rapport** : la ligne de score
-   `sémantique@3 x/n (rang moyen r) · +1 saut x/n · grep x/n · couverture x/n` ;
+   `sémantique@3 x/n (rang moyen r) · +1 saut x/n · bm25@3 x/n (rang moyen r) ·
+   couverture x/n`, suivie de la ligne de contribution marginale :
+   `bm25 seul : n question(s) · bm25 mieux classée : n question(s)` ;
    le tableau par question (dossier et rang de l'attendue, note pivot du
-   +1 saut, grep, verdict) ; **une ligne de répartition par couche** — d'où
+   +1 saut, rang bm25, verdict) ; **une ligne de répartition par couche** — d'où
    viennent les touches, tous dossiers confondus. C'est elle qui dira si les
    textes intégraux de `sources/` étouffent les enseignements ou les
    complètent, question qu'aucun score global ne répond ; pour chaque échec, ce que la recherche a renvoyé **à la place**
@@ -211,7 +233,7 @@ Présenter le rapport, puis proposer d'ajouter en fin de
 `$VAULT/LOG/YYYY-MM-DD.md` (fichier du jour, créé au besoin) :
 
 - mécanique :
-  `## [YYYY-MM-DD] bench | sémantique@3 x/n · +1 saut x/n · grep x/n · couverture x/n`
+  `## [YYYY-MM-DD] bench | sémantique@3 x/n (rang moyen r) · +1 saut x/n · bm25@3 x/n · couverture x/n`
 - réel :
   `## [YYYY-MM-DD] bench-reel | réel x/n · citations complètes x/n`
 
