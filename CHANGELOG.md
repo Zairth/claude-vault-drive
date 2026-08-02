@@ -9,9 +9,33 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
-## [1.26.0] — 2026-08-02
+## [1.28.0] — 2026-08-02
 
-**Raison de l'update** : la colonne lexicale du banc mesurait un grep artisanal, pas le bras BM25 du moteur — donc elle ne pouvait rien dire de la seule question qu'elle aurait dû trancher : est-ce qu'une fusion lexical/sémantique apporterait quelque chose.
+**Raison de l'update** : le hook PreCompact dépose les tours de conversation dans un dossier synchronisé — un identifiant collé dans un prompt y était archivé tel quel. Le détecter après coup arrivait trop tard.
+
+### Ajouté
+- **Le hook PreCompact masque les identifiants avant d'écrire.** Il excluait
+  déjà les sorties d'outils, là où vivent la plupart des secrets ; restaient les
+  tours de conversation eux-mêmes. Sont masqués : les affectations
+  `NOM=valeur` / `NOM: valeur` dont le nom porte `TOKEN`, `SECRET`, `PASSWORD`,
+  `API_KEY`, `PRIVATE_KEY`, `CREDENTIAL`, `AUTH`… ; les en-têtes
+  `Authorization: Bearer|Basic` ; les formes propres à un émetteur, qui se
+  reconnaissent sans nom de variable (`sk-`, `ghp_`, `hf_`, `xox…`, `AKIA…`,
+  `AIza…`) ; et les blocs de clé privée PEM, corps compris.
+  **Le nom de la variable est conservé, seule la valeur part** : `DB_PASSWORD=`
+  sans sa valeur garde ce que le tour voulait dire sans en transporter le
+  secret. Le hook annonce le nombre de masquages effectués.
+  Le masquage est **volontairement trop large**, parce que l'asymétrie des
+  erreurs est totale : un faux positif coûte un mot masqué dans un mémo de
+  travail qu'on relira de toute façon à l'ingestion ; un faux négatif écrit un
+  identifiant vivant dans un dossier répliqué. Il ne garantit rien pour autant —
+  un secret sans forme reconnaissable et sans nom de variable passe au travers.
+  C'est une réduction de surface ; le contrôle 13 de `/doc-lint` reste le filet
+  derrière.
+
+## [1.27.0] — 2026-08-02
+
+**Raison de l'update** : le moteur consigne enfin la granularité de découpage de ses index, et deux runs de banc ont exposé un `cd` qui emportait le répertoire de la session entière.
 
 ### Ajouté
 - **`/doc-lint` compare la granularité de découpage entre index.** Le moteur
@@ -39,6 +63,10 @@ Installer une mise à jour : `/plugin marketplace update zairth_store` puis
   résout depuis le projet, `.claude/vault-path.local` en tête. Les cinq
   commandes l'interdisent désormais explicitement : chemins absolus, ou
   sous-shell.
+
+## [1.26.0] — 2026-08-02
+
+**Raison de l'update** : la colonne lexicale du banc mesurait un grep artisanal, pas le bras BM25 du moteur — donc elle ne pouvait rien dire de la seule question qu'elle aurait dû trancher : est-ce qu'une fusion lexical/sémantique apporterait quelque chose.
 
 ### Modifié
 - **Le banc mesure `bm25@3` au lieu d'un grep artisanal.** La colonne appelle
