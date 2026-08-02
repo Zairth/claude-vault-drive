@@ -23,8 +23,14 @@ cd "${CLAUDE_PROJECT_DIR:-.}"
 [[ -f .claude/vault-path.local ]] || exit 0
 command -v python3 >/dev/null 2>&1 || exit 0
 
-# Le prompt arrive dans le JSON du hook sur stdin (champ "prompt").
-prompt="$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("prompt",""))' 2>/dev/null)" || exit 0
+# Le payload du hook n'arrive qu'UNE FOIS sur stdin : on en tire le prompt et
+# l'identifiant de session en une seule lecture, séparés par une tabulation.
+payload="$(python3 -c 'import json,re,sys
+d = json.load(sys.stdin)
+session = re.sub(r"[^A-Za-z0-9-]", "", str(d.get("session_id", "")))[:16]
+print(session + "\t" + str(d.get("prompt", "")).replace("\t", " "))' 2>/dev/null)" || exit 0
+session_id="${payload%%$'\t'*}"
+prompt="${payload#*$'\t'}"
 
 # Filtres : commandes slash (/doc-query fait sa propre recherche), commandes
 # shell (!), mémos (#), et prompts trop courts pour porter une intention
@@ -75,8 +81,31 @@ sys.exit(0 if any(0 < frequency[w] <= ceiling for w in long_words(os.environ["PR
 
 results="$(bash "$script_directory/vault-lexical.sh" "$prompt" "" 3 2>/dev/null)" || exit 0
 
-printf '%s' "$results" | python3 -c '
-import json, sys
+# Mémoire de session : une note déjà proposée ne l'est plus. Ce hook se
+# déclenche à chaque prompt, et sur un sujet suivi il remonte les mêmes trois
+# notes à chaque fois — trois questions sur la même pièce réinjectaient trois
+# fois les mêmes extraits. Ce n'est pas le volume qui gêne (200 jetons par
+# déclenchement, sous le bruit) mais la redondance : du contexte périmé qui
+# reste et concurrence le reste pour l'attention.
+# Fichier hors du projet et hors du vault — il n'a aucune valeur au delà de la
+# session et ne doit polluer ni l'un ni l'autre.
+#
+# Il se nettoie lui-même : à chaque passage, les mémoires de plus de sept jours
+# sont supprimées. Pas de hook de fin de session pour ça — il n'y en a pas qui
+# se déclenche de façon fiable à la fermeture, et compter sur le nettoyage de
+# /tmp par le système reviendrait à ne rien garantir du tout. Sept jours et non
+# un : une session peut être reprise le lendemain, et retrouver sa mémoire est
+# le comportement voulu. Purge silencieuse, jamais bloquante.
+seen_file=""
+if [[ -n "$session_id" ]]; then
+    seen_directory="${TMPDIR:-/tmp}"
+    find "$seen_directory" -maxdepth 1 -name 'claude-vault-pistes-*' -type f \
+        -mtime +7 -delete 2>/dev/null || true
+    seen_file="$seen_directory/claude-vault-pistes-$session_id"
+fi
+
+printf '%s' "$results" | SEEN_FILE="$seen_file" python3 -c '
+import json, os, sys
 try:
     groups = json.load(sys.stdin)
 except Exception:
@@ -95,15 +124,40 @@ if not hits:
     sys.exit(0)
 hits.sort(key=lambda h: h[0], reverse=True)
 
+# Les trois meilleures, et elles seules. Puis on retire celles deja proposees
+# dans cette session. Si les trois sont deja connues, on SE TAIT — descendre
+# au rang 4 ou 7 pour avoir quelque chose a dire reviendrait a proposer du
+# bruit sous pretexte de ne pas rester muet. Ce hook propose, il ne comble pas.
+seen_file = os.environ.get("SEEN_FILE") or ""
+seen = set()
+if seen_file and os.path.isfile(seen_file):
+    try:
+        seen = set(open(seen_file, encoding="utf-8").read().split("\n"))
+    except Exception:
+        seen = set()
+hits = [h for h in hits[:3]
+        if (h[1] + "/" + str(h[2].get("relative_path", "?"))) not in seen]
+if not hits:
+    sys.exit(0)
+
 # Trois pistes au plus : ce hook propose, il ne repond pas. Le score BM25 sert
 # a ordonner, jamais a filtrer — mesure : il ne distingue pas une question
 # pertinente dune phrase de conversation.
 lines = []
+retenues = []
 for score, layer, hit in hits[:3]:
+    retenues.append(layer + "/" + str(hit.get("relative_path", "?")))
     excerpt = " ".join(str(hit.get("excerpt", "")).split())
     if len(excerpt) > 160:
         excerpt = excerpt[:160] + "\u2026"
     lines.append("- wiki/" + layer + "/" + str(hit.get("relative_path", "?")) + " : " + excerpt)
+
+if seen_file:
+    try:
+        with open(seen_file, "a", encoding="utf-8") as f:
+            f.write("\n".join(retenues) + "\n")
+    except Exception:
+        pass
 
 print("Pistes du vault (mots-cles, automatique — des extraits, pas une reponse ; /doc-query pour une recherche complete et citee) :")
 print("\n".join(lines))

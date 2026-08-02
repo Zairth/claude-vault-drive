@@ -9,6 +9,31 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.31.0] — 2026-08-02
+
+**Raison de l'update** : le hook des pistes reproposait les mêmes notes à chaque question sur un même sujet — ce n'est pas le volume qui pollue une session, c'est la redondance.
+
+### Modifié
+- **Le hook `UserPromptSubmit` ne propose jamais deux fois la même note dans
+  une session.** Il se déclenche à chaque prompt et remonte, sur un sujet
+  suivi, les trois mêmes notes à chaque fois : trois questions sur une même
+  pièce réinjectaient trois fois les mêmes extraits. Le coût en jetons n'était
+  pas le problème — mesuré, ~200 jetons par déclenchement, environ la moitié
+  des prompts, soit 1 % d'une fenêtre d'un million sur cent tours. Le problème
+  est que du contexte périmé reste et concurrence le reste pour l'attention.
+  Une mémoire de session (fichier éphémère hors du projet **et** hors du
+  vault, nommé par `session_id`) retient ce qui a déjà été proposé.
+  **Et quand les trois meilleures sont déjà connues, le hook se tait** — il ne
+  descend pas au rang 4 ou 7 pour avoir quelque chose à dire. Proposer du bruit
+  sous prétexte de ne pas rester muet serait exactement le défaut qu'on
+  corrige. Mesuré : même question posée trois fois → 741 octets, puis 0, puis
+  0 ; question sur un autre sujet → 781 octets.
+  La mémoire **se nettoie elle-même** : à chaque passage, celles de plus de
+  sept jours sont supprimées. Aucun hook ne se déclenche de façon fiable à la
+  fermeture d'une session, et s'en remettre au nettoyage de `/tmp` par le
+  système ne garantirait rien. Sept jours et non un : une session reprise le
+  lendemain doit retrouver sa mémoire.
+
 ## [1.30.0] — 2026-08-02
 
 **Raison de l'update** : du JSON cité dans une pièce fabriquait des nœuds fantômes dans le graphe Obsidian, et la vérification des wikilinks ne les voyait pas — ils tombaient entre « pendant » et « ambigu ».
