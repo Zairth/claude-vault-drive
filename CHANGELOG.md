@@ -9,6 +9,18 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.23.1] — 2026-08-02
+
+**Raison de l'update** : la description du plugin faisait dix lignes dans la liste des plugins installés, et décrivait un fonctionnement supprimé en 1.22.0.
+
+### Corrigé
+- **Description du plugin ramenée à une ligne.** Elle listait les commandes, le
+  détail des forks, les hooks et les replis — de quoi noyer la liste
+  `/plugin`, où chaque entrée doit tenir sur une ligne. Elle annonçait en
+  outre un « sub-agent lecteur conversationnel » qui n'existe plus : la
+  validation conversationnelle a disparu en 1.22.0. Le détail vit dans le
+  README et dans `PREREQUIS.md`, dont c'est le rôle.
+
 ## [1.23.0] — 2026-08-02
 
 **Raison de l'update** : un PDF produit par un logiciel était envoyé à l'OCR comme s'il n'avait pas de texte — mesuré sur un export tableur, une colonne entière inversée sans que rien ne le signale.
