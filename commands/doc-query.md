@@ -168,12 +168,26 @@ La question à traiter est `$ARGUMENTS`, nettoyée des jetons `dans:` et
 
 ## Rapport final (ton retour à l'agent principal)
 
-**Ce bloc ne s'affiche JAMAIS à l'utilisateur.** C'est une consigne d'exécution
-adressée à l'agent principal, pas du contenu : il l'exécute, il ne le recopie
-pas. L'utilisateur ne doit voir que ce qui le concerne — la réponse, le
-rapport, la question posée. Lui montrer les chemins absolus, les noms d'outils
-et le détail du frontmatter à écrire, c'est lui livrer la mécanique interne à
-la place du résultat, et lui faire chercher lui-même ce qu'on attend de lui.
+**Le bloc de consignes ne s'affiche JAMAIS à l'utilisateur** — et c'est TOI
+qui dois le rendre impossible à afficher, parce que l'agent principal ne lit
+pas ce fichier. Cette commande s'exécute en fork : le fichier de commande t'est
+donné à toi, le sub-agent ; l'agent principal ne reçoit que ton rapport. Une
+consigne écrite ici et pas dans le rapport est invisible pour lui — mesuré,
+c'est exactement pour ça qu'un premier correctif n'a rien changé.
+
+Donc le garde-fou voyage **dans le rapport**. Titrer le bloc EXACTEMENT ainsi,
+majuscules comprises :
+
+`## Pour l'agent principal — CONSIGNES D'EXÉCUTION, NE PAS AFFICHER`
+
+et l'ouvrir par cette ligne :
+
+`> Ce bloc s'exécute, il ne se recopie pas. L'utilisateur ne doit voir que ce qui précède.`
+
+Ce qui précède, c'est ce qui le concerne : la réponse, le rapport, la question
+posée. Lui montrer les chemins absolus, les noms d'outils et le frontmatter à
+écrire, c'est lui livrer la mécanique interne à la place du résultat — et lui
+faire chercher lui-même ce qu'on attend de lui.
 
 Exactement ces blocs, dans cet ordre :
 
@@ -195,7 +209,8 @@ Exactement ces blocs, dans cet ordre :
    il a besoin, quand il en a besoin.
    Les notes ouvertes puis écartées comme non pertinentes ne figurent pas
    ici : dire seulement combien l'ont été, par couche.
-4. Un bloc `Pour l'agent principal`, avec le chemin `$VAULT` résolu écrit en
+4. Le bloc de consignes, titré comme indiqué ci-dessus, avec le chemin
+   `$VAULT` résolu écrit en
    clair (l'agent principal ne connaît pas la sortie de vault-check) :
    - présenter la réponse et ses sources à l'utilisateur, puis proposer :
      « Sauvegarder cette réponse en synthèse dans le vault ? » ;

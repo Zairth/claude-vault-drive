@@ -9,6 +9,23 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.33.0] — 2026-08-02
+
+**Raison de l'update** : le correctif de la 1.29.0 n'a rien changé — il était écrit à un endroit que l'agent principal ne lit pas.
+
+### Corrigé
+- **Le garde-fou du bloc de consignes voyage désormais dans le rapport.** Les
+  trois commandes en fork terminent par des consignes destinées à l'agent
+  principal ; la 1.29.0 lui interdisait de les afficher — mais **dans le
+  fichier de commande, que seul le sub-agent reçoit**. En fork, l'agent
+  principal ne voit que le rapport : une consigne écrite ailleurs lui est
+  invisible. Mesuré : le bloc a continué d'être recopié à l'utilisateur, mot
+  pour mot, sous la version corrigée.
+  Le sub-agent titre maintenant le bloc
+  `## Pour l'agent principal — CONSIGNES D'EXÉCUTION, NE PAS AFFICHER` et
+  l'ouvre par une ligne qui le redit. L'interdit part avec le contenu, au lieu
+  d'attendre dans un fichier que le destinataire n'ouvre jamais.
+
 ## [1.32.0] — 2026-08-02
 
 **Raison de l'update** : la règle de découpage d'une série datée était rangée dans la branche « capture d'écran » et prescrivait un titre par message — ce que la pratique a contredit, avec raison.
