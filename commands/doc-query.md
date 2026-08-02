@@ -21,6 +21,12 @@ de sa part se formule dans le rapport, jamais en question bloquante.
 2. Lire intégralement `$VAULT/INSTRUCTIONS-CLAUDE.md` et s'y conformer
    (section « Règles de recherche » notamment).
 
+**Ne jamais `cd` dans le vault.** L'outil Bash conserve son répertoire d'un
+appel à l'autre : un `cd` y laisse la session ENTIÈRE, l'utilisateur le voit
+dans son invite, et tout ce qui se résout depuis le projet casse — à commencer
+par `.claude/vault-path.local`. Travailler en **chemins absolus**, ou isoler le
+déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
+
 ## Cible de recherche optionnelle (dossier voisin du vault)
 
 Si `$ARGUMENTS` contient un jeton `dans:<dossier>` (ex. `dans:marketing`) :

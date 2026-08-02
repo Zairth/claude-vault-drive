@@ -13,6 +13,12 @@ argument-hint: <texte | chemin de fichier | URL | nom d'un fichier de inbox/>
 2. Lire intégralement `$VAULT/INSTRUCTIONS-CLAUDE.md` et s'y conformer
    (conventions de notes, règles de maintenance).
 
+**Ne jamais `cd` dans le vault.** L'outil Bash conserve son répertoire d'un
+appel à l'autre : un `cd` y laisse la session ENTIÈRE, l'utilisateur le voit
+dans son invite, et tout ce qui se résout depuis le projet casse — à commencer
+par `.claude/vault-path.local`. Travailler en **chemins absolus**, ou isoler le
+déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
+
 ## Récupérer et lire la source ($ARGUMENTS) — en sub-agent lecteur
 
 - Argument vide ou ambigu → demander à l'utilisateur ce qu'il veut ingérer

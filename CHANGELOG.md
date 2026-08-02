@@ -13,6 +13,33 @@ Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 
 **Raison de l'update** : la colonne lexicale du banc mesurait un grep artisanal, pas le bras BM25 du moteur — donc elle ne pouvait rien dire de la seule question qu'elle aurait dû trancher : est-ce qu'une fusion lexical/sémantique apporterait quelque chose.
 
+### Ajouté
+- **`/doc-lint` compare la granularité de découpage entre index.** Le moteur
+  consigne désormais `chunk_chars` dans les métadonnées, et le contrôle de
+  cohérence vectorielle le lit comme les trois autres champs — mais **pas avec
+  la même conséquence**, et la distinction est le cœur du contrôle : un
+  provider ou un modèle divergent rend des scores **faux**, donc c'est une
+  erreur ; une granularité divergente rend des scores **justes** établis sur un
+  grain inégal, donc c'est un constat. La recherche continue de fonctionner, et
+  cet état est même normal pendant une reconstruction en cours. Champ absent =
+  granularité inconnue, jamais index invalide.
+
+### Corrigé
+- **`vault-check.sh` cherche la config en remontant l'arborescence.**
+  `CLAUDE_PROJECT_DIR` n'est pas toujours défini — certains sub-agents ne le
+  propagent pas — et le répertoire courant peut être un sous-dossier du projet.
+  Le script remontait alors bredouille et déclarait le vault absent : constaté
+  sur `vault-index-targets.sh`, puis sur `vault-lexical.sh`. La remontée règle
+  les deux cas pour quelques `test -f`, et le message d'erreur nomme désormais
+  les deux remèdes au lieu d'un seul chemin.
+- **Les commandes ne déplacent plus le répertoire de la session.** L'outil Bash
+  conserve son répertoire d'un appel à l'autre : un `cd` dans le vault y
+  laissait la session entière — visible dans l'invite de l'utilisateur, qui
+  passait du nom de son projet au chemin du vault — et cassait tout ce qui se
+  résout depuis le projet, `.claude/vault-path.local` en tête. Les cinq
+  commandes l'interdisent désormais explicitement : chemins absolus, ou
+  sous-shell.
+
 ### Modifié
 - **Le banc mesure `bm25@3` au lieu d'un grep artisanal.** La colonne appelle
   désormais `vault-lexical.sh` — le **vrai** bras lexical, celui que le hook et

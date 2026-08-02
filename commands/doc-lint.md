@@ -22,6 +22,12 @@ chaque point, jamais une question ouverte.
 2. Lire intégralement `$VAULT/INSTRUCTIONS-CLAUDE.md` et s'y conformer
    (règles de maintenance : sources immuables, LOG append-only, INDEX à jour).
 
+**Ne jamais `cd` dans le vault.** L'outil Bash conserve son répertoire d'un
+appel à l'autre : un `cd` y laisse la session ENTIÈRE, l'utilisateur le voit
+dans son invite, et tout ce qui se résout depuis le projet casse — à commencer
+par `.claude/vault-path.local`. Travailler en **chemins absolus**, ou isoler le
+déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
+
 ## Vérifications (les treize)
 
 1. **Callouts** — deux natures que la convention d'`INSTRUCTIONS-CLAUDE.md`
@@ -138,11 +144,22 @@ chaque point, jamais une question ouverte.
    - Pour chaque index présent → lire ses métadonnées (outil MCP
      `mcp__plugin_agentic-toolbox_toolbox__semantic_info` avec
      `directory: $VAULT/wiki/<cible>` — purement local, zéro quota — sinon
-     ligne 1 du fichier : provider, modèle, dimension, version) et les
-     reporter. **Provider, modèle ou dimension divergents entre deux index**
-     = incohérence à signaler : les vecteurs n'ont pas été construits avec le
-     même moteur, et les scores de ces dossiers ne veulent plus rien dire
-     l'un par rapport à l'autre → réindexation complète.
+     ligne 1 du fichier : provider, modèle, dimension, version, `chunk_chars`)
+     et les reporter. Deux divergences à ne PAS confondre :
+     - **provider, modèle ou dimension divergents** entre deux index = les
+       vecteurs n'ont pas été construits avec le même moteur, et les scores de
+       ces dossiers ne veulent plus rien dire l'un par rapport à l'autre.
+       Ce sont des scores **faux** → réindexation complète, à signaler comme
+       une erreur ;
+     - **`chunk_chars` divergent** = même moteur, même espace vectoriel, donc
+       des scores **justes** — mais établis sur un grain inégal : un dossier
+       découpé fin rend des extraits plus précis qu'un dossier découpé large,
+       et leurs rangs ne se comparent plus à qualité égale. À signaler comme
+       un **constat**, pas comme une panne : la recherche continue de
+       fonctionner, et cet état est normal pendant une reconstruction en
+       cours. Remède : réindexer les cibles restées à l'ancienne valeur.
+       Champ absent (`null`) = index construit avant que la granularité soit
+       consignée — granularité **inconnue**, pas index invalide.
      Diagnostic de suivi : comparer le `created_at` le plus récent du mapping
      aux dernières entrées `ingest` du journal (`LOG/*.md`, plus un `LOG.md`
      racine hérité s'il existe) — des ingests postérieurs aux

@@ -31,6 +31,12 @@ jusqu'au bout. L'une ratisse, l'autre creuse.
    manque ou le passage est introuvable dans la note → ton rapport le dit et
    liste les passages approchants trouvés dans cette note — S'ARRÊTER.
 
+**Ne jamais `cd` dans le vault.** L'outil Bash conserve son répertoire d'un
+appel à l'autre : un `cd` y laisse la session ENTIÈRE, l'utilisateur le voit
+dans son invite, et tout ce qui se résout depuis le projet casse — à commencer
+par `.claude/vault-path.local`. Travailler en **chemins absolus**, ou isoler le
+déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
+
 ## Instruction de la correction
 
 ### 1. Localiser

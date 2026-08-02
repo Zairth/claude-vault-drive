@@ -45,6 +45,12 @@ toute retouche du banc passe par `creer` ou par une validation explicite.
 3. `$ARGUMENTS` contient `reel` → section « Mode réel » ; sinon → section
    « Mode mécanique ».
 
+**Ne jamais `cd` dans le vault.** L'outil Bash conserve son répertoire d'un
+appel à l'autre : un `cd` y laisse la session ENTIÈRE, l'utilisateur le voit
+dans son invite, et tout ce qui se résout depuis le projet casse — à commencer
+par `.claude/vault-path.local`. Travailler en **chemins absolus**, ou isoler le
+déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
+
 ## Mode création — proposer le banc
 
 Déléguer à un **sub-agent** (outil Agent, type `Explore`, avant-plan) pour

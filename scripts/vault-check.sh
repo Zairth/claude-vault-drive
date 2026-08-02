@@ -13,10 +13,25 @@
 # parfaitement accessible. Repli sur $PWD hors de Claude Code (appel manuel).
 set -euo pipefail
 
-vault_path_file="${CLAUDE_PROJECT_DIR:-$PWD}/.claude/vault-path.local"
+# Recherche ASCENDANTE depuis le point de départ. CLAUDE_PROJECT_DIR n'est pas
+# toujours défini — certains sub-agents ne le propagent pas — et le répertoire
+# courant peut être un sous-dossier du projet. Remonter jusqu'à la racine règle
+# les deux cas d'un coup, et coûte quelques `test -f`.
+find_vault_path_file() {
+    local directory="$1"
+    while [[ -n "$directory" && "$directory" != "/" ]]; do
+        if [[ -f "$directory/.claude/vault-path.local" ]]; then
+            printf '%s\n' "$directory/.claude/vault-path.local"
+            return 0
+        fi
+        directory="$(dirname "$directory")"
+    done
+    return 1
+}
 
-if [[ ! -f "$vault_path_file" ]]; then
-    echo "ERREUR : fichier de config absent : ${CLAUDE_PROJECT_DIR:-$PWD}/.claude/vault-path.local — lancer vault-init.sh, ou y écrire le chemin du vault (une seule ligne)." >&2
+start_directory="${CLAUDE_PROJECT_DIR:-$PWD}"
+if ! vault_path_file="$(find_vault_path_file "$start_directory")"; then
+    echo "ERREUR : fichier de config introuvable : aucun .claude/vault-path.local depuis $start_directory ni au-dessus. Ce projet n'a pas de vault (lancer vault-init.sh), ou l'appel vient d'un dossier étranger au projet — définir CLAUDE_PROJECT_DIR, ou appeler depuis le projet." >&2
     exit 1
 fi
 
