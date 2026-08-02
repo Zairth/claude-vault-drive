@@ -41,9 +41,9 @@ claude-vault-drive/
 ├── CHANGELOG.md             # pourquoi mettre à jour — une entrée par version
 ├── commands/
 │   ├── vault-init.md        # /vault-init — initialiser le vault du projet courant
-│   ├── doc-ingest.md        # /doc-ingest — ingérer une source (validation conversationnelle)
+│   ├── doc-ingest.md        # /doc-ingest — ingérer une source (lecture, standardisation, contrôle, lint enchaîné)
 │   ├── doc-query.md         # /doc-query — interroger le vault (fork isolé, réponse citée)
-│   ├── doc-lint.md          # /doc-lint — maintenance (fork isolé : orphelins, INDEX, conflits Drive, vecteurs)
+│   ├── doc-lint.md          # /doc-lint — maintenance (fork isolé : treize vérifications, dont les identifiants en clair)
 │   ├── doc-repair.md        # /doc-repair — corriger une information et rebrancher sa chaîne, vérification contre la pièce
 │   └── doc-bench.md         # /doc-bench — banc de questions de référence (mesure mécanique, ou réelle via /doc-query)
 ├── hooks/
@@ -57,10 +57,11 @@ claude-vault-drive/
 │   ├── vault-index.sh       # indexation sémantique incrémentale (porte CLI du moteur)
 │   ├── vault-search.sh      # recherche sémantique, un appel pour tous les dossiers (porte CLI)
 │   ├── vault-lexical.sh     # recherche par mots-clés BM25 — zéro appel API, aucun index requis
-│   ├── vault-ocr.sh         # conversion OCR d'un document (porte CLI, repli de l'outil MCP)
+│   ├── vault-ocr.sh         # conversion OCR — scan, photo : le seul cas où l'OCR est le bon outil
+│   ├── pdf-text.py          # couche de texte d'un PDF, sans dépendance ni réseau (essayée avant l'OCR)
 │   ├── hook-session-start.sh    # hook : INDEX.md injecté à l'ouverture de session
 │   ├── hook-prompt-context.sh   # hook : pistes par mots-clés sous chaque prompt (gratuit)
-│   └── hook-precompact-inbox.sh # hook : transcript déposé dans inbox/ avant compactage
+│   └── hook-precompact-inbox.sh # hook : transcript déposé dans inbox/ avant compactage, identifiants masqués
 └── vault-template/          # fichiers copiés à la racine d'un nouveau vault
     ├── INSTRUCTIONS-CLAUDE.md   # le schéma du vault — toute commande le lit d'abord
     └── INDEX.md                 # carte du vault, point d'entrée des recherches (dérivé, régénérable)
@@ -191,19 +192,30 @@ redémarrage qui charge la permission `additionalDirectories` et rend les
 commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
 
 - `/doc-ingest <texte | fichier | URL | élément de inbox/>` — un sub-agent
-  lecteur lit la source (le contexte principal ne la voit jamais) et propose
-  ses enseignements clés — autant qu'elle en porte, sans plafond, validés par
-  tranches quand ils sont nombreux. La source est routée selon sa nature : **document
-  ou PDF → OCR** ; **capture d'écran → lecture visuelle directe par le
+  lecteur lit la source (le contexte principal ne la voit jamais) et en tire
+  ses enseignements — autant qu'elle en porte, sans plafond. **La commande ne
+  demande son avis à personne** : ce qui arrive dans `inbox/` y est déposé pour
+  que le vault s'en serve, souvent sans que l'utilisateur ait ouvert la pièce,
+  et lui faire valider des enseignements tirés d'un texte qu'il n'a pas lu ne
+  vérifie rien. Ce qui est douteux devient un `> [!question]` dans le vault au
+  lieu de bloquer l'ingestion.
+  La source est routée selon sa nature : **PDF → sa couche de texte si elle
+  existe** (exact, gratuit, instantané — un OCR sur un PDF produit par un
+  logiciel confond des mots voisins et le fait *systématiquement*, ce qui rend
+  un résultat plausible et faux) ; **scan ou photo de document → OCR**, seul
+  cas où il est le bon outil ; **capture d'écran → lecture visuelle directe par le
   lecteur, jamais d'OCR** (un OCR documentaire est réglé pour une mise en page
   de document : sur une capture d'interface il rend un flux linéaire où la
   disposition a disparu, et une partie du sens avec elle) ; des captures
   formant un même ensemble
   comptent pour **une** source, et ce sont les images qui sont archivées ;
-  la discussion passe par ce même sub-agent (relais
-  SendMessage, contexte conservé) ; après validation, l'agent principal
-  écrit : note source immuable, pages concepts/entités, INDEX, LOG.
-  Contradiction détectée → tranchée avec l'utilisateur : la note porte la
+  un doute sur un enseignement se lève auprès de ce même sub-agent (relais
+  SendMessage, contexte conservé) ; puis l'agent principal
+  écrit : note source immuable, pages concepts/entités, INDEX, LOG, et
+  **enchaîne un `/doc-lint`** dont les corrections mécaniques s'appliquent
+  dans la foulée.
+  Contradiction détectée → tranchée sur les pièces (la plus récente, la plus
+  directe, celle qui fait foi) : la note porte la
   valeur courante, l'ancienne descend en `## Historique` (une seule vérité en
   tête, l'historique conservé) ; non tranchable → callout `> [!question]` sur
   la page concept/entité — à ne pas confondre avec `> [!warning]`, qui porte
@@ -222,7 +234,14 @@ commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
   d'échec silencieux.
 - `/doc-lint` — rapport produit en fork isolé, ouvert par une ligne de
   compteurs (l'état de santé du vault d'un coup d'œil, comparable d'un lint à
-  l'autre) : wikilinks pendants, doublons suspectés de pages vivantes (noms
+  l'autre) : **identifiants en clair** — un vault vit sur un dossier
+  synchronisé, donc un jeton oublié dans `inbox/` part avec lui ; la valeur
+  n'est jamais affichée et le remède est la révocation, pas l'effacement —,
+  wikilinks pendants **et ambigus** (un nom nu que deux dossiers portent
+  résout quand même, vers l'un des deux au hasard), **renvois à sens unique**
+  (une note qui se déclare le complément d'une autre sans être pointée en
+  retour est introuvable depuis sa page-parent), doublons suspectés de pages
+  vivantes (noms
   normalisés + similarité sémantique ; fusion assistée après validation —
   wikilinks entrants réécrits, ancien nom conservé en alias),
   contradictions en souffrance (les callouts `> [!question]` seuls — les
@@ -232,8 +251,11 @@ commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
   attente, frontmatters obligatoires manquants, parasites hors `wiki/`
   (`.md` inattendu à la racine, notes vides, nœuds fantômes venus des
   archives OCR), cohérence de l'index vectoriel
-  (`.index/`) ; corrections validées avec l'utilisateur puis appliquées en
-  contexte principal.
+  (`.index/`, granularité de découpage comprise). **Deux régimes** : ce qui est
+  mécanique et réversible s'applique d'office ; ce qui détruit ou ne se défait
+  pas — fusionner, supprimer, écrire dans une couche immuable — est soumis une
+  fois, verdict à l'appui, et la question porte sur l'autorisation d'agir,
+  jamais sur la réponse.
 - `/doc-repair <note> "<passage>" "<nouvelle valeur>"` — corriger une
   information repérée et **rebrancher toute sa chaîne**. En fork isolé : la
   correction est d'abord **vérifiée contre la pièce d'origine** (`archives/`),

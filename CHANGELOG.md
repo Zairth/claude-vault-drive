@@ -9,6 +9,22 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.28.1] — 2026-08-02
+
+**Raison de l'update** : le README décrivait un plugin qui n'existe plus — sur un dépôt public, c'est le point d'entrée.
+
+### Corrigé
+- **README remis en cohérence.** Il annonçait encore la validation
+  conversationnelle de `/doc-ingest` (supprimée en 1.22.0), le routage
+  « document ou PDF → OCR » (faux depuis la 1.23.0, un PDF à couche de texte
+  ne passe plus par l'OCR) et des corrections de `/doc-lint` « validées avec
+  l'utilisateur » (faux depuis la 1.22.0, les mécaniques s'appliquent
+  d'office). Quelqu'un qui le lisait s'attendait donc à valider ses
+  enseignements un par un et à voir ses PDF partir à l'OCR.
+  Ajoutés : les identifiants en clair et les renvois à sens unique dans la
+  liste des vérifications, les deux régimes de correction, `pdf-text.py` dans
+  l'arborescence, et le masquage du hook PreCompact.
+
 ## [1.28.0] — 2026-08-02
 
 **Raison de l'update** : le hook PreCompact dépose les tours de conversation dans un dossier synchronisé — un identifiant collé dans un prompt y était archivé tel quel. Le détecter après coup arrivait trop tard.
