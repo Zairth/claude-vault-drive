@@ -264,26 +264,43 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
 
 ## Rapport final (ton retour à l'agent principal)
 
-**Le bloc de consignes ne s'affiche JAMAIS à l'utilisateur** — et c'est TOI
-qui dois le rendre impossible à afficher, parce que l'agent principal ne lit
-pas ce fichier. Cette commande s'exécute en fork : le fichier de commande t'est
-donné à toi, le sub-agent ; l'agent principal ne reçoit que ton rapport. Une
-consigne écrite ici et pas dans le rapport est invisible pour lui — mesuré,
-c'est exactement pour ça qu'un premier correctif n'a rien changé.
+**Ton rapport EST ce que l'utilisateur lit.** Cette commande s'exécute en
+fork : ta sortie lui est présentée telle quelle. Il n'y a pas d'agent principal
+qui trierait ce qui le concerne de ce qui ne le concerne pas — **une consigne
+écrite dans ton rapport sera affichée**, quel que soit son titre.
 
-Donc le garde-fou voyage **dans le rapport**. Titrer le bloc EXACTEMENT ainsi,
-majuscules comprises :
+Deux tentatives l'ont établi : interdire l'affichage dans ce fichier n'a rien
+changé (l'agent principal ne le lit pas), et titrer le bloc
+« NE PAS AFFICHER » n'a rien changé non plus (il a été affiché avec son titre).
+La conclusion est structurelle, pas rédactionnelle : **il ne doit plus y avoir
+de bloc de consignes dans le rapport.**
 
-`## Pour l'agent principal — CONSIGNES D'EXÉCUTION, NE PAS AFFICHER`
+Donc les consignes détaillées — chemins absolus, frontmatter à écrire, outils à
+appeler — vont **sur disque**, dans
+`${TMPDIR:-/tmp}/claude-vault-suite-<session ou horodatage>.md`, hors du projet
+et hors du vault. Ce fichier porte tout ce qu'il faut pour exécuter la suite.
 
-et l'ouvrir par cette ligne :
+Et ton rapport se termine par **une seule ligne**, lisible par un humain autant
+que par un agent :
 
-`> Ce bloc s'exécute, il ne se recopie pas. L'utilisateur ne doit voir que ce qui précède.`
+`Suite prête : <chemin du fichier>. <n> correction(s) mécanique(s) à appliquer, <n> point(s) à autoriser.`
 
-Ce qui précède, c'est ce qui le concerne : la réponse, le rapport, la question
-posée. Lui montrer les chemins absolus, les noms d'outils et le frontmatter à
-écrire, c'est lui livrer la mécanique interne à la place du résultat — et lui
-faire chercher lui-même ce qu'on attend de lui.
+Rien d'autre. **Le fichier de suite est supprimé dans les trois cas**, parce
+qu'une consigne sans décision est un piège : elle traîne, et la fois suivante
+on ne sait plus si elle attend encore.
+
+- **oui** → le fichier est ouvert, appliqué, puis supprimé ;
+- **non** → supprimé sans être appliqué. Rien n'a été écrit dans le vault, et
+  la réponse reste dans la conversation : elle se redemande en une phrase ;
+- **pas de réponse** → **reposer la question une fois**, au tour suivant, en
+  une ligne. Toujours pas de réponse claire → **traiter comme un refus** et
+  supprimer. C'est le défaut sûr : rien n'a été écrit, donc rien n'est perdu,
+  et relancer indéfiniment coûterait plus cher à l'utilisateur que de refaire
+  la synthèse le jour où il la veut vraiment.
+
+La purge du hook `UserPromptSubmit` reste le dernier filet, pour le cas où la
+session s'interrompt avant qu'une décision ait pu être prise — pas pour tenir
+lieu de nettoyage ordinaire.
 
 1. Le chemin `$VAULT` résolu, écrit en clair (l'agent principal ne connaît pas
    la sortie de vault-check).
@@ -302,8 +319,8 @@ faire chercher lui-même ce qu'on attend de lui.
    précèdent. Un compteur les rangerait parmi les dettes de maintenance, or
    ce n'en est pas une — c'est une fuite, et elle se lit avant le reste.
 3. Le rapport par catégorie (vide = le dire aussi : « rien à signaler »).
-4. Le bloc de consignes, titré comme indiqué ci-dessus. Deux régimes, à ne
-   jamais confondre :
+4. Le **fichier de suite** décrit ci-dessus. Deux régimes, à ne jamais
+   confondre :
 
    - **mécanique et réversible** — trous d'`INDEX.md`, liens pendants ou
      ambigus, frontmatters incomplets, parasites, réindexation, requalification

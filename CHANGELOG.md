@@ -9,6 +9,47 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.35.0] — 2026-08-02
+
+**Raison de l'update** : deux tentatives d'interdire l'affichage du bloc de consignes ont échoué — dans une commande en fork, la sortie du sub-agent EST ce que l'utilisateur lit.
+
+### Corrigé
+- **Une synthèse est indexée dès son écriture.** `/doc-query` écrivait la note,
+  son entrée d'INDEX et sa ligne de journal, mais ne réindexait pas : la
+  synthèse n'entrait dans l'espace vectoriel qu'à la **recherche suivante**,
+  qui réindexe avant de chercher. Elle existait, l'INDEX la listait, le bras
+  lexical la trouvait — mais elle était absente de la similarité jusque-là.
+  L'indexation étant incrémentale, elle ne coûte que les chunks de cette note,
+  et ce coût aurait été payé au prochain `/doc-query` de toute façon.
+
+### Modifié
+- **Les consignes de suite passent sur disque, le rapport n'en garde qu'une
+  ligne.** Les trois commandes en fork terminaient par un bloc destiné à
+  l'exécution — chemins absolus, frontmatter à écrire, outils à appeler. La
+  1.29.0 a interdit de l'afficher dans le fichier de commande : sans effet, le
+  destinataire ne le lit pas. La 1.33.0 a titré le bloc
+  « NE PAS AFFICHER » dans le rapport : sans effet non plus, il a été affiché
+  **avec son titre**.
+  La conclusion est structurelle et non rédactionnelle : dans une commande en
+  fork, **la sortie du sub-agent est ce que l'utilisateur lit**, et aucune
+  formulation ne changera ça. Le bloc ne doit donc plus exister dans le
+  rapport. Les consignes détaillées sont écrites dans un fichier temporaire
+  hors du projet et hors du vault, et le rapport se termine par **une seule
+  ligne** — lisible par un humain autant qu'exploitable par un agent :
+  `Suite prête : <chemin>. <la question ou le verdict>`.
+  Rien n'est écrit dans le vault tant que l'utilisateur n'a pas répondu.
+  **Le fichier de suite est supprimé dans les trois cas** — appliqué après un
+  oui, effacé sans être appliqué après un non, et effacé aussi en l'absence de
+  réponse : la question est reposée **une fois**, puis le silence vaut refus.
+  Une consigne sans décision est un piège, elle traîne et la fois suivante on
+  ne sait plus si elle attend encore ; et relancer indéfiniment coûterait plus
+  cher que de refaire la synthèse le jour où on la veut. Rien n'ayant été écrit
+  dans le vault, le refus par défaut ne perd rien.
+  La purge du hook `UserPromptSubmit` — qui balayait déjà les mémoires de
+  pistes et couvre désormais les deux familles de résidus — reste le dernier
+  filet, pour la session interrompue avant toute décision, pas pour tenir lieu
+  de nettoyage ordinaire.
+
 ## [1.34.0] — 2026-08-02
 
 **Raison de l'update** : rien n'empêchait un identifiant contenu dans une source d'être recopié tel quel dans une couche immuable, indexée et synchronisée.

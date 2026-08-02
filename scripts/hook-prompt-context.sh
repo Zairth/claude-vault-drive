@@ -99,7 +99,12 @@ results="$(bash "$script_directory/vault-lexical.sh" "$prompt" "" 3 2>/dev/null)
 seen_file=""
 if [[ -n "$session_id" ]]; then
     seen_directory="${TMPDIR:-/tmp}"
-    find "$seen_directory" -maxdepth 1 -name 'claude-vault-pistes-*' -type f \
+    # Deux familles de résidus : les mémoires de pistes (celles de ce hook) et
+    # les fichiers de suite écrits par les commandes en fork. Même règle, même
+    # raison — aucun hook ne se déclenche de façon fiable à la fermeture d'une
+    # session, donc c'est le prochain usage qui balaie.
+    find "$seen_directory" -maxdepth 1 -type f \
+        \( -name 'claude-vault-pistes-*' -o -name 'claude-vault-suite-*' \) \
         -mtime +7 -delete 2>/dev/null || true
     seen_file="$seen_directory/claude-vault-pistes-$session_id"
 fi
