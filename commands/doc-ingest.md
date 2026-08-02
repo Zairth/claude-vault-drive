@@ -152,6 +152,13 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
      C'est le seul objectif de cette étape. On ne réécrit pas le texte, on ne
      le résume pas, on ne le corrige pas : on lui donne les titres qui
      permettront de le retrouver par morceaux.
+     **Une exception, et une seule : tout passage de code ou de données cité
+     dans la pièce — JSON, YAML, extrait de programme, tableau de valeurs —
+     s'entoure d'une clôture ` ``` `.** Sans elle, le rendu interprète ce qui
+     n'est pas fait pour l'être : un tableau JSON imbriqué produit `[[` et
+     `]]`, qu'Obsidian lit comme des wikilinks et transforme en nœuds fantômes
+     du graphe. La clôture n'ajoute que des délimiteurs, elle ne touche pas au
+     texte — la fidélité est intacte.
 
      **La chaîne est la même pour toute source, sans exception :**
      `pièce → transcription fidèle → standardisation → wiki/sources/`.
@@ -433,6 +440,9 @@ double emploi : l'une est fidèle, l'autre est utile.
      préfixée du dossier (`sources/<slug>`). Une cible morte → créer la page
      manquante, corriger le lien, ou le délier ; jamais une page coquille pour
      éteindre le compteur ;
+   - **faux wikilinks** — un passage de code ou de données non clôturé
+     produit-il des `[[` `]]` que le rendu prendra pour des liens ? L'entourer
+     d'une clôture ` ``` ` ;
    - **wikilinks ambigus** — un `[[cible]]` **nu** dont le slug existe dans
      plusieurs dossiers de `wiki/` résout quand même, mais vers l'une des deux
      notes au hasard : le contrôle précédent ne le verra jamais. Le préfixer

@@ -90,6 +90,20 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
      La règle : un renvoi à ce que dit une pièce vise
      `[[enseignements/<slug>]]` ; seul un renvoi au texte intégral vise
      `[[sources/<slug>]]`.
+   - **faux wikilink** — la cible est **impossible** : elle contient un
+     guillemet, une virgule, une accolade, un crochet. Ce n'est pas un lien
+     mal écrit, c'est du **texte que le rendu prend pour un lien** — typiquement
+     du JSON ou du code cité dans une pièce, où un tableau imbriqué produit
+     `[[` et `]]` (`[[["RCI"], "00:10"]]`). Obsidian fabrique alors des nœuds
+     fantômes dans le graphe, et un scan de wikilinks trop restrictif ne les
+     voit ni comme pendants ni comme ambigus : ils passent entre les deux.
+     Scanner `[[...]]` **sans présumer de la forme de la cible**, et lister à
+     part — le remède n'est pas de corriger un lien, c'est d'**entourer le
+     passage d'une clôture de code** ` ``` `. Dans une clôture, rien n'est
+     interprété.
+     Exception : ce qui est **déjà** dans une clôture de code n'est pas un
+     défaut. Suivre l'état ouvert/fermé des ` ``` ` en parcourant le fichier,
+     sinon on signale ce qui est déjà réglé.
    Vérifier enfin que `$VAULT/INSTRUCTIONS-CLAUDE.md` énonce bien cette règle
    pour **tout** lien vers une pièce, et pas seulement entre les deux notes
    de la paire : les vaults créés avant 1.21.1 portent une version qui
@@ -388,6 +402,12 @@ la place du résultat, et lui faire chercher lui-même ce qu'on attend de lui.
      corriger le lien vers la page existante ; page réellement manquante →
      proposer sa création ou le délier (texte simple) — jamais de page coquille
      créée juste pour éteindre le compteur.
+   - Pour un **faux wikilink** : entourer le passage d'une clôture de code
+     (` ```json `, ` ``` `…) — **sans modifier un seul caractère du texte**.
+     C'est ce qui rend l'exception acceptable dans une couche immuable : la
+     couche est fidèle au texte de la pièce, pas aux artefacts de rendu de
+     l'outil qui l'affiche, et la clôture n'ajoute que des délimiteurs autour.
+     Mécanique et réversible : appliquer d'office.
    - Pour un **renvoi à sens unique** : ajouter le lien manquant sur la
      page-parent, dans la phrase qui s'y prête — jamais une ligne « Voir
      aussi » posée en fin de note, qui ne dit pas ce que le complément

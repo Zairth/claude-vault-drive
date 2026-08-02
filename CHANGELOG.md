@@ -9,6 +9,33 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.30.0] — 2026-08-02
+
+**Raison de l'update** : du JSON cité dans une pièce fabriquait des nœuds fantômes dans le graphe Obsidian, et la vérification des wikilinks ne les voyait pas — ils tombaient entre « pendant » et « ambigu ».
+
+### Ajouté
+- **`/doc-lint` détecte les faux wikilinks.** Une cible qui contient un
+  guillemet, une virgule ou une accolade n'est pas un lien mal écrit : c'est du
+  **texte que le rendu prend pour un lien**. Un tableau JSON imbriqué cité dans
+  une pièce — `[[["RCI"], "00:10", "both"]]` — produit `[[` et `]]`, et Obsidian
+  en fait des nœuds fantômes. Le scan précédent présumait de la forme d'une
+  cible, donc ne les comptait ni pendants ni ambigus : ils passaient entre les
+  deux mailles, et un vault propre sur onze contrôles polluait quand même le
+  graphe.
+  Le remède n'est pas de corriger un lien mais d'**entourer le passage d'une
+  clôture de code** — mécanique, appliqué d'office, et acceptable même en couche
+  immuable puisque **aucun caractère du texte n'est modifié** : la couche est
+  fidèle au texte de la pièce, pas aux artefacts de rendu de l'outil qui
+  l'affiche. Ce qui est déjà clôturé n'est pas signalé.
+
+### Modifié
+- **`/doc-ingest` clôture le code à la standardisation.** Une exception, et une
+  seule, à la règle « on ne touche pas au texte » : tout passage de code ou de
+  données cité dans une pièce — JSON, YAML, extrait de programme — s'entoure
+  d'une clôture ` ``` `. La clôture n'ajoute que des délimiteurs. Sans elle, le
+  rendu interprète ce qui n'est pas fait pour l'être, et l'auto-vérification de
+  fin d'ingestion le contrôle désormais.
+
 ## [1.29.0] — 2026-08-02
 
 **Raison de l'update** : le bloc « Pour l'agent principal » était recopié tel quel à l'utilisateur — il recevait la mécanique interne à la place de l'interaction attendue.
