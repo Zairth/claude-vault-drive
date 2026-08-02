@@ -81,16 +81,14 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
       l'écran, l'ordre, les dates visibles ; et **signaler tout passage
       illisible, coupé ou ambigu plutôt que de le deviner** — ce sera un
       `> [!warning]` dans la note d'enseignements ;
-    - **une série d'entrées datées** (relevé, journal, suite d'échanges) se
-      standardise avec **un titre `###` par entrée**, portant son auteur et
-      son horodatage quand ils sont lisibles. C'est ce qui fait de chaque
-      entrée un extrait indexé à elle seule, donc retrouvable
-      individuellement ; sans ces titres, tout l'écran part en un seul
-      extrait. **Chaque titre porte le fichier dont l'entrée vient** : une
-      série reste UNE note — la découper en une note par fichier donnerait des
-      notes de trois lignes qui ne veulent rien dire seules —, et cette
-      mention y rétablit la traçabilité, plus finement qu'un découpage ne le
-      ferait. Les dates ne portant souvent ni l'année ni le jour, chercher
+    - **une série d'entrées datées** se structure par titres (voir la règle
+      commune « Découper une série datée » plus bas — elle vaut quelle que soit
+      la forme de la source, capture, export texte ou JSON). **Chaque titre
+      porte le fichier dont l'entrée vient** : une série reste UNE note — la
+      découper en une note par fichier donnerait des notes de trois lignes qui
+      ne veulent rien dire seules —, et cette mention y rétablit la
+      traçabilité, plus finement qu'un découpage ne le ferait.
+      Les dates ne portant souvent ni l'année ni le jour, chercher
       l'ancrage dans le vault (une note existante qui date le même événement)
       ou dans la pièce voisine du même lot. Introuvable → **demander l'ancrage
       à l'utilisateur**, la date de la première entrée : c'est un fait qu'il
@@ -107,6 +105,14 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
   - **Texte lisible tel quel** — `.md`, `.txt`, `.csv`, `.tsv`, `.json`,
     `.xml`, `.html`, `.eml`, code source, export brut → transmis au lecteur
     sans conversion, mesure par `wc -c`.
+    Cas fréquent : un **export de messagerie en JSON** (`messages.json` et
+    consorts). Il se lit sans conversion, mais il n'a **aucune structure
+    markdown** — c'est la standardisation qui doit la lui donner, en suivant la
+    règle de découpage d'une série datée. Sans ça, un export de plusieurs
+    centaines de messages part en un seul bloc et devient introuvable en
+    recherche. Les métadonnées techniques (identifiants de message,
+    empreintes, URL de pièces jointes) ne sont pas du contenu : les écarter,
+    sauf celles qui datent ou attribuent.
   - **Bureautique binaire** — `.xlsx`, `.ods`, `.docx`, `.odt`, `.pptx`… →
     **illisibles tels quels**, et il est hors de question d'en deviner le
     contenu. Convertir d'abord avec ce qui est présent sur la machine
@@ -152,6 +158,22 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
      C'est le seul objectif de cette étape. On ne réécrit pas le texte, on ne
      le résume pas, on ne le corrige pas : on lui donne les titres qui
      permettront de le retrouver par morceaux.
+     **Découper une série datée : l'unité dépend de la densité, pas du
+     format.** Un relevé, un journal, un export de messagerie arrivent en
+     capture, en texte ou en JSON — la forme ne change rien à la question, qui
+     est : *quel morceau veut dire quelque chose tout seul ?*
+     - **conversation** (messagerie, salon, fil de discussion) → **un titre par
+       JOUR**, les messages en dessous, chacun préfixé de son horodatage et de
+       son auteur. Un titre par message donnerait des centaines d'extraits
+       d'une ligne, dont aucun ne se comprend hors de son échange. Mesuré : un
+       export de 479 messages tient en 25 sections quotidiennes utilisables ;
+     - **relevé, journal, suite d'entrées substantielles** (quelques dizaines
+       d'entrées qui se lisent seules) → **un titre par entrée**, avec sa date
+       et son auteur.
+     Le critère est le même dans les deux cas — un extrait doit se comprendre
+     sans son voisin —, il tombe simplement d'un côté ou de l'autre selon que
+     les entrées sont brèves et enchaînées, ou longues et autonomes.
+
      **Une exception, et une seule : tout passage de code ou de données cité
      dans la pièce — JSON, YAML, extrait de programme, tableau de valeurs —
      s'entoure d'une clôture ` ``` `.** Sans elle, le rendu interprète ce qui

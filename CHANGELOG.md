@@ -9,6 +9,31 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.32.0] — 2026-08-02
+
+**Raison de l'update** : la règle de découpage d'une série datée était rangée dans la branche « capture d'écran » et prescrivait un titre par message — ce que la pratique a contredit, avec raison.
+
+### Modifié
+- **Le découpage d'une série datée dépend de la densité, plus du format.** La
+  règle vivait dans la branche « capture d'écran » et ne s'appliquait donc pas
+  à un export texte ou JSON, alors que la question est la même : *quel morceau
+  veut dire quelque chose tout seul ?* Elle est remontée à la standardisation,
+  où elle vaut pour toutes les formes de source.
+  Et elle change de contenu : elle imposait **un titre par entrée**, ce qui
+  donnerait des centaines d'extraits d'une ligne sur une conversation. Deux cas
+  désormais — **conversation → un titre par jour**, messages horodatés en
+  dessous ; **relevé ou journal d'entrées substantielles → un titre par
+  entrée**. Constaté sur un corpus réel : deux conversations ingérées, l'une
+  depuis six captures d'écran et l'autre depuis un export texte de 479
+  messages, ont toutes deux été structurées par jour — la pratique avait déjà
+  tranché contre la règle écrite.
+- **L'export de messagerie en JSON est nommé dans le routage.** Il se lit sans
+  conversion, mais il n'a aucune structure markdown : c'est la standardisation
+  qui doit la lui donner, sans quoi plusieurs centaines de messages partent en
+  un seul bloc. Les métadonnées techniques — identifiants, empreintes, URL de
+  pièces jointes — ne sont pas du contenu et s'écartent, sauf celles qui datent
+  ou attribuent.
+
 ## [1.31.0] — 2026-08-02
 
 **Raison de l'update** : le hook des pistes reproposait les mêmes notes à chaque question sur un même sujet — ce n'est pas le volume qui pollue une session, c'est la redondance.
