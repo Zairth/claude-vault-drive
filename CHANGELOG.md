@@ -67,8 +67,8 @@ Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 - **`/doc-lint` détecte les faux wikilinks.** Une cible qui contient un
   guillemet, une virgule ou une accolade n'est pas un lien mal écrit : c'est du
   **texte que le rendu prend pour un lien**. Un tableau JSON imbriqué cité dans
-  une pièce — `[[["RCI"], "00:10", "both"]]` — produit `[[` et `]]`, et Obsidian
-  en fait des nœuds fantômes. Le scan précédent présumait de la forme d'une
+  une pièce ouvre et ferme deux crochets d'affilée — `[[` puis `]]` — et
+  Obsidian en fait des nœuds fantômes. Le scan précédent présumait de la forme d'une
   cible, donc ne les comptait ni pendants ni ambigus : ils passaient entre les
   deux mailles, et un vault propre sur onze contrôles polluait quand même le
   graphe.

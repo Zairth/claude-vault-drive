@@ -94,7 +94,7 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
      guillemet, une virgule, une accolade, un crochet. Ce n'est pas un lien
      mal écrit, c'est du **texte que le rendu prend pour un lien** — typiquement
      du JSON ou du code cité dans une pièce, où un tableau imbriqué produit
-     `[[` et `]]` (`[[["RCI"], "00:10"]]`). Obsidian fabrique alors des nœuds
+     `[[` en ouverture et `]]` en fermeture. Obsidian fabrique alors des nœuds
      fantômes dans le graphe, et un scan de wikilinks trop restrictif ne les
      voit ni comme pendants ni comme ambigus : ils passent entre les deux.
      Scanner `[[...]]` **sans présumer de la forme de la cible**, et lister à
