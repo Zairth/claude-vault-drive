@@ -174,6 +174,26 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
      sans son voisin —, il tombe simplement d'un côté ou de l'autre selon que
      les entrées sont brèves et enchaînées, ou longues et autonomes.
 
+     **Les identifiants se masquent dans la note, jamais dans la pièce.** Une
+     source peut contenir un mot de passe, un jeton, une clé — typiquement un
+     `.env` recopié dans un message. Ces valeurs ne sont pas de l'information
+     sur le sujet, ce sont des **accès vivants** : les recopier dans
+     `wiki/sources/` les met dans une couche immuable, indexée, et synchronisée
+     — donc répliquée et impossible à retirer proprement.
+     Remplacer la valeur par `[identifiant masqué — voir la pièce archivée]`,
+     **en gardant le nom de la variable** : `DB_PASSWORD=` sans sa valeur dit
+     toujours qu'il était question de cette configuration. La pièce, elle,
+     reste intacte dans `archives/` — c'est elle qui fait foi, et elle est hors
+     de l'index.
+     Ce n'est pas une entorse à la fidélité, c'est sa condition : la couche est
+     fidèle à ce que la pièce **dit**, et la valeur d'une clé ne dit rien du
+     sujet. Le signaler par un `> [!warning]` dans la note d'enseignements —
+     que la pièce contient des identifiants est un fait sur la pièce, et il
+     mérite d'être su.
+     Et le dire à l'utilisateur **au compte rendu**, en clair : un secret qui a
+     transité par un export est à considérer comme compromis, et le remède est
+     la révocation chez l'émetteur, pas le masquage.
+
      **Une exception, et une seule : tout passage de code ou de données cité
      dans la pièce — JSON, YAML, extrait de programme, tableau de valeurs —
      s'entoure d'une clôture ` ``` `.** Sans elle, le rendu interprète ce qui
@@ -462,6 +482,9 @@ double emploi : l'une est fidèle, l'autre est utile.
      préfixée du dossier (`sources/<slug>`). Une cible morte → créer la page
      manquante, corriger le lien, ou le délier ; jamais une page coquille pour
      éteindre le compteur ;
+   - **identifiants en clair** — une valeur de mot de passe, de jeton ou de clé
+     a-t-elle été recopiée dans une note ? La masquer, garder le nom de la
+     variable, et le dire au compte rendu ;
    - **faux wikilinks** — un passage de code ou de données non clôturé
      produit-il des `[[` `]]` que le rendu prendra pour des liens ? L'entourer
      d'une clôture ` ``` ` ;

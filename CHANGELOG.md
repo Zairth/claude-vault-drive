@@ -9,6 +9,30 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.34.0] — 2026-08-02
+
+**Raison de l'update** : rien n'empêchait un identifiant contenu dans une source d'être recopié tel quel dans une couche immuable, indexée et synchronisée.
+
+### Ajouté
+- **`/doc-ingest` masque les identifiants dans la note, jamais dans la pièce.**
+  Une source peut contenir un mot de passe, un jeton, une clé — typiquement un
+  `.env` recopié dans un message. Ces valeurs ne sont pas de l'information sur
+  le sujet, ce sont des **accès vivants** : les écrire dans `wiki/sources/` les
+  place dans une couche immuable, indexée et répliquée, donc impossible à
+  retirer proprement.
+  La valeur est remplacée par `[identifiant masqué — voir la pièce archivée]`,
+  **le nom de la variable est conservé**, et la pièce reste intacte dans
+  `archives/`, hors de l'index. Ce n'est pas une entorse à la fidélité mais sa
+  condition : la couche est fidèle à ce que la pièce **dit**, et la valeur
+  d'une clé ne dit rien du sujet.
+  Un `> [!warning]` le consigne dans la note d'enseignements — qu'une pièce
+  contienne des identifiants est un fait sur la pièce. Et le compte rendu le
+  dit en clair, avec le seul remède qui vaille : la révocation chez l'émetteur,
+  pas le masquage.
+  La règle vient d'un cas réel : une note du corpus portait déjà ce masquage,
+  décidé par la session qui l'avait ingérée. Ce qui marchait par jugement
+  devient une consigne, et l'auto-vérification de fin d'ingestion la contrôle.
+
 ## [1.33.0] — 2026-08-02
 
 **Raison de l'update** : le correctif de la 1.29.0 n'a rien changé — il était écrit à un endroit que l'agent principal ne lit pas.
