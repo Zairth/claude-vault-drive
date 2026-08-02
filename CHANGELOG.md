@@ -9,17 +9,42 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
-## [1.23.1] — 2026-08-02
+## [1.24.0] — 2026-08-02
 
-**Raison de l'update** : la description du plugin faisait dix lignes dans la liste des plugins installés, et décrivait un fonctionnement supprimé en 1.22.0.
+**Raison de l'update** : le vault vit sur un dossier synchronisé, donc un jeton d'accès oublié dans `inbox/` part avec lui — rien ne le cherchait. Et une partie de ce qui attendait une autorisation n'avait rien à perdre.
 
-### Corrigé
-- **Description du plugin ramenée à une ligne.** Elle listait les commandes, le
-  détail des forks, les hooks et les replis — de quoi noyer la liste
-  `/plugin`, où chaque entrée doit tenir sur une ligne. Elle annonçait en
-  outre un « sub-agent lecteur conversationnel » qui n'existe plus : la
-  validation conversationnelle a disparu en 1.22.0. Le détail vit dans le
-  README et dans `PREREQUIS.md`, dont c'est le rôle.
+### Ajouté
+- **`/doc-lint`, douzième vérification : identifiants en clair.** Un vault
+  vit sur un dossier synchronisé — ce qui y traîne part avec lui, et un secret
+  oublié n'est plus un secret. Le contrôle balaie tout le vault, `inbox/` et
+  `archives/` compris puisque ce sont eux qui reçoivent les exports bruts :
+  `.env`, `.*_token`, `*secret*`, `*credential*`, `*.pem`, `*.key`, `id_rsa*`,
+  et les contenus portant `TOKEN=`, `API_KEY=`, `sk-`, `ghp_`, `xox`.
+  La valeur trouvée n'est **jamais affichée** — la citer la recopierait dans un
+  transcript ; seuls le chemin et la taille sont donnés. Le résultat se lit
+  **avant la ligne de compteurs**, sans y figurer : ce n'est pas une dette de
+  maintenance, c'est une fuite.
+  Le remède n'est pas la suppression : un secret qui a séjourné dans un
+  dossier synchronisé est **compromis**, et l'effacer n'annule pas ce qui est
+  déjà répliqué. L'ordre est de le révoquer chez l'émetteur, puis de sortir le
+  fichier — et la suppression se propose, elle ne s'applique pas d'office :
+  c'est peut-être le seul exemplaire.
+
+### Modifié
+- **Les suppressions sans perte possible passent en automatique.** Une note
+  vide, un fichier de conflit Drive sur un dérivé jetable, un reliquat d'index
+  d'une version antérieure : il n'y a rien à sauver dans un fichier vide et un
+  dérivé se régénère. Demander l'autorisation ne protégeait rien et coûtait un
+  aller-retour. Restent soumis les trois actes qui ne se défont pas — fusionner
+  deux pages, supprimer un fichier qui porte du contenu, écrire dans une couche
+  immuable — le vault n'étant pas versionné.
+- **Le compte rendu d'ingestion dit ce qui a été reporté** :
+  `<n> point(s) reportés à /doc-lint`. Ils étaient comptés sans être annoncés,
+  donc invisibles.
+- **Description du plugin ramenée à une ligne.** Elle faisait 623 caractères
+  dans la liste `/plugin`, où chaque entrée doit tenir sur une ligne, et
+  annonçait encore un « sub-agent lecteur conversationnel » supprimé en
+  1.22.0. Le détail vit dans le README et `PREREQUIS.md`.
 
 ## [1.23.0] — 2026-08-02
 

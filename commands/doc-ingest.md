@@ -457,11 +457,17 @@ double emploi : l'une est fidèle, l'autre est utile.
    Une seule fois par ingestion, quel que soit le nombre de sources — jamais
    par source. Puis **appliquer sans rien demander** tout ce qui est mécanique
    et réversible : trous d'`INDEX.md`, liens pendants ou ambigus, frontmatters
-   incomplets, parasites, réindexation des dossiers touchés. Ce qui reste —
-   fusion de pages vivantes, édition d'une couche immuable, suppression d'un
-   fichier — n'est PAS appliqué et n'est PAS soumis : ce sont des actes
-   destructeurs, ils attendent un `/doc-lint` lancé exprès. Les compter, rien
-   de plus.
+   incomplets, parasites, réindexation des dossiers touchés, et les
+   suppressions **sans perte possible** (note vide, conflit Drive sur un
+   dérivé jetable, reliquat d'index). Ce qui reste — fusion de pages vivantes,
+   édition d'une couche immuable, suppression d'un fichier qui porte du
+   contenu — n'est PAS appliqué et n'est PAS soumis : ces trois-là ne se
+   défont pas, le vault n'étant pas versionné, et une ingestion n'est pas le
+   moment de les décider. Les compter, et **dire leur nombre au compte
+   rendu** : reportés, pas oubliés.
+   Exception : un **identifiant en clair** trouvé dans le vault (contrôle 12)
+   se dit immédiatement, quel que soit le reste. Ce n'est pas une dette de
+   maintenance qui peut attendre le prochain lint, c'est une fuite en cours.
    Échec du sub-agent (moteur absent, fork indisponible) → non bloquant :
    l'ingestion reste valide, le noter en une ligne.
 
@@ -477,7 +483,7 @@ Quatre lignes au plus :
 1. **Ce qui est entré** : `<n> source(s) → <n> enseignements · <n> concepts et
    entités touchés`. Des nombres, pas des chemins.
 2. **Ce qui attendra**, seulement s'il y en a : `<n> contradiction(s) à
-   trancher` — sans les détailler. Elles ne sont pas urgentes, elles vivent
+   trancher · <n> point(s) reportés à /doc-lint` — sans les détailler. Elles ne sont pas urgentes, elles vivent
    dans le vault, et `/doc-lint` les listera quand l'utilisateur voudra s'en
    occuper. Les réserves documentaires ne se mentionnent pas : elles sont
    définitives, il n'y a rien à en faire.

@@ -22,7 +22,7 @@ chaque point, jamais une question ouverte.
 2. Lire intégralement `$VAULT/INSTRUCTIONS-CLAUDE.md` et s'y conformer
    (règles de maintenance : sources immuables, LOG append-only, INDEX à jour).
 
-## Vérifications (les onze)
+## Vérifications (les douze)
 
 1. **Callouts** — deux natures que la convention d'`INSTRUCTIONS-CLAUDE.md`
    sépare par leur durée de vie ; ne jamais les additionner :
@@ -204,6 +204,19 @@ chaque point, jamais une question ouverte.
    convention « une idée par note » tranche la plupart des cas.
    Détection et verdict seulement — aucune fusion sans validation (voir
    corrections).
+12. **Identifiants en clair dans le vault** — un vault vit sur un dossier
+   **synchronisé** : ce qui y traîne part avec lui, et un secret oublié n'est
+   plus un secret. Chercher dans TOUT le vault, `inbox/` et `archives/`
+   compris (ce sont eux qui reçoivent les exports bruts, donc eux qui les
+   ramassent) : fichiers `.env`, `.*_token`, `*token*`, `*secret*`,
+   `*credential*`, `*.pem`, `*.key`, `id_rsa*`, `*.p12`, et tout fichier dont
+   le contenu porte une affectation du type `TOKEN=`, `API_KEY=`,
+   `PASSWORD=`, ou une chaîne `sk-`/`ghp_`/`xox`.
+   **Ne jamais afficher la valeur trouvée** — la citer dans un rapport la
+   recopierait dans un transcript. Donner le chemin, la taille, et ce que le
+   nom laisse penser.
+   Ce n'est pas une erreur de vault, c'est une fuite : la lister **en tête du
+   rapport**, avant les compteurs, quel que soit le reste.
 
 ## Rapport final (ton retour à l'agent principal)
 
@@ -219,6 +232,9 @@ chaque point, jamais une question ouverte.
    `contradictions` ne compte QUE les `[!question]` en souffrance, augmentés
    des `[!warning]` requalifiés — jamais les mises en garde documentaires,
    qui sont un état normal du vault et non une dette.
+   Les **identifiants en clair** ne figurent pas dans cette ligne : ils la
+   précèdent. Un compteur les rangerait parmi les dettes de maintenance, or
+   ce n'en est pas une — c'est une fuite, et elle se lit avant le reste.
 3. Le rapport par catégorie (vide = le dire aussi : « rien à signaler »).
 4. Un bloc `Pour l'agent principal`. Deux régimes, à ne jamais confondre :
 
@@ -227,8 +243,14 @@ chaque point, jamais une question ouverte.
      d'un callout : **appliquer sans demander**. Rien de tout cela ne détruit
      quoi que ce soit, et attendre un accord ne fait que reporter la même
      correction ;
+     S'y ajoutent les suppressions **sans perte possible** : note vide (0 octet
+     ou frontmatter seul), fichier de conflit Drive sur un dérivé jetable,
+     reliquat d'index d'une version antérieure. Il n'y a rien à sauver dans un
+     fichier vide, et un dérivé se régénère — demander l'autorisation de les
+     supprimer ne protège rien et coûte un aller-retour ;
    - **destructeur ou irréversible** — fusionner deux pages, supprimer un
-     fichier, éditer une couche immuable : soumettre. Une seule fois, avec ton
+     fichier qui porte du contenu, éditer une couche immuable : soumettre.
+     Le vault n'est pas versionné : ces trois-là ne se défont pas. Une seule fois, avec ton
      verdict et ce qui le motive, et la question porte sur l'**autorisation**,
      jamais sur la réponse.
 
@@ -340,6 +362,12 @@ chaque point, jamais une question ouverte.
      de la note dans `LOG/` ou un `LOG.md` racine hérité ; `description`
      manquante : rapatrier celle de l'entrée `INDEX.md` existante, sinon la
      déduire du contenu) — jamais de valeur inventée sans le signaler.
+   - Pour un **identifiant en clair** : ne pas se contenter de supprimer le
+     fichier. Un secret qui a séjourné dans un dossier synchronisé est à
+     considérer comme **compromis**, et l'effacer n'annule pas ce qui a déjà
+     été répliqué. L'ordre est : dire à l'utilisateur de le **révoquer chez
+     l'émetteur**, puis sortir le fichier du vault. La suppression se propose,
+     elle ne s'applique pas d'office : c'est peut-être le seul exemplaire.
    - Pour la cohérence vectorielle : proposer la réindexation **des seules
      cibles en défaut** — outil MCP
      `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` avec
