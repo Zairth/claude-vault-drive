@@ -40,12 +40,37 @@ else
     echo "Conservé (déjà présent) : .claude/vault-path.local"
 fi
 
+# Deux permissions, dans le fichier LOCAL (jamais versionné, et le chemin du
+# plugin dépend de la machine) :
+#   - additionalDirectories : l'accès au vault, hors du projet ;
+#   - allow : les scripts du plugin, sans quoi chaque commande se fait refuser
+#     ses appels un par un et dégrade au lieu de tourner. Le joker sur la
+#     version évite d'avoir à refaire ça à chaque mise à jour.
+# Périmètre volontairement étroit : ce dossier de scripts, rien d'autre. Ils
+# lisent le vault ; seul vault-index.sh y écrit, dans les `.index/`, qui sont
+# des dérivés régénérables.
 settings_file="$project_claude_directory/settings.local.json"
-if [[ ! -f "$settings_file" ]]; then
+plugin_scripts_glob=""
+if [[ -n "${CLAUDE_PLUGIN_ROOT:-}" ]]; then
+    # .../<plugin>/<version>/scripts → .../<plugin>/*/scripts, pour survivre aux
+    # mises à jour. Hors cache versionné, on garde le chemin tel quel.
+    plugin_parent="$(dirname "$CLAUDE_PLUGIN_ROOT")"
+    if [[ "$(basename "$CLAUDE_PLUGIN_ROOT")" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        plugin_scripts_glob="$plugin_parent/*/scripts/*"
+    else
+        plugin_scripts_glob="$CLAUDE_PLUGIN_ROOT/scripts/*"
+    fi
+fi
+
+if command -v python3 >/dev/null 2>&1 \
+   && SETTINGS_FILE="$settings_file" VAULT_PATH="$vault_path" \
+      SCRIPTS_GLOB="$plugin_scripts_glob" python3 "$script_directory/merge-permissions.py"; then
+    echo "OK : .claude/settings.local.json — accès au vault et scripts du plugin autorisés (relancer la session Claude Code pour les charger)."
+elif [[ ! -f "$settings_file" ]]; then
     printf '{\n  "permissions": {\n    "additionalDirectories": [\n      "%s"\n    ]\n  }\n}\n' "$vault_path" > "$settings_file"
-    echo "OK : .claude/settings.local.json créé (relancer la session Claude Code pour charger la permission)."
+    echo "OK : .claude/settings.local.json créé (fusion indisponible : autoriser à la main les scripts du plugin si les commandes se font refuser leurs appels)."
 else
-    echo "Conservé (déjà présent) : .claude/settings.local.json — vérifier qu'il autorise bien : $vault_path"
+    echo "Conservé (déjà présent) : .claude/settings.local.json — y autoriser à la main : $vault_path, et les scripts du plugin." >&2
 fi
 
 # .gitignore du projet : les fichiers locaux ne sont jamais versionnés.

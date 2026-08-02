@@ -9,6 +9,36 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.37.0] — 2026-08-02
+
+**Raison de l'update** : refusés par le classificateur de permissions, les scripts du plugin font DÉGRADER une commande au lieu de l'arrêter — le résultat reste plausible, en moins bon.
+
+### Ajouté
+- **`/vault-init` autorise les scripts du plugin.** Il n'inscrivait que l'accès
+  au vault (`additionalDirectories`) ; chaque commande `/doc-*` appelle en plus
+  plusieurs scripts, refusés un par un tant que rien ne les autorise. Le coût
+  n'est pas un échec franc mais une **dégradation silencieuse** : la commande
+  improvise un repli et rend un résultat amoindri. Constaté en usage réel — une
+  recherche sémantique menée sur des index périmés parce que la réindexation
+  avait été refusée.
+  Deux règles sont ajoutées (`bash` et `python3`), avec un **joker sur le
+  numéro de version** pour survivre aux mises à jour du plugin. Périmètre
+  étroit : ce dossier de scripts, rien d'autre.
+  La fusion (`scripts/merge-permissions.py`) préserve un fichier existant, est
+  idempotente, et **refuse d'écrire** si le JSON est illisible plutôt que
+  d'écraser une configuration qu'elle ne comprend pas.
+
+### Corrigé
+- **Les commandes en fork ne transmettent plus de consignes du tout.** La
+  1.35.0 les faisait écrire sur disque : **impossible**, un fork `Explore` est
+  en lecture seule stricte et n'a aucun outil d'écriture. C'était la troisième
+  tentative après l'interdiction dans le fichier de commande (invisible pour le
+  destinataire) et le titre « NE PAS AFFICHER » (affiché avec son titre).
+  Il n'y a en réalité rien à transmettre : les conventions d'écriture sont dans
+  `INSTRUCTIONS-CLAUDE.md`, que l'agent principal peut lire, et le reste est
+  déjà dans le rapport. Le rapport se termine par **deux lignes** — le chemin
+  du vault, seule chose qui ne se devine pas, et la question ou le verdict.
+
 ## [1.36.0] — 2026-08-02
 
 **Raison de l'update** : le script listant les dossiers à indexer a été refusé par les permissions en pleine recherche — la commande s'en est sortie en improvisant, ce qui n'est pas une garantie.

@@ -269,38 +269,23 @@ fork : ta sortie lui est présentée telle quelle. Il n'y a pas d'agent principa
 qui trierait ce qui le concerne de ce qui ne le concerne pas — **une consigne
 écrite dans ton rapport sera affichée**, quel que soit son titre.
 
-Deux tentatives l'ont établi : interdire l'affichage dans ce fichier n'a rien
-changé (l'agent principal ne le lit pas), et titrer le bloc
-« NE PAS AFFICHER » n'a rien changé non plus (il a été affiché avec son titre).
-La conclusion est structurelle, pas rédactionnelle : **il ne doit plus y avoir
-de bloc de consignes dans le rapport.**
+Trois tentatives l'ont établi : interdire l'affichage dans ce fichier (l'agent
+principal ne le lit pas), titrer le bloc « NE PAS AFFICHER » (il a été affiché
+avec son titre), et écrire les consignes sur disque — **impossible, tu es en
+lecture seule stricte et n'as aucun outil d'écriture**.
 
-Donc les consignes détaillées — chemins absolus, frontmatter à écrire, outils à
-appeler — vont **sur disque**, dans
-`${TMPDIR:-/tmp}/claude-vault-suite-<session ou horodatage>.md`, hors du projet
-et hors du vault. Ce fichier porte tout ce qu'il faut pour exécuter la suite.
+La conclusion est simple : **il n'y a pas de consignes à transmettre.** L'agent
+principal n'en a pas besoin — les conventions d'écriture sont dans
+`$VAULT/INSTRUCTIONS-CLAUDE.md`, qu'il peut lire, et le reste (le corps, les
+références) est dans ton rapport, sous les yeux de l'utilisateur.
 
-Et ton rapport se termine par **une seule ligne**, lisible par un humain autant
-que par un agent :
+Ton rapport se termine donc par **deux lignes**, et rien d'autre :
 
-`Suite prête : <chemin du fichier>. <n> correction(s) mécanique(s) à appliquer, <n> point(s) à autoriser.`
+`Vault : <le chemin résolu>`
+`<la question, ou le verdict — voir ci-dessous>`
 
-Rien d'autre. **Le fichier de suite est supprimé dans les trois cas**, parce
-qu'une consigne sans décision est un piège : elle traîne, et la fois suivante
-on ne sait plus si elle attend encore.
-
-- **oui** → le fichier est ouvert, appliqué, puis supprimé ;
-- **non** → supprimé sans être appliqué. Rien n'a été écrit dans le vault, et
-  la réponse reste dans la conversation : elle se redemande en une phrase ;
-- **pas de réponse** → **reposer la question une fois**, au tour suivant, en
-  une ligne. Toujours pas de réponse claire → **traiter comme un refus** et
-  supprimer. C'est le défaut sûr : rien n'a été écrit, donc rien n'est perdu,
-  et relancer indéfiniment coûterait plus cher à l'utilisateur que de refaire
-  la synthèse le jour où il la veut vraiment.
-
-La purge du hook `UserPromptSubmit` reste le dernier filet, pour le cas où la
-session s'interrompt avant qu'une décision ait pu être prise — pas pour tenir
-lieu de nettoyage ordinaire.
+Le chemin, parce que c'est la seule chose que l'agent principal ne peut pas
+deviner. La question, parce qu'elle s'adresse à l'utilisateur.
 
 1. Le chemin `$VAULT` résolu, écrit en clair (l'agent principal ne connaît pas
    la sortie de vault-check).
@@ -319,8 +304,8 @@ lieu de nettoyage ordinaire.
    précèdent. Un compteur les rangerait parmi les dettes de maintenance, or
    ce n'en est pas une — c'est une fuite, et elle se lit avant le reste.
 3. Le rapport par catégorie (vide = le dire aussi : « rien à signaler »).
-4. Le **fichier de suite** décrit ci-dessus. Deux régimes, à ne jamais
-   confondre :
+4. Les **deux lignes finales** décrites ci-dessus. Pour l'agent principal qui
+   appliquera, deux régimes à ne jamais confondre :
 
    - **mécanique et réversible** — trous d'`INDEX.md`, liens pendants ou
      ambigus, frontmatters incomplets, parasites, réindexation, requalification
