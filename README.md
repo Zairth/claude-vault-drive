@@ -3,30 +3,60 @@
 [![plugin Claude Code](https://img.shields.io/badge/plugin-Claude%20Code-d97757)](https://code.claude.com/docs/en/plugins)
 [![version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FZairth%2Fclaude-vault-drive%2Fmain%2F.claude-plugin%2Fplugin.json&query=%24.version&label=version&color=blue)](CHANGELOG.md)
 [![licence MIT](https://img.shields.io/github/license/Zairth/claude-vault-drive?color=green)](LICENSE)
-[![sans service ni clone](https://img.shields.io/badge/install-sans%20clone%2C%20sans%20service-lightgrey)](#installation)
+[![sans service ni clone](https://img.shields.io/badge/install-sans%20clone%2C%20sans%20service-lightgrey)](#démarrer)
 
-Un vault Obsidian partagé (Google Drive ou tout dossier synchronisé), consultable
-et maintenu par Claude Code — distribué comme **plugin Claude Code** : s'installe
-en deux commandes dans n'importe quel projet, **sans clone, sans service qui
-tourne**. Le vault n'est que des fichiers markdown dans un dossier : Obsidian est
-la vitrine humaine (graphe, wikilinks), Claude Code y accède directement.
+**Donnez à Claude Code une mémoire qui survit à vos sessions.**
 
-## Objectif
+Vous lui déposez des documents — un PDF, une capture d'écran, un export, un
+compte rendu. Le plugin en fait des notes markdown rangées et reliées entre
+elles, dans un dossier bien à vous. À la session suivante, Claude les relit et
+répond en citant ses sources. Ouvrez ce dossier dans Obsidian si vous voulez le
+voir en graphe — rien ne vous y oblige, ce ne sont que des fichiers.
 
-Combiné à [agentic-toolbox](https://github.com/Zairth/agentic-toolbox), ce
-plugin fait naître le fameux **deuxième cerveau de Claude** : une mémoire
-externe durable et partagée, optimisée par **orchestration agentique**
-(`/doc-query` et `/doc-lint` s'exécutent entièrement dans un sub-agent via
-`context: fork` ; `/doc-ingest` lit la source dans un sub-agent lecteur
-conversationnel — le contexte principal n'est jamais saturé) et par des
-**skills** pour la recherche sémantique et l'OCR.
+## Démarrer
 
-Le cas d'usage type : brancher un projet sur son dossier Drive — Claude le
-**consomme** (`/doc-query` répond en citant les notes) et l'**alimente en
-retour** (`/doc-ingest`, synthèses persistées) au fur et à mesure des
-itérations de sessions sur ce projet. Le savoir s'accumule d'une session à
-l'autre au lieu de disparaître avec le contexte, et reste lisible par les
-humains dans Obsidian.
+Une fois, valable pour tous vos projets :
+
+```
+/plugin marketplace add https://github.com/Zairth/marketplace
+/plugin install claude-vault-drive@zairth_store
+```
+
+Puis dans le projet qui doit avoir sa mémoire :
+
+```
+/vault-init "/chemin/vers/mon-vault"
+```
+
+Relancez la session : c'est prêt. Aucun clone, aucun service à faire tourner.
+Le dossier du vault peut être n'importe où — Google Drive, Dropbox, ou un
+disque local. Options, montage Drive et cas particuliers :
+[installation détaillée](#installation-détaillée).
+
+## Les cinq commandes
+
+| commande | ce qu'elle fait |
+|---|---|
+| `/vault-init` | crée le vault et branche le projet dessus |
+| `/doc-ingest` | range une source dans le vault — un fichier, un dossier, un lien |
+| `/doc-query` | pose une question, obtient une réponse qui cite ses notes |
+| `/doc-lint` | vérifie la cohérence de l'ensemble |
+| `/doc-repair` | corrige une information et la répercute partout où elle apparaît |
+
+Au quotidien, deux suffisent : **`/doc-ingest` pour nourrir, `/doc-query` pour
+consulter.** Le reste s'enchaîne tout seul — une ingestion lance sa
+vérification sans qu'on le lui demande.
+
+## Pour aller plus loin
+
+- **Recherche par le sens** (et non par mots-clés) et **lecture des documents
+  scannés** : installer aussi
+  [agentic-toolbox](https://github.com/Zairth/agentic-toolbox). Facultatif —
+  sans lui, la recherche se rabat sur les mots-clés, et le dit.
+- Prérequis pas à pas, montage Drive, clés API : [PREREQUIS.md](PREREQUIS.md)
+- Ce que change chaque version : [CHANGELOG.md](CHANGELOG.md)
+- Comment c'est construit : [Principes](#principes) et
+  [Usage](#usage) plus bas.
 
 ## Ce que contient ce repo
 
@@ -59,6 +89,7 @@ claude-vault-drive/
 │   ├── vault-lexical.sh     # recherche par mots-clés BM25 — zéro appel API, aucun index requis
 │   ├── vault-ocr.sh         # conversion OCR — scan, photo : le seul cas où l'OCR est le bon outil
 │   ├── pdf-text.py          # couche de texte d'un PDF, sans dépendance ni réseau (essayée avant l'OCR)
+│   ├── verify-entries.py    # recompte les entrées datées d'une source dans la note produite
 │   ├── hook-session-start.sh    # hook : INDEX.md injecté à l'ouverture de session
 │   ├── hook-prompt-context.sh   # hook : pistes par mots-clés sous chaque prompt (gratuit)
 │   └── hook-precompact-inbox.sh # hook : transcript déposé dans inbox/ avant compactage, identifiants masqués
@@ -123,7 +154,11 @@ vault par projet**.
 - **Échecs explicites** : Drive non monté, vault non initialisé → message clair,
   jamais de vault vide silencieux.
 
-## Installation
+## Installation détaillée
+
+Pour l'installation courante, trois commandes suffisent : voir
+[Démarrer](#démarrer) plus haut. Cette section couvre les prérequis, les
+options et ce que `/vault-init` écrit exactement.
 
 **Prérequis** : [Claude Code](https://claude.com/claude-code) ; Google Drive
 pour Desktop si le vault doit être partagé (sinon n'importe quel dossier local
@@ -189,7 +224,7 @@ Première commande à taper dans un projet, une fois le plugin installé :
 `/vault-init "/chemin/du/vault"` (le chemin en argument, sinon la commande le
 demande et s'arrête), puis **relancer la session Claude Code** — c'est ce
 redémarrage qui charge la permission `additionalDirectories` et rend les
-commandes ci-dessous opérationnelles (détail : [Installation](#installation)).
+commandes ci-dessous opérationnelles (détail : [installation détaillée](#installation-détaillée)).
 
 - `/doc-ingest <texte | fichier | URL | élément de inbox/>` — un sub-agent
   lecteur lit la source (le contexte principal ne la voit jamais) et en tire

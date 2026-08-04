@@ -228,7 +228,10 @@ s'en sert dans le plugin, et ce qui se passe s'il manque :
   est écrit en bash pur, sans dépendance ;
 - **lecture des PDF à couche de texte** (`scripts/pdf-text.py`) → sans
   `python3`, un PDF produit par un logiciel repart vers l'OCR, qui le lira
-  moins bien et à un coût d'API. Rien ne casse, la qualité baisse.
+  moins bien et à un coût d'API. Rien ne casse, la qualité baisse ;
+- **recomptage des entrées d'une série datée** (`scripts/verify-entries.py`)
+  → sans `python3`, l'ingestion d'un relevé ou d'un export perd sa
+  vérification d'intégralité : elle reste correcte, elle n'est plus prouvée.
 
 Bibliothèque standard seule dans les trois cas : aucun `pip install`, aucun
 accès réseau. (Le moteur sémantique, lui, a ses propres prérequis Python —

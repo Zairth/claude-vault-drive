@@ -8,9 +8,17 @@ argument-hint: "[creer | reel [Q3 Q7 ...]]"
 **Instrument facultatif.** Rien dans le plugin ne l'exige : le vault
 s'initialise, s'alimente et s'interroge sans jamais l'ouvrir, et aucun réglage
 n'attend d'être calibré. Il sert à qui veut **vérifier ou améliorer** la
-qualité de recherche sur son propre corpus — repérer une régression après une
-mise à jour du moteur, ou décider si un changement vaut d'être gardé. La
-plupart des vaults n'en auront jamais besoin.
+qualité de recherche sur son propre corpus, dans cet ordre :
+- **d'abord son vault** — le banc dit si les notes sont assez maillées et assez
+  découpées pour être retrouvées. Un échec renvoie à un wikilink absent, à une
+  note qui ne cite pas sa page-parente, à une section trop longue : tout est à
+  portée de main, et c'est là qu'ont atterri la plupart des constats ;
+- **ensuite le moteur** — une régression après une mise à jour se repère au
+  même endroit. On ne peut alors que la constater, le moteur n'étant pas dans
+  ce dépôt : rester sur la version précédente, ou au moins savoir pourquoi les
+  résultats ont changé du jour au lendemain.
+
+La plupart des vaults n'en auront jamais besoin.
 
 Le banc est une liste de questions figée (`BENCH.md`, à la racine du vault),
 chacune avec les notes qu'une bonne recherche doit remonter. Trois modes :

@@ -3,3 +3,7 @@
 # jamais versionnée. Le plugin lui-même vit à la racine (commands/, scripts/…).
 .claude/
 /CLAUDE.md
+
+# artefacts Python
+__pycache__/
+*.pyc

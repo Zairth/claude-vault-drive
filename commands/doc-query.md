@@ -141,10 +141,16 @@ La question à traiter est `$ARGUMENTS`, nettoyée des jetons `dans:` et
    pluriel, le suffixe et la forme fléchie sans les énumérer, et c'est ce qui
    rattrape la plupart des ratés d'une correspondance exacte. Étendre aux
    synonymes et variantes françaises.
-   **Écarter les termes trop répandus** : un mot présent dans la plupart des
-   notes ne discrimine rien — un patronyme suffit à ramener la moitié d'un
-   vault. Ce sont les termes rares de la question qui portent le sens ; que
-   les touches viennent d'eux.
+   **Écarter les termes trop répandus — sauf en énumération.** Sur une
+   question thématique, un mot présent dans la plupart des notes ne discrimine
+   rien : ce sont les termes rares qui portent le sens, que les touches
+   viennent d'eux. Mais dès que la question demande **tout ce qui concerne un
+   acteur, un module, un produit, un client**, ce terme fréquent cesse d'être
+   du bruit — il **est** le critère de sélection, et l'écarter revient à
+   chercher autre chose que ce qui est demandé. Le tri se fait alors à la
+   lecture et non au motif : c'est coûteux, c'est normal, c'est le prix de
+   l'exhaustivité, et c'est ton contexte qui le paie — jamais celui de
+   l'utilisateur.
 
    **Ouvrir TOUTES les touches retenues, puis trier** : ne retenir que celles qui
    apportent un fait, ou un savoir explicitement énoncé, répondant à la
@@ -167,6 +173,19 @@ La question à traiter est `$ARGUMENTS`, nettoyée des jetons `dans:` et
    la lecture, jamais du classement. Trop de notes pour un seul lecteur → le
    dire dans le rapport et nommer ce qui n'a pas été couvert ; jamais de
    silence sur une couverture partielle.
+
+   **Où porte le grep, explicitement.** Par défaut `$VAULT/wiki/` : c'est là
+   que vit le texte intégral standardisé, seule couche à la fois complète et
+   indexée. `archives/` porte les pièces d'origine et ce qui en a été extrait —
+   le même contenu sous une autre forme, donc chaque touche y ferait doublon
+   avec celle de `wiki/sources/`. On l'ajoute dans un seul cas, et en
+   l'annonçant : quand la question porte sur ce qu'une pièce portait
+   **littéralement** et que la couche standardisée ne le rend pas.
+   `inbox/` n'est jamais fouillé : ce qui s'y trouve n'est pas ingéré, donc
+   ni standardisé ni vérifié — une touche y serait citée comme un fait du
+   vault alors qu'elle n'en est pas encore un. Si le périmètre de la question
+   laisse penser qu'`inbox/` contient de la matière, le dire dans le rapport
+   et appeler un `/doc-ingest` ; ne jamais citer depuis le sas.
 5. Ne jamais recopier des notes entières.
 6. Si rien de pertinent : le dire explicitement et lister ce qui s'en
    rapproche.

@@ -70,8 +70,7 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
     disposition — colonnes, encadrés, alignements — a disparu, et avec elle
     une partie du sens. Le sub-agent lecteur **ouvre l'image directement**
     (outil Read, qui affiche les images) et en produit lui-même la version
-    standardisée. Trois
-    conséquences :
+    standardisée. Ce qui en découle :
     - pas de mesure par `wc -c` — une image ne se compte pas en octets de
       texte. Des captures qui forment **un même ensemble** comptent pour UNE
       source, qu'un seul lecteur ouvre dans l'ordre (une dizaine au plus par
@@ -97,6 +96,46 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
       **ne pas bloquer** : ingérer sans date, avec un `> [!warning]` qui dit
       l'ancrage manquant. Ne jamais la déduire : une année devinée dans une
       couche immuable ne se verra plus jamais ;
+    - **une vue qui défile, capturée en série** — un outil sans export
+      (tableau de bord, fil d'activité, éditeur en ligne) — se contrôle par sa
+      continuité. Ces contrôles valent d'être faits parce qu'ils sont les
+      **seuls possibles** : le texte n'existant nulle part avant que le lecteur
+      ne l'écrive, il n'y a rien à quoi le recouper.
+      - **numérotation** — les noms d'une campagne de captures se suivent
+        (`capture-014` … `capture-061`). Un trou dans la suite est une image
+        prise puis égarée. Se vérifie avant toute lecture, sans rien ouvrir ;
+      - **recouvrement de bord** — deux captures consécutives d'une vue qui
+        défile partagent des lignes à la jointure. Le lecteur s'en sert pour
+        raccorder, et **déclare chaque jointure** : recouvrement constaté, ou
+        rupture. Une rupture est un morceau que la campagne n'a jamais
+        capturé — un fait sur la **couverture**, à consigner en
+        `> [!warning]`, pas un détail de lecture ;
+      - **monotonie des dates** — les horodatages lisibles à l'écran doivent
+        progresser sans retour en arrière sur toute la série. Un saut est soit
+        un silence réel, soit une capture absente : dans les deux cas il se
+        dit.
+      Aucun des trois ne prouve la fidélité du texte transcrit — rien ne le
+      peut. Ils prouvent que la série est **continue**, et nomment les endroits
+      où elle ne l'est pas : c'est la différence entre une couverture inconnue
+      et une couverture bornée ;
+    - **l'attribution se reporte, elle ne se devine pas.** Une interface qui
+      groupe les entrées consécutives d'un même auteur n'affiche son nom
+      **qu'une fois** : les suivantes arrivent nues, et le nom ne réapparaît
+      qu'au changement d'auteur ou à une rupture d'horaire. Un nom absent ne
+      veut donc pas dire « auteur inconnu », il veut dire « le même que la
+      ligne précédente » — le lecteur **reporte le dernier auteur connu** et
+      l'écrit en toutes lettres sur chaque entrée. C'est précisément ce que la
+      standardisation sert à faire : rendre explicite ce que l'affichage
+      élidait.
+      Le report **franchit la jointure** entre deux captures : les premières
+      entrées d'une image peuvent prolonger l'auteur de la fin de la
+      précédente. C'est le second usage du recouvrement de bord, et la raison
+      pour laquelle un seul lecteur ouvre une série entière, dans l'ordre.
+      Auteur indéterminable faute de tout point de report (une série qui
+      s'ouvre en plein milieu d'un groupe) → l'écrire tel quel et poser un
+      `> [!warning]` ; ne jamais attribuer par ressemblance. Une entrée mal
+      attribuée est pire qu'une entrée non attribuée : la seconde se voit, la
+      première se cite ;
     - ce sont les **images elles-mêmes** qui sont archivées, avec la
       transcription fidèle qu'en a faite le lecteur — même règle que pour un
       document et sa sortie d'OCR. Aucune référence d'image n'est écrite dans
@@ -105,14 +144,27 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
   - **Texte lisible tel quel** — `.md`, `.txt`, `.csv`, `.tsv`, `.json`,
     `.xml`, `.html`, `.eml`, code source, export brut → transmis au lecteur
     sans conversion, mesure par `wc -c`.
-    Cas fréquent : un **export de messagerie en JSON** (`messages.json` et
-    consorts). Il se lit sans conversion, mais il n'a **aucune structure
-    markdown** — c'est la standardisation qui doit la lui donner, en suivant la
-    règle de découpage d'une série datée. Sans ça, un export de plusieurs
-    centaines de messages part en un seul bloc et devient introuvable en
-    recherche. Les métadonnées techniques (identifiants de message,
-    empreintes, URL de pièces jointes) ne sont pas du contenu : les écarter,
-    sauf celles qui datent ou attribuent.
+    Cas fréquent : un **export d'API en JSON** (suivi de tickets, journal
+    d'activité, historique d'un outil). Il se lit sans conversion, mais il n'a
+    **aucune structure markdown** — c'est la standardisation qui doit la lui
+    donner, en suivant la règle de découpage d'une série datée. Sans ça, un
+    export de plusieurs centaines d'entrées part en un seul bloc et devient
+    introuvable en recherche. Les métadonnées techniques (identifiants
+    d'entrée, empreintes, URL de pièces jointes) ne sont pas du contenu : les
+    écarter, sauf celles qui datent ou attribuent.
+    **Projeter l'export sur ses champs utiles AVANT de le mesurer et de le
+    découper.** Une réponse d'API porte une enveloppe — identifiants internes,
+    drapeaux, tableaux vides, objets de relation — qui pèse couramment **neuf
+    dixièmes du fichier** sans porter une ligne de contenu : un export qui
+    paraît en peser six n'en porte parfois qu'un demi. Mesurer le brut fait
+    franchir le seuil de gros volume à une source qui ne l'atteint pas, et
+    multiplie d'autant le nombre de lecteurs — dix fois plus de tranches pour
+    le même texte, chacune payée en contexte et en temps. Déposer la
+    projection dans `$VAULT/inbox/<slug>.projete.md` (une ligne par entrée :
+    horodatage, auteur, texte, nom des pièces jointes), mesurer **celle-là**,
+    et la donner au lecteur. C'est le fichier d'origine qui reste archivé et
+    que pointe `origine:` — la projection est un intermédiaire jetable, comme
+    la conversion d'un binaire.
   - **Bureautique binaire** — `.xlsx`, `.ods`, `.docx`, `.odt`, `.pptx`… →
     **illisibles tels quels**, et il est hors de question d'en deviner le
     contenu. Convertir d'abord avec ce qui est présent sur la machine
@@ -159,20 +211,45 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
      le résume pas, on ne le corrige pas : on lui donne les titres qui
      permettront de le retrouver par morceaux.
      **Découper une série datée : l'unité dépend de la densité, pas du
-     format.** Un relevé, un journal, un export de messagerie arrivent en
-     capture, en texte ou en JSON — la forme ne change rien à la question, qui
-     est : *quel morceau veut dire quelque chose tout seul ?*
-     - **conversation** (messagerie, salon, fil de discussion) → **un titre par
-       JOUR**, les messages en dessous, chacun préfixé de son horodatage et de
-       son auteur. Un titre par message donnerait des centaines d'extraits
-       d'une ligne, dont aucun ne se comprend hors de son échange. Mesuré : un
-       export de 479 messages tient en 25 sections quotidiennes utilisables ;
+     format.** Un relevé, un journal, un export d'outil arrivent en capture, en
+     texte ou en JSON — la forme ne change rien à la question, qui est : *quel
+     morceau veut dire quelque chose tout seul ?*
+     - **entrées brèves et enchaînées** (fil de discussion, salon, suivi de
+       tickets) → **un titre par JOUR**, les entrées en dessous. Un titre par
+       entrée donnerait des centaines d'extraits d'une ligne, dont aucun ne se
+       comprend hors de son échange. Mesuré : une série de 479 entrées tient en
+       25 sections quotidiennes utilisables ;
      - **relevé, journal, suite d'entrées substantielles** (quelques dizaines
        d'entrées qui se lisent seules) → **un titre par entrée**, avec sa date
        et son auteur.
      Le critère est le même dans les deux cas — un extrait doit se comprendre
      sans son voisin —, il tombe simplement d'un côté ou de l'autre selon que
      les entrées sont brèves et enchaînées, ou longues et autonomes.
+
+     **Une entrée s'écrit sur UNE ligne, dans cette forme et aucune autre :**
+
+     ```
+     - AAAA-MM-JJ HH:MM — <auteur> : <texte de l'entrée>
+     ```
+
+     La date **complète sur chaque ligne**, même sous un titre qui la porte
+     déjà. La répétition est voulue, pour trois raisons qui tiennent toutes à
+     ce qui se passe *après* l'ingestion :
+     - **un extrait remonté doit se dater tout seul.** Le découpage sémantique
+       coupe où il veut dans une longue journée : un extrait qui ne porterait
+       que `14:32` reviendrait sans son jour, donc inutilisable pour citer quoi
+       que ce soit. Le titre au-dessus ne voyage pas avec l'extrait ;
+     - **une plage de dates devient cherchable** — `grep '^- 2026-04'` rend un
+       mois entier, quelle que soit la pièce dont il vient. Sans forme commune,
+       chaque source impose la sienne et rien ne se recoupe ;
+     - **l'intégralité devient vérifiable sans deviner.** Une forme unique se
+       contrôle ; un format libre s'infère, et une inférence peut se tromper
+       dans les deux sens — annoncer une perte qui n'existe pas, ou en manquer
+       une vraie.
+     Le coût est de onze caractères par entrée. Il n'y a pas de contrepartie :
+     le titre quotidien reste, puisque c'est lui qui découpe.
+     Heure absente de la source (une capture qui n'affiche que le jour) →
+     `AAAA-MM-JJ` seul, jamais une heure inventée.
 
      **Les identifiants se masquent dans la note, jamais dans la pièce.** Une
      source peut contenir un mot de passe, un jeton, une clé — typiquement un
@@ -477,6 +554,19 @@ double emploi : l'une est fidèle, l'autre est utile.
    est disproportionné après une ingestion — et il rapporte sans corriger.
    Ici on contrôle uniquement ce que CETTE ingestion pouvait casser, sur les
    seules notes touchées, et on corrige immédiatement :
+   - **entrées d'une série datée** — la source était-elle une suite d'entrées
+     horodatées (relevé, journal d'activité, export d'API, suivi de tickets) ?
+     Alors la note doit en porter autant que la source :
+     `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/verify-entries.py" --source <la
+     pièce> --note <la ou les notes de sources/>`.
+     C'est le seul contrôle qui réponde à « est-ce que tout y est ? ». Aucun
+     contrôle de forme ne peut le faire : une tranche jamais rendue produit une
+     note parfaitement valide, simplement plus courte, et il n'y a rien à quoi
+     comparer sa taille. Sortie **1** → les horodatages absents sont listés :
+     relancer un lecteur sur la plage concernée et compléter la note, jamais
+     laisser le trou. Sortie **2** (source sans ancre datée) → vérification
+     sans objet, passer. Le résultat va au compte rendu, tel quel :
+     `<n>/<n> entrées` ;
    - **wikilinks pendants** — chaque `[[cible]]` des nouvelles notes désigne-t-il
      un fichier existant ou un alias déclaré ? La cible peut être un nom nu ou
      préfixée du dossier (`sources/<slug>`). Une cible morte → créer la page
@@ -542,7 +632,9 @@ lu.
 Quatre lignes au plus :
 
 1. **Ce qui est entré** : `<n> source(s) → <n> enseignements · <n> concepts et
-   entités touchés`. Des nombres, pas des chemins.
+   entités touchés`. Des nombres, pas des chemins. Une source datée y ajoute
+   son recomptage (`· <n>/<n> entrées`) : c'est la seule ligne du compte rendu
+   qui ne se déduit d'aucune autre.
 2. **Ce qui attendra**, seulement s'il y en a : `<n> contradiction(s) à
    trancher · <n> point(s) reportés à /doc-lint` — sans les détailler. Elles ne sont pas urgentes, elles vivent
    dans le vault, et `/doc-lint` les listera quand l'utilisateur voudra s'en

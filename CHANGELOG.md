@@ -9,6 +9,99 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.38.0] — 2026-08-04
+
+**Raison de l'update** : une source découpée entre plusieurs lecteurs n'avait aucun moyen de prouver qu'elle était entrée en entier — une tranche jamais rendue produit une note valide, seulement plus courte.
+
+### Ajouté
+- **Recomptage des entrées d'une série datée** (`scripts/verify-entries.py`).
+  Un relevé d'activité, un journal, un suivi de tickets, un export d'API sont
+  les seules sources qui portent leur propre preuve d'intégralité : chaque
+  entrée est ancrée par un horodatage, et cette ancre survit à la
+  standardisation. Le script compare les ancres de la source à celles de la
+  note produite et **nomme celles qui manquent**. Aucun contrôle de forme ne
+  pouvait le faire : ni les wikilinks, ni le frontmatter, ni la taille, qu'on
+  n'a rien à quoi comparer.
+  Il lit le JSON (une ancre par entrée, sans descendre dans les sous-objets,
+  qui datent un détail et non une entrée de plus) et le texte (les ancres qui
+  ouvrent une ligne priment sur les dates citées dans un corps d'entrée).
+  Une source rendue dans un autre fuseau ferait conclure à une perte totale :
+  le script essaie les décalages entiers, retient celui qui explique le mieux
+  les correspondances, et l'annonce. Bibliothèque standard seule, aucun appel
+  réseau. Sortie 0 complet · 1 il manque, avec la liste · 2 source non datée,
+  vérification sans objet.
+  Branché sur l'auto-vérification de `/doc-ingest`, et reporté au compte rendu
+  (`<n>/<n> entrées`).
+- **Report d'attribution dans une série de captures.** Une interface qui groupe
+  les entrées consécutives d'un même auteur n'affiche son nom qu'une fois : les
+  suivantes arrivent nues, et le nom ne réapparaît qu'au changement d'auteur ou
+  à une rupture d'horaire. Un nom absent ne veut pas dire « auteur inconnu »
+  mais « le même que la ligne précédente » — le lecteur reporte le dernier
+  auteur connu, y compris **d'une capture à la suivante**, et l'écrit en toutes
+  lettres. C'est ce que la standardisation sert à faire : rendre explicite ce
+  que l'affichage élidait. Sans point de report, l'entrée reste non attribuée
+  avec un `> [!warning]` — jamais d'attribution par ressemblance, une entrée mal
+  attribuée étant pire qu'une entrée sans auteur : la seconde se voit, la
+  première se cite.
+- **Contrôles de continuité d'une série de captures.** Une vue qui défile,
+  capturée depuis un outil sans export, n'a aucune source à laquelle se
+  recouper — le texte n'existe pas avant que le lecteur ne l'écrive. Trois
+  contrôles la bornent quand même : continuité de la **numérotation** (avant
+  toute lecture, sans rien ouvrir), **recouvrement de bord** entre deux
+  captures consécutives — déclaré jointure par jointure, une rupture étant un
+  fait sur la couverture et non un détail de lecture —, et **monotonie des
+  dates** sur toute la série. Ils ne prouvent pas la fidélité du texte, rien ne
+  le peut ; ils font la différence entre une couverture inconnue et une
+  couverture bornée.
+
+### Modifié
+- **Une entrée de série datée s'écrit sur une ligne, dans une forme unique :**
+  `- AAAA-MM-JJ HH:MM — <auteur> : <texte>`. La date complète figure sur chaque
+  ligne, même sous un titre quotidien qui la porte déjà. Le découpage sémantique
+  coupe où il veut dans une longue journée, et le titre ne voyage pas avec
+  l'extrait : une entrée qui ne portait que son heure remontait sans son jour,
+  donc impossible à citer. La forme commune rend aussi une plage de dates
+  cherchable d'une pièce à l'autre (`grep '^- 2026-04'`), et l'intégralité
+  vérifiable sans rien inférer. Onze caractères par entrée, et une répétition
+  qui entre dans le vecteur de chaque extrait — négligeable devant un extrait
+  qu'on ne pouvait pas dater. Le titre quotidien reste : c'est lui qui découpe.
+  Le recomptage annonce la forme qu'il a reconnue et **avertit** quand une note
+  n'est pas dans la forme prescrite — le compte reste bon, mais il repose alors
+  sur une lecture du format et non de la note.
+- **Un export d'API en JSON est projeté sur ses champs utiles avant d'être
+  mesuré et découpé.** L'enveloppe d'une réponse d'API — identifiants internes,
+  drapeaux, tableaux vides, objets de relation — pèse couramment neuf dixièmes
+  du fichier sans porter une ligne de contenu. Mesurer le brut faisait franchir
+  le seuil de gros volume à des sources qui ne l'atteignent pas, et multipliait
+  d'autant le nombre de lecteurs : dix fois plus de tranches pour le même
+  texte, chacune payée en contexte et en temps.
+- **`/doc-query` : un terme fréquent redevient un critère valide en
+  énumération.** La règle écartait les termes répandus, ce qui est juste sur
+  une question thématique et faux dès que la question demande *tout ce qui
+  concerne* un acteur, un module, un produit — là, ce terme fréquent **est** le
+  critère de sélection, et l'écarter revient à chercher autre chose que ce qui
+  est demandé.
+- **README : ce que fait le plugin, puis comment l'installer, dans les trente
+  premières lignes.** Il ouvrait sur l'architecture — orchestration en
+  sub-agent, `context: fork`, degrés de fidélité — et l'installation arrivait
+  à la ligne 128. Le nouveau début dit à quoi ça sert en cinq lignes, donne les
+  trois commandes pour démarrer, puis un tableau des cinq commandes avec les
+  deux qui servent au quotidien mises en avant. Rien n'est retiré : les
+  sections d'architecture suivent, et l'installation complète devient
+  « installation détaillée ».
+- **`/doc-bench` annonce d'abord ce sur quoi on peut agir.** Il se présentait
+  par la détection de régression du moteur — moitié qu'un utilisateur ne peut
+  que constater, le moteur n'étant pas dans ce dépôt. L'autre moitié passe
+  devant : le banc dit si les notes sont assez maillées et assez découpées pour
+  être retrouvées, et un échec renvoie à un wikilink absent ou à une section
+  trop longue, tous deux à portée de main.
+- **`/doc-query` : le périmètre du grep est écrit.** Il n'était spécifié nulle
+  part, donc décidé au cas par cas. Par défaut `wiki/`, seule couche à la fois
+  complète et indexée ; `archives/` seulement quand la question porte sur ce
+  qu'une pièce portait littéralement, et en l'annonçant ; `inbox/` jamais — ce
+  qui s'y trouve n'est ni standardisé ni vérifié, le citer reviendrait à en
+  faire un fait du vault.
+
 ## [1.37.0] — 2026-08-02
 
 **Raison de l'update** : refusés par le classificateur de permissions, les scripts du plugin font DÉGRADER une commande au lieu de l'arrêter — le résultat reste plausible, en moins bon.
