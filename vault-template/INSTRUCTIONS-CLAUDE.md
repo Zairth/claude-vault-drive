@@ -23,6 +23,7 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
 ├── LOG/                     ← journal append-only : un fichier par jour (YYYY-MM-DD.md)
 ├── inbox/                   ← sas : dépôts bruts en attente d'ingestion
 ├── archives/                ← pièces d'origine conservées après ingestion (hors index)
+├── references/              ← compilations d'entrées (/doc-query --all-references) — hors index sémantique, régénérables
 ├── wiki/
 │   ├── sources/             ← couche IMMUABLE : le texte intégral standardisé d'une pièce
 │   ├── enseignements/       ← couche IMMUABLE : ce qu'on retient d'une pièce, un ### par enseignement
@@ -30,6 +31,25 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
 │   ├── entites/             ← couche vivante : personnes, outils, projets
 │   └── syntheses/           ← réponses de /doc-query sauvegardées
 ```
+
+**`references/` est un produit de travail, pas une couche de savoir.** Une
+compilation d'entrées répondant à une question précise — créée à la demande,
+**régénérable** : relancer la commande la refait, plus complète si le vault a
+grandi. Rien ne s'y maintient, rien ne s'y corrige : on la refait.
+
+Elle vit hors de `wiki/` pour une raison mécanique : son contenu est déjà dans
+`sources/`, et l'indexer vectoriserait deux fois le même texte, ferait remonter
+le même passage en double à chaque recherche et gonflerait le vault de copies.
+C'est automatique — l'indexation sémantique ne parcourt que les cinq dossiers
+de `wiki/`.
+
+**En revanche elle reste dans le graphe Obsidian**, contrairement à `archives/`
+et `inbox/`. Ce n'est pas un oubli : une compilation est un document construit,
+qui cite les notes dont elle tire ses entrées et renvoie à la synthèse qu'on en
+a tirée. Elle porte donc **deux liens** — `[[syntheses/<slug>]]` en tête si la
+synthèse existe, et un renvoi par note citée en fin de fichier. Jamais un lien
+par entrée : deux cents liens vers la même note ne feraient qu'un nœud
+illisible.
 
 **Trois degrés de fidélité, du plus travaillé au plus brut.** Une même pièce
 existe à trois endroits, et on descend d'un cran à chaque fois qu'un doute
@@ -116,7 +136,13 @@ indexée par rien** — toute note vit dans un de ces dossiers.
   n'est pas conforme ; `/doc-lint` les vérifie) :
   - toutes les notes : `type` (source | enseignements | concept | entite |
     synthese),
-    `date` (date de création `YYYY-MM-DD`, jamais modifiée ensuite),
+    `date` (`YYYY-MM-DD`, jamais modifiée ensuite) — pour `type: source` et
+    `type: enseignements`, **la date de la pièce, celle-là même qui préfixe le
+    slug**, jamais la date d'ingestion ; pour les couches vivantes (`concept`,
+    `entite`, `synthese`), la date de création de la page, qui n'est la pièce de
+    personne. Pièce non datée → pas de `date` du tout, comme il n'y a pas de
+    préfixe : une date d'ingestion mise là daterait la lecture en faisant croire
+    qu'elle date la pièce,
     `auteur` (qui a créé la note : la personne pilotant la session — la
     demander une fois si inconnue, puis réutiliser — ou le nom de l'équipe
     tierce pour une note importée) et `description` (la note en quelques

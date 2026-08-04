@@ -141,6 +141,16 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
    `entites/`, `type: source` sous `sources/`, `type: enseignements` sous
    `enseignements/`…) : un désaccord fausse l'INDEX et trahit une note écrite
    au mauvais endroit.
+   **Et que `date` est bien celle de la pièce, sur les couches d'origine** :
+   pour `sources/` et `enseignements/`, le `date` du frontmatter doit être
+   identique au préfixe `YYYY-MM-DD-` du nom de fichier. Un écart signifie
+   presque toujours la même chose — la date d'ingestion a été écrite à la place
+   de celle de la pièce, et **toutes les notes du lot portent alors le même
+   jour**, celui de la session. Le défaut est invisible à la lecture (la note
+   est datée, elle a l'air juste) et fausse tout raisonnement chronologique
+   comme toute citation. Le signaler par lot, avec le jour commun trouvé, et le
+   corriger depuis le préfixe du nom de fichier, qui fait foi. Note sans
+   préfixe → elle ne doit pas porter de `date` non plus.
 9. **Cohérence vectorielle** — il y a **un index par dossier de `wiki/`**
    (`concepts/`, `entites/`, `syntheses/`, `enseignements/`, `sources/`), pas
    un index global.
@@ -200,6 +210,11 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
    `inbox/`** : sans ces deux filtres, les pièces d'origine et la matière brute
    en attente apparaissent dans le graphe comme s'il s'agissait de notes.
    Filtre manquant → le signaler (remède dans les corrections).
+   `references/` n'est **pas** dans cette liste, et c'est délibéré : une
+   compilation est un document construit, qui cite ses notes et renvoie à sa
+   synthèse — elle a sa place dans le graphe humain. Ce dont elle doit rester
+   dehors, c'est l'index **sémantique**, et ça n'a rien à configurer :
+   l'indexation ne parcourt que les cinq dossiers de `wiki/`.
    - `.md` inattendu à la **racine** du vault : tout sauf `INDEX.md`,
      `INSTRUCTIONS-CLAUDE.md`, `BENCH.md` et un `LOG.md` hérité → lister.
      Cas typique : un clic sur un nœud fantôme du graphe Obsidian crée une

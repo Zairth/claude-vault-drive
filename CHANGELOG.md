@@ -9,6 +9,79 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.39.0] — 2026-08-04
+
+**Raison de l'update** : un classement rend les K meilleurs résultats, jamais l'ensemble — et le `date` du frontmatter, décrit comme « date de création », faisait repartir tout un lot daté du jour de l'ingestion.
+
+### Ajouté
+- **`/doc-query … --all-references` rend les entrées, pas les notes.** Le mode
+  normal cherche *ce qui répond* et rédige une réponse appuyée sur des notes ;
+  celui-ci cherche *tout ce qui concerne* et rend **les entrées elles-mêmes**,
+  datées et attribuées, citables une par une. La forme canonique de la 1.38.0
+  est ce qui le rend possible : chaque entrée porte sa date complète et son
+  auteur sur sa ligne.
+  Le déroulé, dans cet ordre : **le grep d'abord**, seule couche qui rende
+  toutes les occurrences plutôt qu'un classement ; puis des **vagues
+  sémantiques**, la première avec la question **non reformulée** — les mots de
+  l'utilisateur sont le signal le plus fort, la reformuler d'emblée reviendrait
+  à chercher la question d'un autre —, les suivantes sous un angle différent
+  chacune, en filtrant les chemins déjà retenus. **Arrêt quand une vague
+  n'apporte plus aucun fichier neuf**, jamais à un nombre fixe : un compteur
+  gaspille ou tronque, et une troncature silencieuse est le pire résultat
+  possible pour ce mode. Chaque fichier retenu est lu **en entier**, jamais son
+  seul extrait.
+  La règle qui écarte les termes trop répandus **s'inverse** ici : le terme
+  fréquent qui désigne le sujet est le critère de sélection. Sans terme
+  littéral, le mode le dit en tête de rapport — le périmètre repose alors sur
+  le seul jugement, et l'exhaustivité n'est pas garantie. Les limites sont
+  écrites dans la commande plutôt que sous-entendues : le grep garantit le
+  littéral, les vagues élargissent, le lecteur juge — mais un jugement n'est
+  pas une preuve, et rien ne rattrape ce qui n'a jamais été ingéré.
+- **`references/`, une compilation d'entrées hors index sémantique.** Le
+  résultat de `--all-references` ne va **pas** dans `wiki/syntheses/` : ce
+  dossier est indexé et porte des réponses, pas des extraits. Y déverser des
+  entrées déjà présentes dans `wiki/sources/` vectoriserait deux fois le même
+  texte, ferait remonter le même passage en double à toute recherche suivante,
+  et transformerait le dossier des conclusions en le plus gros du vault.
+  Une compilation vit donc hors de `wiki/` — l'indexation ne parcourant que ses
+  cinq dossiers, il n'y a rien à configurer —, n'entre pas dans `INDEX.md`, et
+  se **régénère** : relancer la commande la refait, plus complète si le vault a
+  grandi. Rien ne s'y maintient. Une ligne au journal, et c'est tout.
+  Elle reste en revanche **dans le graphe Obsidian**, contrairement à
+  `archives/` et `inbox/` : c'est un document construit, qui cite ses notes et
+  renvoie à sa synthèse.
+- **Compilation et synthèse se proposent ensemble et se pointent
+  mutuellement.** L'une sans l'autre laisse le travail à moitié fait — des
+  entrées que personne n'a conclues, ou une conclusion dont on ne peut plus
+  produire les pièces. Elles partagent leur slug et se lient dans les deux
+  sens, exactement comme `sources/` et `enseignements/` le font pour une pièce :
+  même idiome, même raison — un doute sur la thèse se remonte aux entrées, une
+  entrée se replace dans ce qu'elle sert à établir. Deux liens dans la
+  compilation, et deux seulement : la synthèse en tête, un renvoi par note
+  citée en fin de fichier — jamais un lien par entrée, deux cents liens vers la
+  même note ne faisant qu'un nœud illisible.
+
+- **Le contrôle 8 de `/doc-lint` compare `date` au préfixe du nom de fichier**
+  sur `sources/` et `enseignements/`, le nom faisant foi. Un écart se signale
+  **par lot** avec le jour commun trouvé : quand la date d'ingestion a remplacé
+  celle des pièces, toutes les notes du lot portent le même jour, et c'est cette
+  forme-là qui rend le défaut reconnaissable d'un coup d'œil.
+
+### Corrigé
+- **`date` porte la date de la pièce, sur les couches d'origine.** La règle
+  était explicite pour le nom de fichier — « la date de la pièce, jamais la date
+  d'ingestion » — et muette pour le frontmatter, où elle disait seulement « date
+  de création ». L'ambiguïté s'est résolue du mauvais côté : constaté sur un
+  premier lot réel, **onze notes sur onze** portaient le jour de la session
+  alors que leur slug portait la vraie date, de janvier à août.
+  Le défaut est invisible à la lecture — la note est datée, elle a l'air juste —
+  et fausse tout raisonnement chronologique comme toute citation. `date` vaut
+  désormais explicitement la date de la pièce pour `type: source` et
+  `type: enseignements`, la date de création de la page pour les couches
+  vivantes, et **rien du tout** pour une pièce non datée, exactement comme il
+  n'y a pas de préfixe : une date d'ingestion mise là daterait la lecture en
+  faisant croire qu'elle date la pièce.
+
 ## [1.38.0] — 2026-08-04
 
 **Raison de l'update** : une source découpée entre plusieurs lecteurs n'avait aucun moyen de prouver qu'elle était entrée en entier — une tranche jamais rendue produit une note valide, seulement plus courte.

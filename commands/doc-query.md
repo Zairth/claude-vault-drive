@@ -1,6 +1,6 @@
 ---
 description: Interroger le vault Obsidian — exécution en fork (contexte principal préservé), réponse citée, synthèse optionnelle
-argument-hint: <question>
+argument-hint: <question> [--all-references]
 context: fork
 agent: Explore
 background: false
@@ -47,6 +47,86 @@ Sans jeton `dans:`, la cible est `$VAULT` (comportement normal).
 
 Prérequis d'accès : la permission `additionalDirectories` doit couvrir le
 dossier parent (ex. autoriser `<parent>` plutôt que `<parent>/<vault>` seul).
+
+## `--all-references` — rendre les entrées, pas les notes
+
+Si `$ARGUMENTS` contient `--all-references` : le retirer de la question, et
+répondre par **la liste des entrées elles-mêmes** — datées, attribuées,
+citables une par une — au lieu d'une réponse rédigée appuyée sur des notes.
+C'est le mode de qui construit un dossier et doit pouvoir produire chaque
+pièce, pas une synthèse.
+
+Le mode normal cherche **ce qui répond** ; celui-ci cherche **tout ce qui
+concerne**. Les deux ne se conduisent pas pareil.
+
+**1. Nommer le critère de sélection, et le dire.** Une question exhaustive a
+presque toujours un terme littéral qui désigne son sujet : une personne, un
+module, un produit, un client. C'est lui le critère — et la règle qui écarte
+les termes trop répandus **ne s'applique pas** ici, elle s'inverse. Aucun
+terme littéral (« tout ce qui montre une satisfaction ») → le dire en tête du
+rapport : le périmètre reposera sur le seul jugement, donc l'exhaustivité
+n'est **pas** garantie, et c'est une information, pas un détail.
+
+**2. Le grep d'abord — c'est le plancher.** Sur le critère et ses variantes
+(racine, accents repliés, casse ignorée), à travers `wiki/`. Il rend **toutes**
+les occurrences, pas un classement : c'est la seule couche qui garantisse
+quelque chose. Tout ce qui suit ne fait qu'y ajouter.
+
+**3. Puis des vagues sémantiques, la première non reformulée.** La question
+dans les mots de l'utilisateur est le signal le plus fort qui existe : la
+reformuler d'emblée reviendrait à chercher la question d'un autre. `top_k`
+généreux (20 par dossier plutôt que 3 — on ne cherche plus le meilleur, on
+cherche tout).
+Vagues suivantes : **une reformulation par vague**, sous un angle différent à
+chaque fois — synonymes du critère, formulation inverse, cas concret,
+notion abstraite. C'est la reformulation qui fait apparaître de la matière
+neuve, en déplaçant le point d'interrogation dans l'espace vectoriel ; retirer
+les fichiers déjà collectés ne fait que descendre dans le classement, donc
+n'ajoute que du moins pertinent. **Filtrer les `relative_path` déjà retenus**
+côté appelant — le moteur n'a pas de paramètre d'exclusion et n'en a pas
+besoin.
+
+**4. S'arrêter quand une vague n'apporte aucun fichier nouveau** — jamais à un
+nombre fixe de vagues. Un compteur gaspille ou tronque, et une troncature
+silencieuse est le pire résultat possible pour ce mode. Dire au rapport combien
+de vagues ont tourné.
+
+**5. Lire chaque fichier retenu EN ENTIER**, jamais son seul extrait, et en
+extraire les entrées qui répondent — verbatim, avec leur date et leur auteur.
+La forme canonique le permet : chaque entrée porte sa date complète et son
+auteur sur sa ligne. Trop de fichiers pour un seul lecteur → les répartir entre
+plusieurs sub-agents lecteurs, chacun rendant ses entrées ; jamais
+d'échantillonnage.
+
+**6. Le rapport rend les entrées, dans l'ordre chronologique**, chacune avec
+la note d'où elle vient. Puis, obligatoirement, **ce qui n'a pas été
+couvert** : fichiers non lus, dossiers hors périmètre, `inbox/` non ingéré.
+Une couverture partielle se dit ; elle ne se devine pas.
+Dans ce mode, le rapport **recopie** donc les entrées, contrairement au mode
+normal où recopier serait l'erreur : ici les entrées **sont** le livrable, et
+elles n'ont pas d'autre chemin vers l'utilisateur.
+
+**7. La destination de ces entrées n'est pas `syntheses/`.** Une liste
+d'extraits n'est pas une réponse : `wiki/syntheses/` est indexé, et y déverser
+des entrées déjà présentes dans `wiki/sources/` vectoriserait deux fois le même
+texte, ferait remonter le même contenu en double à toute recherche suivante, et
+transformerait le dossier des conclusions en le plus gros du vault.
+Elles vont dans `references/`, hors de `wiki/` donc hors index sémantique.
+
+**Et les deux livrables se proposent ensemble, dans cet ordre.** La compilation
+porte les pièces, la synthèse porte la thèse qu'on en tire ; ni l'une ni
+l'autre ne remplace sa voisine, et l'une sans l'autre laisse le travail à
+moitié fait — des entrées que personne n'a conclues, ou une conclusion dont on
+ne peut plus produire les pièces. Elles **se pointent mutuellement en
+wikilink**, exactement comme `sources/` et `enseignements/` le font pour une
+pièce : même idiome, même raison — un doute sur la thèse se remonte aux
+entrées, une entrée se replace dans ce qu'elle sert à établir.
+
+**Ce que ce mode ne garantit pas, et qu'il doit écrire.** Une entrée qui ne
+porte aucun terme du critère et qu'aucune reformulation n'approche reste hors
+d'atteinte. Le grep garantit le littéral, les vagues élargissent, le lecteur
+juge — mais le jugement n'est pas une preuve. Et rien ne rattrape ce qui n'a
+jamais été ingéré, ni ce qu'une lecture d'image a laissé passer.
 
 ## Recherche sémantique
 
@@ -123,8 +203,8 @@ seul.
 
 ## Recherche
 
-La question à traiter est `$ARGUMENTS`, nettoyée des jetons `dans:` et
-`--no-index`.
+La question à traiter est `$ARGUMENTS`, nettoyée des jetons `dans:`,
+`--no-index` et `--all-references`.
 
 1. Lire `INDEX.md` à la racine de la cible (si présent).
 2. Pistes sémantiques (s'il y en a) : ouvrir ces notes EN PREMIER, aux
@@ -237,8 +317,35 @@ Exactement ces blocs, dans cet ordre :
    ici : dire seulement combien l'ont été, par couche.
 4. Les **deux lignes finales** décrites ci-dessus, avec le chemin `$VAULT` résolu écrit en
    clair (l'agent principal ne connaît pas la sortie de vault-check) :
-   - présenter la réponse et ses sources à l'utilisateur, puis proposer :
-     « Sauvegarder cette réponse en synthèse dans le vault ? » ;
+   - **en mode `--all-references`**, la proposition porte sur **les deux
+     livrables à la fois** : « Écrire la compilation et sa synthèse dans le
+     vault ? » — jamais l'une sans proposer l'autre, sinon le travail reste à
+     moitié fait : des entrées que personne n'a conclues, ou une conclusion
+     dont on ne peut plus produire les pièces.
+     Si oui, **la compilation d'abord**, `$VAULT/references/YYYY-MM-DD-<slug>.md`
+     (dossier créé au besoin ; hors de `wiki/`, donc hors index sémantique —
+     rien à configurer, l'indexation ne parcourt que `wiki/`). Frontmatter
+     `type: references`, `date` (celle de la compilation : c'est un produit de
+     travail, pas une pièce), `question`, `couverture` (une phrase : vagues
+     jouées, fichiers lus, ce qui reste dehors). Corps : les entrées dans
+     l'ordre chronologique, chacune suivie de la note dont elle vient.
+     L'agent principal les a déjà sous les yeux dans ton rapport : il recopie,
+     il ne relit rien.
+     **Deux liens, et deux seulement** : `[[syntheses/<slug>]]` en tête, et un
+     renvoi par note citée en fin de fichier. Jamais un lien par entrée — deux
+     cents liens vers la même note ne feraient qu'un nœud illisible.
+     Ni entrée d'`INDEX.md`, ni indexation : une compilation est
+     **régénérable** — relancer la commande la refait, plus complète si le
+     vault a grandi entre-temps. Elle n'a pas à être maintenue, seulement
+     datée. Une ligne au journal :
+     `## [YYYY-MM-DD] references | <slug> — <n> entrées`.
+     **Puis la synthèse**, avec le même `<slug>`, selon les règles ci-dessous —
+     et un renvoi `[[references/YYYY-MM-DD-<slug>]]` dans sa section
+     `## Références`, en tête, présenté comme les pièces qui la fondent. Les
+     deux se pointent donc mutuellement, exactement comme `sources/` et
+     `enseignements/` le font pour une pièce ;
+   - **en mode normal**, présenter la réponse et ses sources à l'utilisateur,
+     puis proposer : « Sauvegarder cette réponse en synthèse dans le vault ? » ;
    - si oui : écrire `$VAULT/wiki/syntheses/<slug>.md` — frontmatter
      (`type: synthese`, `date`, `auteur` — repérable dans les notes existantes
      du vault, sinon le demander —, `description` — la réponse en quelques

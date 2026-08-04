@@ -438,7 +438,10 @@ double emploi : l'une est fidèle, l'autre est utile.
 
 1. `$VAULT/wiki/sources/YYYY-MM-DD-<slug>.md` — **le texte intégral
    standardisé** de la pièce. Frontmatter conforme au modèle de note
-   d'`INSTRUCTIONS-CLAUDE.md` (`type: source`, `date`, `auteur` — repérable
+   d'`INSTRUCTIONS-CLAUDE.md` (`type: source`, `date` = **la date de la pièce,
+   la même qui préfixe le slug** — jamais celle du jour, qui daterait ta lecture
+   en faisant croire qu'elle date la pièce ; pièce non datée → pas de `date`,
+   comme il n'y a pas de préfixe —, `auteur` — repérable
    dans les notes existantes du vault, sinon le demander —, `description`,
    `origine` = ce dont la note a été faite (chemin archivé, URL, mention
    libre) ; `original` seulement si la pièce qui fait foi en diffère — le PDF
