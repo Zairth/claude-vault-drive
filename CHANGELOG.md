@@ -9,6 +9,23 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.39.3] — 2026-08-05
+
+**Raison de l'update** : le démarrage du README s'arrêtait à « le vault est prêt » — sur un vault vide, sans dire comment lui donner quoi que ce soit à lire.
+
+### Ajouté
+- **Le démarrage va jusqu'à la première ingestion.** Les deux façons de
+  présenter ses sources sont désormais écrites : les déposer dans le sas
+  `inbox/` puis `/doc-ingest inbox/`, ou donner un chemin quelconque sans rien
+  déplacer.
+  Avec la condition qui manquait et qui se paie comptant : **un dossier hors du
+  vault et hors du projet est refusé** tant qu'il ne figure pas dans
+  `additionalDirectories` — c'est le cas courant quand les sources sont rangées
+  à côté du vault plutôt que dedans.
+  Précisé aussi que `/doc-ingest` sans argument **ne prend pas `inbox/`
+  entier** : il liste son contenu et demande, plutôt que d'avaler un lot que
+  personne n'a chiffré.
+
 ## [1.39.2] — 2026-08-05
 
 **Raison de l'update** : le mode `--all-references` n'apparaissait nulle part dans le README, et le modèle listait `references/` sans dire qu'il n'est créé qu'à la demande.

@@ -28,8 +28,28 @@ Puis dans le projet qui doit avoir sa mémoire :
 /vault-init "/chemin/vers/mon-vault"
 ```
 
-Relancez la session : c'est prêt. Aucun clone, aucun service à faire tourner.
-Le dossier du vault peut être n'importe où — Google Drive, Dropbox, ou un
+Relancez la session : le vault existe, il est vide.
+
+Reste à lui donner de quoi lire. **Deux façons**, au choix :
+
+```
+/doc-ingest inbox/                    ← tout ce que vous avez déposé dans le sas
+/doc-ingest /chemin/vers/mes-docs     ← un dossier, un fichier, ou un lien
+```
+
+- **Le sas.** `/vault-init` crée un dossier `inbox/` à la racine du vault :
+  déposez-y vos fichiers, puis lancez `/doc-ingest inbox/` pour ingérer le lot,
+  ou `/doc-ingest <nom-du-fichier>` pour n'en prendre qu'un. Sans argument, la
+  commande liste ce qui s'y trouve et vous demande — elle n'avale jamais un lot
+  entier sans qu'on le lui dise.
+- **Un chemin quelconque**, sans rien déplacer. Une seule condition : il doit
+  être **autorisé**. Un dossier situé hors du vault et hors du projet sera
+  refusé tant qu'il ne figure pas dans `additionalDirectories`
+  (`.claude/settings.local.json`) — c'est le cas le plus courant quand les
+  sources sont rangées à côté du vault plutôt que dedans.
+
+Puis interrogez : `/doc-query <votre question>`. Aucun clone, aucun service à
+faire tourner. Le vault peut être n'importe où — Google Drive, Dropbox, ou un
 disque local. Options, montage Drive et cas particuliers :
 [installation détaillée](#installation-détaillée).
 
