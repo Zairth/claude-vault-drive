@@ -9,6 +9,26 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.39.2] — 2026-08-05
+
+**Raison de l'update** : le mode `--all-references` n'apparaissait nulle part dans le README, et le modèle listait `references/` sans dire qu'il n'est créé qu'à la demande.
+
+### Ajouté
+- **Le README documente `--all-references` et `references/`.** La 1.39.0 les
+  avait livrés sans les décrire : ni la table des commandes, ni la section
+  d'usage, ni l'arborescence ne les mentionnaient. Une fonctionnalité qu'aucune
+  documentation n'annonce n'existe que pour qui a lu le CHANGELOG.
+
+### Corrigé
+- **Le modèle dit que `references/` est créé à la demande.** Le schéma de
+  structure le présentait au même titre qu'`inbox/` ou `archives/`, que
+  `/vault-init` pose d'emblée. Il n'apparaît en réalité qu'à la première
+  compilation acceptée, comme `BENCH.md` au premier `/doc-bench` — les dossiers
+  posés à l'initialisation servent tous à chaque ingestion, celui-ci
+  n'appartient qu'à un mode facultatif dont la plupart des vaults n'auront
+  jamais besoin. Le comportement ne change pas, seule sa description était
+  fausse.
+
 ## [1.39.1] — 2026-08-05
 
 **Raison de l'update** : `/vault-init` n'inscrivait toujours pas les autorisations de scripts — la variable dont il déduisait leur chemin n'existe pas dans son environnement.

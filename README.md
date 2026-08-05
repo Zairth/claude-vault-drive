@@ -39,7 +39,7 @@ disque local. Options, montage Drive et cas particuliers :
 |---|---|
 | `/vault-init` | crée le vault et branche le projet dessus |
 | `/doc-ingest` | range une source dans le vault — un fichier, un dossier, un lien |
-| `/doc-query` | pose une question, obtient une réponse qui cite ses notes |
+| `/doc-query` | pose une question, obtient une réponse qui cite ses notes — `--all-references` rend toutes les entrées d'un sujet |
 | `/doc-lint` | vérifie la cohérence de l'ensemble |
 | `/doc-repair` | corrige une information et la répercute partout où elle apparaît |
 
@@ -72,7 +72,7 @@ claude-vault-drive/
 ├── commands/
 │   ├── vault-init.md        # /vault-init — initialiser le vault du projet courant
 │   ├── doc-ingest.md        # /doc-ingest — ingérer une source (lecture, standardisation, contrôle, lint enchaîné)
-│   ├── doc-query.md         # /doc-query — interroger le vault (fork isolé, réponse citée)
+│   ├── doc-query.md         # /doc-query — interroger le vault (fork isolé, réponse citée ; --all-references pour l'exhaustif)
 │   ├── doc-lint.md          # /doc-lint — maintenance (fork isolé : treize vérifications, dont les identifiants en clair)
 │   ├── doc-repair.md        # /doc-repair — corriger une information et rebrancher sa chaîne, vérification contre la pièce
 │   └── doc-bench.md         # /doc-bench — banc de questions de référence (mesure mécanique, ou réelle via /doc-query)
@@ -123,6 +123,10 @@ vault par projet**.
   `wiki/syntheses/` (réponses transversales persistées).
   Rien de ce qui est ingéré n'est perdu : ce qu'aucun enseignement n'a retenu
   reste cherchable dans le texte intégral.
+  À côté de ces couches, `references/` — hors de `wiki/`, créé à la demande —
+  garde les compilations d'entrées produites par `--all-references`. Ce n'est
+  pas du savoir mais un **produit de travail**, jamais vectorisé (son contenu
+  est déjà dans `sources/`) et régénérable en relançant la commande.
 - **Un index sémantique par dossier de `wiki/`**, dans le dossier lui-même
   (un `.index/` dans chacun des cinq dossiers). Chaque dossier est un espace
   vectoriel séparé, donc les notes ne concourent qu'entre semblables : une
@@ -267,6 +271,27 @@ commandes ci-dessous opérationnelles (détail : [installation détaillée](#ins
   vault. Ajouter `--no-index` pour interroger sans réindexer. Moteur
   sémantique indisponible → repli grep **explicite** (⚠ affiché), jamais
   d'échec silencieux.
+- `/doc-query <question> --all-references` — le mode **exhaustif**. Le mode
+  normal cherche *ce qui répond* et rédige une réponse ; celui-ci cherche
+  *tout ce qui concerne* et rend **les entrées elles-mêmes**, datées,
+  attribuées, citables une par une. Pour qui doit pouvoir produire chaque
+  pièce, pas une synthèse.
+  Un classement rend les K meilleurs résultats, jamais l'ensemble : le grep
+  passe donc **d'abord** (seule couche qui rende toutes les occurrences), puis
+  des vagues sémantiques — la première avec la question **non reformulée**,
+  les suivantes sous un angle différent chacune —, jusqu'à ce qu'une vague
+  n'apporte plus aucun fichier neuf. Jamais un nombre fixe de vagues : un
+  compteur gaspille ou tronque.
+  Résultat écrit dans **`references/`**, hors de `wiki/` donc jamais
+  vectorisé — son contenu est déjà dans `sources/`, l'indexer ferait remonter
+  le même passage en double. Le dossier est **créé à la demande** et la
+  compilation est **régénérable** : relancer la commande la refait, plus
+  complète si le vault a grandi. Compilation et synthèse sont proposées
+  ensemble et se pointent mutuellement — l'une porte les pièces, l'autre la
+  thèse qu'on en tire.
+  Ce que le mode **ne** garantit **pas** est écrit dans son rapport : le grep
+  garantit le littéral, les vagues élargissent, le lecteur juge — un jugement
+  n'est pas une preuve, et rien ne rattrape ce qui n'a jamais été ingéré.
 - `/doc-lint` — rapport produit en fork isolé, ouvert par une ligne de
   compteurs (l'état de santé du vault d'un coup d'œil, comparable d'un lint à
   l'autre) : **identifiants en clair** — un vault vit sur un dossier

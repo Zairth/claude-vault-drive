@@ -23,7 +23,7 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
 ├── LOG/                     ← journal append-only : un fichier par jour (YYYY-MM-DD.md)
 ├── inbox/                   ← sas : dépôts bruts en attente d'ingestion
 ├── archives/                ← pièces d'origine conservées après ingestion (hors index)
-├── references/              ← compilations d'entrées (/doc-query --all-references) — hors index sémantique, régénérables
+├── references/              ← compilations d'entrées (/doc-query --all-references) — créé à la demande, hors index sémantique
 ├── wiki/
 │   ├── sources/             ← couche IMMUABLE : le texte intégral standardisé d'une pièce
 │   ├── enseignements/       ← couche IMMUABLE : ce qu'on retient d'une pièce, un ### par enseignement
@@ -33,9 +33,14 @@ maintenance et de recherche. Toute commande (`/doc-ingest`, `/doc-query`,
 ```
 
 **`references/` est un produit de travail, pas une couche de savoir.** Une
-compilation d'entrées répondant à une question précise — créée à la demande,
-**régénérable** : relancer la commande la refait, plus complète si le vault a
-grandi. Rien ne s'y maintient, rien ne s'y corrige : on la refait.
+compilation d'entrées répondant à une question précise, **régénérable** :
+relancer la commande la refait, plus complète si le vault a grandi. Rien ne s'y
+maintient, rien ne s'y corrige : on la refait.
+
+`/vault-init` ne le crée pas — c'est la première compilation acceptée qui le
+crée, comme `BENCH.md` n'apparaît qu'au premier `/doc-bench`. Les dossiers
+posés d'emblée servent tous à chaque ingestion ; celui-ci n'appartient qu'à un
+mode facultatif, et la plupart des vaults n'en auront jamais.
 
 Elle vit hors de `wiki/` pour une raison mécanique : son contenu est déjà dans
 `sources/`, et l'indexer vectoriserait deux fois le même texte, ferait remonter
