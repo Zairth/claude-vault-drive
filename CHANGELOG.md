@@ -9,6 +9,19 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.39.6] — 2026-08-05
+
+**Raison de l'update** : l'entrée de la 1.39.4 laissait croire que le plugin installe agentic-toolbox lui-même.
+
+### Corrigé
+- **Formulation de l'entrée 1.39.4** : « agentic-toolbox est installé dès le
+  bloc de démarrage » se lit comme une dépendance tirée automatiquement. Ce
+  n'en est pas une, et ce ne peut pas en être une — le manifeste de marketplace
+  ne porte aucun champ de dépendance, un plugin ne peut donc pas en installer
+  un autre. C'est une **troisième ligne à taper**, comme les deux autres. Le
+  README, lui, était juste ; seule sa description dans le journal était
+  trompeuse.
+
 ## [1.39.5] — 2026-08-05
 
 **Raison de l'update** : `/doc-ingest` sans argument affichait un tableau des lots et attendait une réponse tapée, là où une case à cocher suffisait.
@@ -34,8 +47,11 @@ Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 **Raison de l'update** : agentic-toolbox était renvoyé en fin de README comme une option parmi d'autres, alors que c'est lui qui fait la différence entre chercher par mots-clés et chercher par le sens.
 
 ### Modifié
-- **agentic-toolbox est installé dès le bloc de démarrage**, avec ce qu'il
-  apporte concrètement : sans lui la recherche trouve ce qu'on a su nommer et
+- **La commande d'installation d'agentic-toolbox figure dès le bloc de
+  démarrage** — une troisième ligne à taper, pas une dépendance tirée
+  automatiquement : un plugin ne peut pas en installer un autre, le manifeste
+  de marketplace ne porte aucun champ de dépendance. Elle est accompagnée de ce
+  qu'il apporte concrètement : sans lui la recherche trouve ce qu'on a su nommer et
   rate la reformulation ; avec lui, « qui a validé le budget ? » remonte une
   note qui parle d'accord donné sur une enveloppe, sans partager un seul mot
   avec la question. Plus la lecture des documents scannés, sans quoi un PDF
