@@ -13,6 +13,21 @@ if [[ $# -ne 1 || -z "${1:-}" ]]; then
 fi
 
 vault_path="$1"
+
+# Chemin Windows collé tel quel (`G:\Mon Drive\...`) → forme POSIX. C'est le
+# geste naturel de qui lit le chemin dans l'explorateur, et sans conversion il
+# ne produit AUCUNE erreur : la chaîne ne contient pas un seul `/`, donc
+# `dirname` rend `.`, le contrôle du dossier parent passe, et `mkdir -p` crée
+# un dossier dont le NOM contient les antislashs, au milieu du projet. Le
+# script annonce alors « vault initialisé » sur un vault qui n'est pas là où
+# l'utilisateur croit.
+if [[ "$vault_path" =~ ^([A-Za-z]):[\\/](.*)$ ]]; then
+    drive_letter="$(printf '%s' "${BASH_REMATCH[1]}" | tr 'A-Z' 'a-z')"
+    windows_path="$vault_path"
+    vault_path="/mnt/$drive_letter/${BASH_REMATCH[2]//\\//}"
+    echo "Note : chemin Windows converti — $windows_path → $vault_path"
+fi
+
 script_directory="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 plugin_root="$(cd "$script_directory/.." && pwd)"
 template_directory="$plugin_root/vault-template"
@@ -25,7 +40,43 @@ fi
 
 parent_directory="$(dirname "$vault_path")"
 if [[ ! -d "$parent_directory" ]]; then
-    echo "ERREUR : dossier parent introuvable : $parent_directory — Google Drive est-il lancé et monté ? (WSL : sudo mount -t drvfs <lettre>: /mnt/<lettre>)" >&2
+    echo "ERREUR : dossier parent introuvable : $parent_directory" >&2
+    # Cas de loin le plus fréquent : le vault vit sur un lecteur Windows que
+    # WSL n'a pas monté. Le diagnostic est mécanique, autant le poser et
+    # rendre les commandes copiables telles quelles plutôt que de laisser un
+    # `<lettre>` à compléter.
+    # Ce script n'écrit JAMAIS hors du projet et du vault : monter un lecteur
+    # et éditer /etc/fstab demandent root, touchent toute la machine et ne
+    # concernent que WSL. C'est une décision d'administration, elle revient à
+    # l'utilisateur — on la lui prépare, on ne la prend pas à sa place.
+    if [[ "$vault_path" =~ ^/mnt/([a-z])(/|$) ]]; then
+        mount_letter="${BASH_REMATCH[1]}"
+        mount_point="/mnt/$mount_letter"
+        drive="$(printf '%s' "$mount_letter" | tr 'a-z' 'A-Z'):"
+        if ! mountpoint -q "$mount_point" 2>/dev/null && ! grep -q " $mount_point " /proc/mounts 2>/dev/null; then
+            echo "  → $mount_point n'est pas monté. Le lecteur $drive est-il lancé côté Windows ?" >&2
+            if grep -qE "^[^#]*[[:space:]]$mount_point[[:space:]]" /etc/fstab 2>/dev/null; then
+                echo "     $mount_point figure déjà dans /etc/fstab — le montage a dû échouer au démarrage :" >&2
+                echo "       sudo mount -a" >&2
+            else
+                # Le point de montage est un dossier ordinaire du disque WSL :
+                # créé une fois, il persiste. Ne proposer `mkdir` que s'il
+                # manque vraiment — après un redémarrage, seul le montage est
+                # à refaire, et une commande superflue fait douter de tout le
+                # reste du diagnostic.
+                if [[ -d "$mount_point" ]]; then
+                    echo "     Monter maintenant :   sudo mount -t drvfs $drive $mount_point" >&2
+                else
+                    echo "     Monter maintenant :   sudo mkdir -p $mount_point && sudo mount -t drvfs $drive $mount_point" >&2
+                fi
+                echo "     Rendre permanent :    echo '$drive $mount_point drvfs defaults 0 0' | sudo tee -a /etc/fstab" >&2
+                echo "     (root requis : à lancer vous-même — ce script n'écrit que dans le projet et le vault.)" >&2
+            fi
+            echo "  Puis relancer cette commande." >&2
+            exit 1
+        fi
+    fi
+    echo "  → vérifier le chemin, ou créer le dossier parent." >&2
     exit 1
 fi
 
@@ -37,7 +88,21 @@ if [[ ! -f "$config_file" ]]; then
     printf '%s\n' "$vault_path" > "$config_file"
     echo "OK : .claude/vault-path.local créé."
 else
-    echo "Conservé (déjà présent) : .claude/vault-path.local"
+    # « Ne jamais écraser » protège une config valide. Appliqué à une config
+    # CASSÉE, ça interdit de la réparer : relancer la commande avec le bon
+    # chemin conservait l'ancien et échouait sur « vault introuvable », sans
+    # dire que le chemin conservé était le coupable. Un chemin enregistré qui
+    # ne désigne aucun dossier n'est pas une préférence à respecter.
+    recorded_path="$(tr -d '\r' < "$config_file" | head -1 | sed 's/[[:space:]]*$//')"
+    if [[ "$recorded_path" == "$vault_path" ]]; then
+        echo "Conservé (identique) : .claude/vault-path.local"
+    elif [[ -d "$recorded_path" ]]; then
+        echo "Conservé (déjà présent, et le dossier existe) : .claude/vault-path.local → $recorded_path" >&2
+        echo "  Pour le remplacer par $vault_path, supprimer ce fichier et relancer." >&2
+    else
+        printf '%s\n' "$vault_path" > "$config_file"
+        echo "OK : .claude/vault-path.local corrigé — l'ancien chemin ne désignait aucun dossier ($recorded_path)."
+    fi
 fi
 
 # Deux permissions, dans le fichier LOCAL (jamais versionné, et le chemin du
@@ -166,6 +231,50 @@ PY
     fi
 else
     echo "Ignoré : .obsidian/app.json existant et python3 absent — exclure archives/ et inbox/ à la main (Paramètres → Fichiers et liens → Fichiers exclus)."
+fi
+
+# Couleurs du graphe : une par dossier de wiki/. Sans ça, tous les nœuds se
+# ressemblent et le graphe ne dit rien — c'est le seul réglage d'Obsidian qui
+# rende la structure du vault visible d'un coup d'œil.
+# `graph.json` porte AUSSI les réglages personnels (zoom, forces, filtres) :
+# on n'y touche que si `colorGroups` est vide. Des groupes déjà définis sont
+# un choix de l'utilisateur, pas un défaut à écraser.
+graph_config="$vault_path/.obsidian/graph.json"
+if command -v python3 >/dev/null 2>&1; then
+    if GRAPH_CONFIG="$graph_config" python3 - <<'PY'
+import json, os, sys
+path = os.environ["GRAPH_CONFIG"]
+groups = [
+    ("path:wiki/sources",       0x5B8DEF),  # bleu    — texte intégral
+    ("path:wiki/enseignements", 0x3DA35D),  # vert    — ce qu'on retient
+    ("path:wiki/concepts",      0xE8A33D),  # ambre   — notions
+    ("path:wiki/entites",       0xA45BD6),  # violet  — personnes, outils
+    ("path:wiki/syntheses",     0xE05C5C),  # rouge   — réponses
+]
+config = {}
+if os.path.exists(path):
+    try:
+        with open(path, encoding="utf-8") as f:
+            config = json.load(f)
+        if not isinstance(config, dict):
+            sys.exit(1)
+    except Exception:
+        sys.exit(1)  # illisible : ne rien toucher
+    if config.get("colorGroups"):
+        sys.exit(2)  # l'utilisateur a ses propres groupes
+config["colorGroups"] = [{"query": q, "color": {"a": 1, "rgb": c}} for q, c in groups]
+with open(path, "w", encoding="utf-8") as f:
+    json.dump(config, f, ensure_ascii=False, indent=2)
+PY
+    then
+        echo "OK : graphe Obsidian coloré par dossier (.obsidian/graph.json) — si Obsidian est ouvert, le redémarrer."
+    else
+        status=$?
+        (( status == 2 )) && echo "Conservé (déjà présent) : groupes de couleurs du graphe Obsidian." \
+                          || echo "Ignoré : .obsidian/graph.json illisible — colorer à la main (Paramètres du graphe → Groupes)."
+    fi
+else
+    echo "Ignoré : python3 absent — colorer le graphe à la main (Paramètres du graphe → Groupes, une requête path:wiki/<dossier> par dossier)."
 fi
 
 # Vérification finale par le portier officiel.

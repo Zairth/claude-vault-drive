@@ -9,6 +9,75 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.40.0] — 2026-08-05
+
+**Raison de l'update** : le graphe Obsidian n'était coloré que si l'utilisateur le faisait à la main, et un chemin Windows donné à `/vault-init` créait un dossier au nom absurde dans le projet en annonçant « vault initialisé » — sans une seule erreur.
+
+### Ajouté
+- **`/vault-init` colore le graphe Obsidian par dossier.** Un réglage à faire
+  à la main jusqu'ici, décrit dans le README et donc sauté par la plupart :
+  sans lui, tous les nœuds se ressemblent et le graphe ne montre pas la
+  structure du vault. Cinq groupes sont écrits dans `.obsidian/graph.json` —
+  bleu `sources/`, vert `enseignements/`, ambre `concepts/`, violet
+  `entites/`, rouge `syntheses/`.
+  Le fichier porte aussi les réglages personnels (zoom, forces, filtres) :
+  il n'est **jamais écrasé**. Les groupes ne sont écrits que si `colorGroups`
+  est vide — des groupes déjà définis sont un choix, pas un défaut à remplacer
+  —, le reste du fichier est préservé intact, et un `graph.json` illisible est
+  laissé tel quel avec la marche à suivre manuelle. Même discipline que la
+  fusion d'`app.json`.
+
+### Corrigé
+- **Un chemin Windows est converti, plus pris au pied de la lettre.**
+  `G:\Mon Drive\Produit` devient `/mnt/g/Mon Drive/Produit`. Sans conversion,
+  cette chaîne ne produisait **aucune erreur** : elle ne contient pas un seul
+  `/`, donc `dirname` rend `.`, le contrôle du dossier parent passe, et
+  `mkdir -p` crée un dossier dont le **nom** contient les antislashs, au milieu
+  du projet. La commande annonçait ensuite « ✅ vault initialisé et vérifié »
+  — sur un vault qui n'était pas là où l'utilisateur le croyait, et le
+  contrôle final confirmait, puisque le dossier existait bel et bien.
+  C'est le geste naturel de qui copie le chemin depuis l'explorateur Windows.
+  La conversion est annoncée en une ligne ; un chemin déjà POSIX passe
+  inchangé.
+- **Le diagnostic de lecteur non monté donne les commandes exactes.** Le
+  message renvoyait un `sudo mount -t drvfs <lettre>: /mnt/<lettre>` à
+  compléter soi-même. `/vault-init` reconnaît maintenant le cas — vault sous
+  `/mnt/<lettre>/` dont le point de montage est absent — et rend les deux
+  commandes prêtes à coller, avec la bonne lettre : le montage immédiat, et la
+  ligne `/etc/fstab` qui le rend permanent. Le `mkdir` du point de montage
+  n'est proposé que s'il manque réellement — c'est un dossier ordinaire du
+  disque WSL, créé une fois il persiste, et après un redémarrage seul le
+  montage est à refaire. Une commande superflue ferait douter du reste du
+  diagnostic. Point de montage **déjà présent
+  dans `/etc/fstab`** → c'est `sudo mount -a` qui est proposé, le montage ayant
+  échoué au démarrage.
+  Il ne les exécute pas : monter un lecteur et éditer `/etc/fstab` demandent
+  root, touchent toute la machine et ne concernent que WSL. Ce script n'écrit
+  que dans le projet et le vault — c'est une décision d'administration, on la
+  prépare, on ne la prend pas.
+- **Le portier `vault-check.sh` diagnostique aussi.** C'est lui qui parle après
+  un redémarrage de WSL — le lecteur n'est plus monté, et il rejette **toutes**
+  les commandes jusqu'au remontage, alors que `/vault-init` ne se lance qu'une
+  fois. Il portait le même modèle à compléter ; il rend maintenant la commande
+  copiable telle quelle, avec la bonne lettre, et distingue trois cas : lecteur
+  non monté (`sudo mount -t drvfs G: /mnt/g`, ou `sudo mount -a` si le point de
+  montage est déjà dans `/etc/fstab` — le montage a alors échoué au démarrage,
+  souvent parce que le lecteur n'était pas encore lancé), lecteur monté mais
+  dossier disparu (déplacé, renommé, synchronisation en cours), et chemin hors
+  de `/mnt`.
+  **Aucun des deux scripts ne monte quoi que ce soit** : `mount` exige root, un
+  script appelé par une commande n'a pas de terminal pour demander un mot de
+  passe, et `sudo -n` n'est disponible que si l'utilisateur l'a configuré. Ce
+  qu'ils peuvent faire, c'est ne plus laisser chercher.
+- **Un `vault-path.local` cassé peut enfin être réparé en relançant.** « Ne
+  jamais écraser » protège une configuration valide ; appliqué à une
+  configuration **fausse**, ça interdisait de la corriger : relancer
+  `/vault-init` avec le bon chemin conservait l'ancien, puis échouait sur
+  « vault introuvable » sans dire que le chemin conservé était le coupable.
+  Désormais, un chemin enregistré qui **ne désigne aucun dossier** est remplacé
+  et le remplacement est annoncé. Un chemin valide reste protégé — la commande
+  dit alors comment le changer volontairement.
+
 ## [1.39.6] — 2026-08-05
 
 **Raison de l'update** : l'entrée de la 1.39.4 laissait croire que le plugin installe agentic-toolbox lui-même.

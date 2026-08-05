@@ -44,7 +44,29 @@ if [[ -z "$vault_path" ]]; then
 fi
 
 if [[ ! -d "$vault_path" ]]; then
-    echo "ERREUR : vault introuvable : $vault_path — le lecteur du vault est-il monté ? (Google Drive lancé ? sous WSL : sudo mount -t drvfs <lettre>: /mnt/<lettre>)" >&2
+    echo "ERREUR : vault introuvable : $vault_path" >&2
+    # C'est ce portier-là qui parle après un redémarrage de WSL : le lecteur
+    # n'est plus monté, et il rejette TOUTES les commandes jusqu'à ce qu'on le
+    # remonte. Autant rendre la commande copiable telle quelle, avec la bonne
+    # lettre, plutôt qu'un modèle à compléter.
+    # Le montage exige root : ce script ne le fait pas, il ne peut pas — pas de
+    # terminal pour un mot de passe — et ce n'est pas son rôle. Il diagnostique.
+    if [[ "$vault_path" =~ ^/mnt/([a-z])(/|$) ]]; then
+        mount_point="/mnt/${BASH_REMATCH[1]}"
+        drive="$(printf '%s' "${BASH_REMATCH[1]}" | tr 'a-z' 'A-Z'):"
+        if ! grep -q " $mount_point " /proc/mounts 2>/dev/null; then
+            echo "  → $mount_point n'est pas monté (le montage ne survit pas à un redémarrage de WSL)." >&2
+            if grep -qE "^[^#]*[[:space:]]$mount_point[[:space:]]" /etc/fstab 2>/dev/null; then
+                echo "     sudo mount -a        ($mount_point est dans /etc/fstab : le montage a échoué au démarrage, souvent parce que le lecteur n'était pas encore lancé)" >&2
+            else
+                echo "     sudo mount -t drvfs $drive $mount_point" >&2
+            fi
+        else
+            echo "  → $mount_point est monté : vérifier que le dossier du vault existe toujours (déplacé, renommé, synchronisation en cours ?)." >&2
+        fi
+    else
+        echo "  → le lecteur du vault est-il monté et le dossier toujours en place ?" >&2
+    fi
     exit 1
 fi
 

@@ -229,17 +229,23 @@ Puis dans chaque projet qui doit avoir son vault :
    `additionalDirectories`) — les commandes `/doc-ingest`, `/doc-query` et
    `/doc-lint` sont prêtes.
 3. (Facultatif, humain) Ouvrir le dossier du vault comme coffre dans Obsidian.
-   Astuce vue graphique : les arêtes du graphe ne viennent que des wikilinks
-   `[[...]]` (les chemins bruts et propriétés `origine`/`original` n'en créent
-   pas) ; pour colorer les nœuds par type, créer un groupe par dossier dans
-   les paramètres du graphe — `path:wiki/concepts`, `path:wiki/entites`,
-   `path:wiki/sources`, `path:wiki/enseignements`, `path:wiki/syntheses`.
-   `/vault-init` exclut déjà `archives/` et `inbox/` du graphe — ni les pièces
-   d'origine ni la matière brute en attente ne sont des notes. **Exclure `archives/`**
-   (Paramètres → Fichiers et liens → Filtres d'exclusion) : Obsidian indexe
-   tout le vault, et les markdown OCR archivés référencent des images non
-   extraites qui apparaissent en nœuds fantômes — cliquer sur l'un d'eux crée
-   une note vide à la racine.
+   **Rien à régler** : `/vault-init` a déjà écrit les deux réglages qui
+   comptent, et il ne touche à aucun autre.
+   - **Le graphe est coloré par dossier** (`.obsidian/graph.json`) : bleu pour
+     `sources/`, vert pour `enseignements/`, ambre pour `concepts/`, violet
+     pour `entites/`, rouge pour `syntheses/`. Sans ça, tous les nœuds se
+     ressemblent et le graphe ne dit rien. Vos propres groupes de couleurs, si
+     vous en avez, sont conservés — le fichier porte aussi vos réglages de
+     zoom et de forces, il n'est jamais écrasé.
+   - **`archives/` et `inbox/` sont exclus de l'index Obsidian**
+     (`.obsidian/app.json`) : ni les pièces d'origine ni la matière brute en
+     attente ne sont des notes. Sans ce filtre, les markdown OCR archivés
+     référencent des images non extraites qui apparaissent en nœuds fantômes —
+     cliquer sur l'un d'eux crée une note vide à la racine.
+
+   Bon à savoir pour lire le graphe : ses arêtes ne viennent **que** des
+   wikilinks `[[...]]`. Les chemins bruts et les propriétés
+   `origine`/`original` n'en créent aucune.
 
 Installer une mise à jour : automatique en arrière-plan, ou manuelle —
 `/plugin marketplace update zairth_store` puis `/reload-plugins` (récupère le
