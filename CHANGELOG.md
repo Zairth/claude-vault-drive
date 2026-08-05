@@ -9,6 +9,21 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.39.4] — 2026-08-05
+
+**Raison de l'update** : agentic-toolbox était renvoyé en fin de README comme une option parmi d'autres, alors que c'est lui qui fait la différence entre chercher par mots-clés et chercher par le sens.
+
+### Modifié
+- **agentic-toolbox est installé dès le bloc de démarrage**, avec ce qu'il
+  apporte concrètement : sans lui la recherche trouve ce qu'on a su nommer et
+  rate la reformulation ; avec lui, « qui a validé le budget ? » remonte une
+  note qui parle d'accord donné sur une enveloppe, sans partager un seul mot
+  avec la question. Plus la lecture des documents scannés, sans quoi un PDF
+  photographié n'est qu'une image.
+  Son coût est annoncé au même endroit — `uv` et une clé Mistral gratuite — au
+  lieu d'être découvert après coup. Il reste facultatif : sans lui rien ne
+  casse, les commandes annoncent leur repli au lieu de faire semblant.
+
 ## [1.39.3] — 2026-08-05
 
 **Raison de l'update** : le démarrage du README s'arrêtait à « le vault est prêt » — sur un vault vide, sans dire comment lui donner quoi que ce soit à lire.

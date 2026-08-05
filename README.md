@@ -20,7 +20,20 @@ Une fois, valable pour tous vos projets :
 ```
 /plugin marketplace add https://github.com/Zairth/marketplace
 /plugin install claude-vault-drive@zairth_store
+/plugin install agentic-toolbox@zairth_store
 ```
+
+**Prenez le second.** Techniquement facultatif, il change tout ce qui compte :
+sans lui, la recherche se fait par mots-clés — elle trouve ce que vous avez su
+nommer, et rate la reformulation. Avec lui, elle cherche **par le sens** :
+« qui a validé le budget ? » remonte une note qui parle d'accord donné sur une
+enveloppe, sans partager un seul mot avec la question. Il apporte aussi la
+lecture des documents scannés, sans quoi un PDF photographié n'est qu'une
+image.
+Il demande en retour `uv` et une clé d'API Mistral, gratuite —
+[PREREQUIS.md](PREREQUIS.md) détaille les deux, y compris comment couper
+l'utilisation de vos données pour l'entraînement. Si vous ne l'installez pas,
+rien ne casse : les commandes annoncent leur repli au lieu de faire semblant.
 
 Puis dans le projet qui doit avoir sa mémoire :
 
@@ -69,10 +82,9 @@ vérification sans qu'on le lui demande.
 
 ## Pour aller plus loin
 
-- **Recherche par le sens** (et non par mots-clés) et **lecture des documents
-  scannés** : installer aussi
-  [agentic-toolbox](https://github.com/Zairth/agentic-toolbox). Facultatif —
-  sans lui, la recherche se rabat sur les mots-clés, et le dit.
+- Le moteur de recherche par le sens et d'OCR :
+  [agentic-toolbox](https://github.com/Zairth/agentic-toolbox) — dépôt séparé,
+  installé plus haut.
 - Prérequis pas à pas, montage Drive, clés API : [PREREQUIS.md](PREREQUIS.md)
 - Ce que change chaque version : [CHANGELOG.md](CHANGELOG.md)
 - Comment c'est construit : [Principes](#principes) et
