@@ -9,6 +9,26 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.39.1] — 2026-08-05
+
+**Raison de l'update** : `/vault-init` n'inscrivait toujours pas les autorisations de scripts — la variable dont il déduisait leur chemin n'existe pas dans son environnement.
+
+### Corrigé
+- **`/vault-init` déduit la racine du plugin de l'emplacement de son propre
+  script, plus de `CLAUDE_PLUGIN_ROOT`.** La commande l'invoque par
+  `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-init.sh"` : le chemin est
+  **substitué dans la ligne de commande**, donc le script le reçoit en argument
+  — mais la variable n'est pas exportée dans son environnement. Le script la
+  lisait vide, sautait les règles `allow` sans un mot, et n'écrivait que
+  l'accès au vault.
+  C'est exactement la panne que la 1.37.0 prétendait réparer, reproduite à
+  l'identique sur un vault neuf : les commandes se font refuser leurs scripts
+  un par un et **dégradent** au lieu de s'arrêter. `$script_directory`, calculé
+  depuis `BASH_SOURCE`, est toujours juste ; la variable ne sert plus que de
+  préférence si elle existe.
+  Vault déjà initialisé avec un `allow` vide → relancer `/vault-init`, il est
+  idempotent.
+
 ## [1.39.0] — 2026-08-04
 
 **Raison de l'update** : un classement rend les K meilleurs résultats, jamais l'ensemble — et le `date` du frontmatter, décrit comme « date de création », faisait repartir tout un lot daté du jour de l'ingestion.

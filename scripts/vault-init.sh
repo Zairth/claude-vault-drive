@@ -50,16 +50,21 @@ fi
 # lisent le vault ; seul vault-index.sh y écrit, dans les `.index/`, qui sont
 # des dérivés régénérables.
 settings_file="$project_claude_directory/settings.local.json"
-plugin_scripts_glob=""
-if [[ -n "${CLAUDE_PLUGIN_ROOT:-}" ]]; then
-    # .../<plugin>/<version>/scripts → .../<plugin>/*/scripts, pour survivre aux
-    # mises à jour. Hors cache versionné, on garde le chemin tel quel.
-    plugin_parent="$(dirname "$CLAUDE_PLUGIN_ROOT")"
-    if [[ "$(basename "$CLAUDE_PLUGIN_ROOT")" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-        plugin_scripts_glob="$plugin_parent/*/scripts/*"
-    else
-        plugin_scripts_glob="$CLAUDE_PLUGIN_ROOT/scripts/*"
-    fi
+# Racine du plugin déduite de l'emplacement de CE script, jamais de
+# `CLAUDE_PLUGIN_ROOT` seule. La commande invoque
+# `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-init.sh"` : le chemin est
+# **substitué dans la ligne de commande**, donc le script le reçoit en
+# argument — mais la variable, elle, n'est PAS dans son environnement. S'y fier
+# faisait sauter les règles `allow` sans le moindre message, et laissait les
+# commandes se faire refuser leurs scripts un par un.
+# `$script_directory` est calculé depuis `BASH_SOURCE`, donc toujours juste.
+plugin_root="${CLAUDE_PLUGIN_ROOT:-$(dirname "$script_directory")}"
+# .../<plugin>/<version>/scripts → .../<plugin>/*/scripts, pour survivre aux
+# mises à jour. Hors cache versionné, on garde le chemin tel quel.
+if [[ "$(basename "$plugin_root")" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    plugin_scripts_glob="$(dirname "$plugin_root")/*/scripts/*"
+else
+    plugin_scripts_glob="$plugin_root/scripts/*"
 fi
 
 if command -v python3 >/dev/null 2>&1 \
