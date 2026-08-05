@@ -21,8 +21,25 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
 
 ## Récupérer et lire la source ($ARGUMENTS) — en sub-agent lecteur
 
-- Argument vide ou ambigu → demander à l'utilisateur ce qu'il veut ingérer
-  (lister le contenu de `$VAULT/inbox/` s'il n'est pas vide).
+- **Argument vide ou ambigu → poser une question à choix** (outil
+  AskUserQuestion), jamais un tableau que l'utilisateur devrait recopier. Cette
+  commande ne s'exécute pas en fork : elle peut demander, et une case à cocher
+  vaut mieux qu'une réponse à taper — surtout quand les noms de lots sont
+  longs.
+  - `$VAULT/inbox/` **non vide** → recenser ses lots (sous-dossiers, ou
+    fichiers isolés à la racine du sas) et en faire les options, en
+    **multi-sélection**. Le format n'en accepte que **quatre** : regrouper au
+    besoin ce qui se traite pareil, plutôt que d'en omettre. La description de
+    chaque option porte ce qui décide — nombre de fichiers, volume, et le coût
+    dominant (couche de texte gratuite, OCR facturé, série de captures lue
+    image par image).
+    **Ordonner du moins cher au plus cher**, le premier marqué
+    « (recommandé) » : un lot de PDF à couche de texte valide toute la chaîne
+    pour presque rien, alors qu'une série de captures est le poste le plus
+    lourd et mérite d'être gardé pour la fin. L'entrée libre reste toujours
+    offerte, elle sert à donner un chemin hors du sas.
+  - `inbox/` **vide** → une seule chose à demander, en question ouverte : le
+    chemin ou l'URL de la source. Il n'y a rien à proposer.
 - Texte bref fourni directement dans `$ARGUMENTS` → il est déjà en contexte :
   pas de sub-agent, passer directement au contrôle avant écriture.
 - Fichier local, élément d'`inbox/`, URL, PDF, capture d'écran → **NE JAMAIS

@@ -9,6 +9,26 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.39.5] — 2026-08-05
+
+**Raison de l'update** : `/doc-ingest` sans argument affichait un tableau des lots et attendait une réponse tapée, là où une case à cocher suffisait.
+
+### Corrigé
+- **`/doc-ingest` sans argument pose une vraie question à choix.** La règle
+  disait seulement « demander à l'utilisateur ce qu'il veut ingérer », ce qui
+  laissait le rendu libre : en pratique, un tableau des lots à recopier à la
+  main. La commande ne s'exécutant pas en fork, elle peut poser une question
+  sélectionnable — et c'est ce qu'elle fait désormais, en multi-sélection.
+  Les lots du sas deviennent les options, regroupées si nécessaire pour tenir
+  dans les quatre choix du format, **ordonnées du moins cher au plus cher** et
+  décrites par ce qui décide : nombre de fichiers, volume, coût dominant
+  (couche de texte gratuite, OCR facturé, série de captures lue image par
+  image). Le premier est marqué « recommandé » — un lot de PDF à couche de
+  texte valide toute la chaîne pour presque rien, une série de captures est le
+  poste le plus lourd. L'entrée libre reste offerte pour un chemin hors du sas.
+  Sas vide → une seule question ouverte, le chemin de la source : il n'y a rien
+  à proposer.
+
 ## [1.39.4] — 2026-08-05
 
 **Raison de l'update** : agentic-toolbox était renvoyé en fin de README comme une option parmi d'autres, alors que c'est lui qui fait la différence entre chercher par mots-clés et chercher par le sens.
