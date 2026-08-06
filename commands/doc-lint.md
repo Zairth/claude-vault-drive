@@ -338,6 +338,12 @@ Ton rapport se termine donc par **deux lignes**, et rien d'autre :
 `Vault : <le chemin résolu>`
 `<la question, ou le verdict — voir ci-dessous>`
 
+**Une seule question**, jamais une question composée. Deux autorisations à
+donner → deux phrases numérotées, chacune répondant par oui ou non ; jamais
+une phrase qui en emballe trois et à laquelle on ne peut pas répondre d'un mot.
+Rien à autoriser → pas de question du tout, un verdict : « rien ne demande
+d'autorisation ».
+
 Le chemin, parce que c'est la seule chose que l'agent principal ne peut pas
 deviner. La question, parce qu'elle s'adresse à l'utilisateur.
 
@@ -357,7 +363,26 @@ deviner. La question, parce qu'elle s'adresse à l'utilisateur.
    Les **identifiants en clair** ne figurent pas dans cette ligne : ils la
    précèdent. Un compteur les rangerait parmi les dettes de maintenance, or
    ce n'en est pas une — c'est une fuite, et elle se lit avant le reste.
-3. Le rapport par catégorie (vide = le dire aussi : « rien à signaler »).
+3. Le rapport par catégorie — **à longueur proportionnelle à ce qui a été
+   trouvé**. C'est la règle qui décide si ce rapport se lit ou se survole.
+   - **Rien trouvé → UNE ligne.** « 5. INDEX — rien à signaler (121/121). »
+     Pas un paragraphe, pas de tableau, pas la liste de ce qui a été vérifié.
+     On justifie ce qu'on a trouvé, jamais ce qu'on n'a pas trouvé : le
+     détail d'un contrôle qui passe n'apprend rien et noie celui qui échoue.
+     Un rapport dont huit sections sur douze sont vides doit être **court**,
+     pas long de huit démonstrations d'innocence.
+   - **Quelque chose trouvé →** le détail utile à la décision : quoi, où,
+     combien, et le verdict. Rien de plus.
+   - **Une seule exception, et elle est étroite** : une décision qui, sans
+     être consignée, serait **reprise à zéro au prochain lint** — une paire
+     suspectée puis délibérément conservée, un `[!warning]` examiné puis non
+     requalifié. Une ligne, motif en quelques mots (« <page-a> / <page-b> :
+     scission voulue, l'une porte un nom abandonné »). Une ligne, pas un
+     paragraphe : de quoi ne pas refaire le travail, pas de quoi le
+     rejouer.
+   Le corps du contrôle n'est pas le corps du rapport. Tout ce qui a été
+   ouvert, compté, recoupé pour arriver au verdict reste dans ton contexte —
+   il est jetable, c'est sa fonction.
 4. Les **deux lignes finales** décrites ci-dessus. Pour l'agent principal qui
    appliquera, deux régimes à ne jamais confondre :
 
@@ -365,7 +390,14 @@ deviner. La question, parce qu'elle s'adresse à l'utilisateur.
      ambigus, frontmatters incomplets, parasites, réindexation, requalification
      d'un callout : **appliquer sans demander**. Rien de tout cela ne détruit
      quoi que ce soit, et attendre un accord ne fait que reporter la même
-     correction ;
+     correction.
+     **Les appliquer AVANT de présenter quoi que ce soit**, et les rapporter au
+     passé — « 3 wikilinks déliés dans le journal », jamais « à délier ». Une
+     liste d'intentions placée au-dessus d'une question finale devient
+     conditionnelle : tout attend la réponse, y compris ce qui ne demandait
+     aucune autorisation. Constaté — un rapport annonçant « ce qui s'applique
+     d'office, sans rien demander » suivi d'une question, et rien d'appliqué.
+     La question ne doit porter que sur ce qui reste ;
      S'y ajoutent les suppressions **sans perte possible** : note vide (0 octet
      ou frontmatter seul), fichier de conflit Drive sur un dérivé jetable,
      reliquat d'index d'une version antérieure. Il n'y a rien à sauver dans un

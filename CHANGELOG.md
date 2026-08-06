@@ -9,6 +9,38 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.42.2] — 2026-08-06
+
+**Raison de l'update** : le rapport de lint justifiait aussi longuement les contrôles qui passent que ceux qui échouent — huit sections vides sur douze, et dix lignes utiles noyées dans cent cinquante.
+
+### Corrigé
+- **Le rapport de `/doc-lint` est proportionné à ce qu'il trouve.** La règle
+  disait « vide = le dire aussi », sans dire que ça devait tenir en une ligne :
+  d'où des paragraphes entiers, tableaux compris, pour démontrer qu'une
+  catégorie n'a **rien** à signaler. Sur un vault sain, l'essentiel du rapport
+  devenait la justification de son propre silence.
+  Désormais : rien trouvé → **une ligne** ; quelque chose trouvé → le détail
+  utile à la décision, et rien de plus. On justifie ce qu'on a trouvé, jamais
+  ce qu'on n'a pas trouvé — le détail d'un contrôle qui passe n'apprend rien
+  et noie celui qui échoue. Le corps du contrôle n'est pas le corps du
+  rapport : ce qui a été ouvert et recoupé reste dans le contexte du fork,
+  qui est jetable, c'est sa fonction.
+  **Une seule exception, étroite** : une décision qui serait reprise à zéro au
+  prochain lint — une paire suspectée puis délibérément conservée, un
+  `[!warning]` examiné puis non requalifié. Une ligne avec son motif, de quoi
+  ne pas refaire le travail, pas de quoi le rejouer.
+- **Les corrections mécaniques s'appliquent AVANT la présentation, et se
+  rapportent au passé.** Le régime existait — « appliquer sans demander » —,
+  mais rien ne disait *quand*. Constaté : un rapport listant « ce qui
+  s'applique d'office, sans rien demander », suivi d'une question finale… et
+  rien d'appliqué. Une liste d'intentions placée au-dessus d'une question
+  devient conditionnelle, et tout attend la réponse, y compris ce qui ne
+  demandait aucune autorisation. On rapporte donc « 3 wikilinks déliés »,
+  jamais « à délier », et la question ne porte que sur ce qui reste.
+- **Une seule question finale, jamais composée.** Deux autorisations → deux
+  phrases numérotées, chacune répondant par oui ou non. Rien à autoriser → pas
+  de question, un verdict.
+
 ## [1.42.1] — 2026-08-06
 
 **Raison de l'update** : rien n'interdisait les wikilinks dans le journal, et une page citée par le seul journal passait pour reliée.
