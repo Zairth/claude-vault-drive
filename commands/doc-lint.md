@@ -151,6 +151,22 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
    comme toute citation. Le signaler par lot, avec le jour commun trouvé, et le
    corriger depuis le préfixe du nom de fichier, qui fait foi. Note sans
    préfixe → elle ne doit pas porter de `date` non plus.
+
+   **Et que les séries datées progressent.** Une note de `sources/` dont les
+   entrées ouvrent leur ligne par un horodatage doit les porter **du plus
+   ancien au plus récent**. Ce défaut-là ne se voit par aucun autre bout :
+   toutes les entrées sont présentes, le compte est juste, le frontmatter est
+   conforme, les liens résolvent — et l'échange se lit à rebours. Il vient
+   presque toujours d'une source qui rend l'inverse (un journal de versions,
+   une API paginée à rebours) et d'un lecteur qui a fidèlement reporté son
+   ordre. Comparer la suite des horodatages à elle-même triée ; signaler la
+   note, son nombre d'entrées, et laquelle des deux formes — **entièrement
+   retournée**, ou **ruptures d'ordre éparses**, qui trahissent plutôt un
+   assemblage de tranches remises dans le désordre.
+   `verify-entries.py` fait le même contrôle à l'ingestion ; celui-ci rattrape
+   les notes écrites avant, qui ne repasseront jamais par là.
+   **Ne pas corriger d'office** : réordonner réécrit une couche immuable. Le
+   compter et le soumettre, comme toute édition de cette couche.
 9. **Cohérence vectorielle** — il y a **un index par dossier de `wiki/`**
    (`concepts/`, `entites/`, `syntheses/`, `enseignements/`, `sources/`), pas
    un index global.

@@ -81,6 +81,22 @@ jour sans année —, **demander l'ancrage à l'utilisateur** avant de
 standardiser, et le noter en frontmatter. Ne jamais le déduire : une année
 devinée dans une couche immuable est une erreur qu'on ne verra plus jamais.
 
+Deux invariants d'une série, qu'aucun compteur ne rattrape :
+
+- **du plus ancien au plus récent.** Certaines sources rendent l'inverse — une
+  API qui pagine à rebours, un export qui commence par le dernier message : on
+  remet d'aplomb, on ne reporte pas l'ordre de la source. Une note écrite à
+  l'envers porte pourtant toutes ses entrées : le total est juste, et l'échange
+  se lit à rebours ;
+- **le fuseau se déclare en `fuseau:`, il ne se convertit pas.** Une API
+  horodate volontiers en UTC, un export d'application rend l'heure locale de
+  l'appareil. Mêlées sans le dire, deux séries produisent une chronologie
+  fausse du décalage, et rien ne la signale — les heures ont l'air normales.
+  Convertir depuis un décalage que la pièce ne donne pas serait une supposition
+  écrite dans une couche immuable, indiscernable d'un fait par la suite.
+  Fuseau indéterminable → l'écrire tel quel (`heure locale, fuseau non porté
+  par la pièce`) et poser un `> [!warning]` dans la note d'enseignements.
+
 3. `archives/<nom d'origine>` — la **pièce elle-même**, telle qu'elle est
    arrivée. Jamais indexée, jamais modifiée. C'est ce qui fait foi quand le
    texte standardisé est mis en doute.

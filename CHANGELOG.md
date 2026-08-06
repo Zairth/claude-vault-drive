@@ -9,6 +9,57 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.41.0] — 2026-08-05
+
+**Raison de l'update** : deux invariants d'une série datée n'étaient écrits nulle part — son sens de lecture et son fuseau —, et aucun compteur ne les rattrape.
+
+### Ajouté
+- **`verify-entries.py --ancre '<motif>'` recompte sur autre chose qu'un
+  horodatage.** Une pièce rédigée en prose date ses entrées en toutes lettres,
+  un récapitulatif les numérote : le recomptage sortait alors en « vérification
+  sans objet », **qui a l'apparence d'un succès**. C'est le pire résultat
+  possible pour un contrôle d'intégralité — constaté sur deux relevés, dont la
+  fidélité n'a pu être établie qu'en recoupant à la main une autre ancre.
+  Le motif tient lieu d'horodatage : empreinte, numéro de pièce, référence de
+  ticket. Ce mode détecte en plus les ancres **en trop** dans la note, absentes
+  de la source — une entrée recopiée de travers, que le dénombrement des
+  horodatages ne peut pas voir.
+  Le message de sortie 2 sépare désormais les deux cas qu'il confondait : la
+  pièce n'est pas une série (rien à recompter), ou elle en est une et porte une
+  autre ancre (la donner). Et il dit ce que le code veut dire : pas un succès,
+  une absence de contrôle.
+- **Le contrôle 8 de `/doc-lint` balaie le vault à la recherche de séries à
+  l'envers.** Le recomptage ne voit que ce qui s'ingère ; les notes écrites
+  avant ne repassent jamais par là. Vérifié sur un vault réel : **six séries
+  déjà écrites** étaient antichronologiques, dont deux relevés de 332 et 71
+  entrées — reportées fidèlement depuis des pièces qui rendent le plus récent
+  en premier. Le lint les compte et les soumet ; il ne réordonne pas d'office,
+  réécrire une couche immuable ne se fait jamais sans autorisation.
+- **Le recomptage signale une série écrite à l'envers.** Constaté en usage : un
+  export rendu en ordre antichronologique passe **tous** les contrôles — le
+  total est juste, chaque entrée est là, aucun trou —, et pourtant l'échange se
+  lit à rebours et se cite mal. `verify-entries.py` a déjà les ancres en main :
+  il vérifie maintenant qu'elles progressent, et distingue les deux formes du
+  défaut — série entièrement retournée, ou ruptures d'ordre éparses, dont il
+  donne le nombre. Coût nul, aucun appel de plus.
+
+### Modifié
+- **Une série se standardise du plus ancien au plus récent.** L'ordre n'était
+  spécifié nulle part : `/doc-query` l'exigeait pour son rapport, mais rien ne
+  le demandait à l'écriture de la note. Un lecteur qui reportait l'ordre d'une
+  source paginée à rebours ne violait donc aucune règle. C'en est une
+  maintenant : on remet d'aplomb, on ne reporte pas.
+- **Le fuseau horaire d'une série se déclare en `fuseau:`, et ne se convertit
+  jamais.** Une API horodate volontiers en UTC, un export d'application rend
+  l'heure locale de l'appareil. Mêlées sans le dire, deux séries produisent une
+  chronologie fausse du décalage — et rien ne la signale, les heures ayant
+  l'air normales. La note de `sources/` porte donc `UTC`, `UTC+02:00`, ou
+  `heure locale, fuseau non porté par la pièce`.
+  Pas de conversion : `sources/` est immuable et fidèle, et convertir depuis un
+  décalage que la pièce ne donne pas écrit une supposition qu'on ne saura plus
+  distinguer d'un fait. Fuseau indéterminable → un `> [!warning]` dans la note
+  d'enseignements, réserve documentaire valant pour toute lecture croisée.
+
 ## [1.40.0] — 2026-08-05
 
 **Raison de l'update** : le graphe Obsidian n'était coloré que si l'utilisateur le faisait à la main, et un chemin Windows donné à `/vault-init` créait un dossier au nom absurde dans le projet en annonçant « vault initialisé » — sans une seule erreur.

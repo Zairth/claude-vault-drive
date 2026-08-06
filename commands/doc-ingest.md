@@ -268,6 +268,29 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
      Heure absente de la source (une capture qui n'affiche que le jour) →
      `AAAA-MM-JJ` seul, jamais une heure inventée.
 
+     **Du plus ancien au plus récent, toujours.** Une série se lit dans le sens
+     où elle s'est déroulée. Certaines sources rendent l'inverse — une API qui
+     pagine à rebours, un export qui commence par le dernier message : remettre
+     d'aplomb, ne jamais reporter l'ordre de la source. Rien dans un recomptage
+     ne trahit une note écrite à l'envers — le total est juste, chaque entrée
+     est là, et pourtant l'échange se lit à rebours et se cite mal. Le contrôle
+     est fait par `verify-entries.py`, qui a déjà les ancres en main ; encore
+     faut-il que la note soit écrite dans le bon sens.
+
+     **Le fuseau se déclare, il ne se convertit pas.** Deux séries d'outils
+     différents n'expriment pas leurs heures dans le même référentiel — une API
+     horodate volontiers en UTC, un export d'application rend l'heure locale de
+     l'appareil. Mêlées sans le dire, elles produisent une chronologie fausse
+     du décalage, et **rien ne la signale** : les heures ont l'air normales.
+     Porter donc `fuseau:` dans le frontmatter de la note de `sources/` —
+     `UTC`, `UTC+02:00`, ou `heure locale, fuseau non porté par la pièce`.
+     **Ne jamais convertir** : `sources/` est une couche immuable et fidèle,
+     et convertir depuis un décalage que la pièce ne donne pas est une
+     supposition qu'on ne pourra plus distinguer d'un fait. Fuseau
+     indéterminable → le dire en `fuseau:` et poser un `> [!warning]` dans la
+     note d'enseignements : c'est une réserve documentaire, elle vaut pour
+     toute lecture croisée ultérieure.
+
      **Les identifiants se masquent dans la note, jamais dans la pièce.** Une
      source peut contenir un mot de passe, un jeton, une clé — typiquement un
      `.env` recopié dans un message. Ces valeurs ne sont pas de l'information
@@ -584,9 +607,20 @@ double emploi : l'une est fidèle, l'autre est utile.
      note parfaitement valide, simplement plus courte, et il n'y a rien à quoi
      comparer sa taille. Sortie **1** → les horodatages absents sont listés :
      relancer un lecteur sur la plage concernée et compléter la note, jamais
-     laisser le trou. Sortie **2** (source sans ancre datée) → vérification
-     sans objet, passer. Le résultat va au compte rendu, tel quel :
-     `<n>/<n> entrées` ;
+     laisser le trou.
+     Sortie **2** — aucune ancre datée dans la source — appelle une décision,
+     pas un haussement d'épaules : **ce code n'est pas un succès, c'est une
+     absence de contrôle.** Deux cas s'y confondent, et il faut les séparer :
+     - la pièce **n'est pas une série** (un contrat, un rapport, une facture) →
+       il n'y a rien à recompter, passer ;
+     - la pièce **est une série** mais date ses entrées autrement — en toutes
+       lettres, en prose, ou pas du tout. Elle porte alors une autre ancre :
+       empreinte, numéro de pièce, référence. La donner en
+       `--ancre '<motif>'` et recompter dessus. Ce mode détecte en plus les
+       ancres **en trop** dans la note, absentes de la source — une entrée
+       recopiée de travers, ce que le dénombrement des horodatages ne voit
+       pas.
+     Le résultat va au compte rendu, tel quel : `<n>/<n> entrées` ;
    - **wikilinks pendants** — chaque `[[cible]]` des nouvelles notes désigne-t-il
      un fichier existant ou un alias déclaré ? La cible peut être un nom nu ou
      préfixée du dossier (`sources/<slug>`). Une cible morte → créer la page

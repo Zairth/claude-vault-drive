@@ -17,9 +17,18 @@ question « est-ce que tout y est ? » par autre chose qu'une impression.
 Le script ne lit ni ne rapporte de contenu : uniquement des horodatages et des
 comptes. Aucun appel réseau.
 
+Toutes les pièces ne portent pas d'horodatage exploitable : un relevé rédigé en
+prose date ses entrées en toutes lettres, un récapitulatif les numérote. Elles
+portent alors une **autre** ancre — empreinte de commit, numéro de facture,
+référence de ticket — et `--ancre` permet de recompter dessus. Sans cette
+échappatoire, ces pièces sortent en « vérification sans objet », qui a
+l'apparence d'un succès : c'est le pire résultat possible pour un contrôle
+d'intégralité.
+
 Usage :
     python3 verify-entries.py --source <f> [<f>…] --note <f> [<f>…]
     python3 verify-entries.py --source <f> [<f>…]          # recensement seul
+    python3 verify-entries.py --ancre '<motif>' --source <f> --note <f>
 
 Codes de sortie :
     0  la note porte toutes les ancres de la source
@@ -242,10 +251,66 @@ def _best_offset(source, note):
     return best
 
 
+def custom_anchors(path, pattern):
+    """Ancres arbitraires : chaque correspondance compte pour une entrée.
+    Le motif tient lieu d'horodatage quand la pièce n'en porte pas
+    d'exploitable — l'ordre chronologique n'a alors plus de sens, seul le
+    dénombrement en garde un."""
+    try:
+        text = Path(path).read_text(encoding="utf-8", errors="replace")
+    except OSError as error:
+        print(f"illisible : {path} ({error})", file=sys.stderr)
+        raise SystemExit(3)
+    return [m.group(0).lower() for m in pattern.finditer(text)]
+
+
+def _compare_custom(sources, notes, pattern):
+    src, note = Counter(), Counter()
+    for path in sources:
+        found = custom_anchors(path, pattern)
+        src.update(found)
+        print(f"source  {path.name:<44} {len(found):>6} correspondances")
+    if not src:
+        print("\nLe motif ne correspond à rien dans la source — motif à revoir.")
+        return 2
+    print(f"\nSource : {len(src)} ancres distinctes")
+    if not notes:
+        return 0
+    for path in notes:
+        found = custom_anchors(path, pattern)
+        note.update(found)
+        print(f"note    {path.name:<44} {len(found):>6} correspondances")
+    missing = src - note
+    extra = note - src
+    print(f"\nRetrouvées : {sum((src & note).values())}/{sum(src.values())}")
+    if extra:
+        print(f"EN TROP dans la note : {sum(extra.values())} "
+              "(ancre absente de la source — recopie fautive ?)")
+        for a in sorted(extra)[:_MAX_LISTED]:
+            print(f"  {a}")
+    if not missing:
+        print("Intégralité vérifiée : aucune ancre manquante.")
+        return 1 if extra else 0
+    print(f"MANQUANTES : {sum(missing.values())} ancres")
+    for a in sorted(missing)[:_MAX_LISTED]:
+        print(f"  {a}")
+    return 1
+
+
 def main(argv):
-    sources, notes, bucket = [], [], None
+    sources, notes, bucket, pattern = [], [], None, None
+    expect_pattern = False
     for arg in argv:
-        if arg == "--source":
+        if expect_pattern:
+            try:
+                pattern = re.compile(arg, re.IGNORECASE)
+            except re.error as error:
+                print(f"motif invalide : {error}", file=sys.stderr)
+                return 3
+            expect_pattern = False
+        elif arg == "--ancre":
+            expect_pattern, bucket = True, None
+        elif arg == "--source":
             bucket = sources
         elif arg == "--note":
             bucket = notes
@@ -255,9 +320,15 @@ def main(argv):
             return 3
         else:
             bucket.append(Path(arg))
+    if expect_pattern:
+        print("--ancre attend un motif", file=sys.stderr)
+        return 3
     if not sources:
         print("aucune source : --source <fichier> [<fichier>…]", file=sys.stderr)
         return 3
+
+    if pattern is not None:
+        return _compare_custom(sources, notes, pattern)
 
     source_anchors = []
     for path in sources:
@@ -267,6 +338,10 @@ def main(argv):
 
     if not source_anchors:
         print("\nAucune ancre datée dans la source — vérification sans objet.")
+        print("  Si la pièce EST une série, elle porte une autre ancre "
+              "(empreinte, numéro, référence) : la donner en `--ancre '<motif>'`.")
+        print("  Sinon — un contrat, un rapport — il n'y a rien à recompter, "
+              "et ce code n'est pas un succès : c'est une absence de contrôle.")
         return 2
 
     span = f"{min(source_anchors):%Y-%m-%d} → {max(source_anchors):%Y-%m-%d}"
@@ -275,9 +350,19 @@ def main(argv):
     if not notes:
         return 0
 
-    note_anchors, note_forms = [], set()
+    note_anchors, note_forms, disordered = [], set(), []
     for path in notes:
         found, form = anchors_of(path)
+        # Une série se lit du plus ancien au plus récent. Rien dans le compte
+        # ne trahit une note écrite à l'envers : le total est juste, chaque
+        # entrée est là, et pourtant la conversation se lit à rebours. C'est
+        # le seul défaut d'une série datée que le recomptage peut voir sans
+        # rien coûter, puisqu'il a déjà toutes les ancres en main.
+        if found != sorted(found):
+            inversions = sum(1 for a, b in zip(found, found[1:]) if b < a)
+            direction = "antichronologique" if found == sorted(found, reverse=True) \
+                else f"{inversions} rupture(s) d'ordre"
+            disordered.append((path.name, direction))
         note_anchors += found
         note_forms.add(form)
         print(f"note    {path.name:<44} {len(found):>6} entrées datées"
@@ -289,6 +374,10 @@ def main(argv):
     if note_forms - {"horodatage complet par entrée", "entrées JSON datées"}:
         print("⚠ note hors forme prescrite (date complète attendue sur chaque "
               "entrée) : comptage déduit, à confirmer avant de conclure")
+
+    for name, direction in disordered:
+        print(f"⚠ {name} : entrées dans le désordre — {direction}. Une série se "
+              "lit du plus ancien au plus récent ; le compte ne le dit pas.")
 
     source_count = Counter(source_anchors)
     note_count = Counter(note_anchors)
