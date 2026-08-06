@@ -9,6 +9,52 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.42.0] — 2026-08-06
+
+**Raison de l'update** : le lint demandait l'autorisation d'aller chercher une réponse, donc faisait arbitrer sans elle ; et son contrôle d'ordre pouvait s'appliquer aux titres de jour, qui progressent, plutôt qu'aux entrées, qui reculent.
+
+### Modifié
+- **`/doc-lint` enchaîne `/doc-repair` d'office sur les contradictions.** La
+  délégation était spécifiée mais soumise à autorisation : on demandait la
+  permission **avant** d'aller voir, donc on faisait arbitrer sans la réponse
+  en main — précisément ce que ce plugin refuse partout ailleurs. Or
+  `/doc-repair` est un fork qui **n'écrit rien** : il ouvre la pièce et rend un
+  verdict. Le lancer ne détruit rien et ne coûte que des jetons. Ce qui se
+  soumet, désormais, c'est l'**application** du verdict.
+  Avec un tri préalable, pour ne pas dépenser en vain : le lint a lu les
+  callouts, il dit lesquels une pièce d'`archives/` peut plausiblement trancher
+  (« quel est le texte exact de tel article ») et lesquels attendent une pièce
+  **nouvelle** (« tel message a-t-il causé tel effet »). Les seconds ne
+  partent pas en délégation, le callout reste : c'est sa raison d'être.
+  Un lint qui rend « 9 tranchées, 4 en attente d'une pièce » a fait le travail ;
+  un lint qui rend « 13 à trancher » l'a seulement déplacé.
+- **L'ordre d'une série vient des horodatages, pas de la séquence du fichier.**
+  La règle disait « remettre d'aplomb » sans dire d'où l'ordre se déduit. Le
+  cas insidieux n'est pas la source entièrement retournée mais l'**entrée
+  isolée hors de son rang** : un export place ses messages système en tête de
+  fichier tout en les horodatant à l'heure de l'export, donc après le premier
+  vrai message du jour. Reportées telles quelles, ces lignes donnent une note
+  dont les titres progressent impeccablement et dont les entrées reculent à
+  l'intérieur d'un jour. Trier sur l'horodatage règle les deux formes d'un
+  coup.
+
+### Corrigé
+- **Le contrôle d'ordre porte sur les lignes d'entrée, jamais sur les titres de
+  jour.** La formulation — « comparer la suite des horodatages à elle-même
+  triée » — ne disait pas de quels horodatages il s'agissait. Appliquée aux
+  titres `### AAAA-MM-JJ`, elle ne voit rien : ils peuvent progresser
+  parfaitement pendant que les entrées **à l'intérieur** de chaque jour
+  reculent.
+  Constaté sur un vault réel : le contrôle a signalé 2 séries retournées et
+  déclaré saines les 19 autres — dont **cinq** dont les entrées sont en
+  désordre, titres impeccables. La cause y est différente et vaut d'être
+  connue : ce ne sont pas des sources antéchronologiques mais des messages
+  système que l'export horodate à l'ouverture du fichier, donc placés avant le
+  vrai premier message de la journée.
+  Les deux formes du défaut sont maintenant décrites par leur origine — série
+  entièrement retournée, ou ruptures éparses — pour qu'un rapport dise laquelle
+  et pourquoi.
+
 ## [1.41.0] — 2026-08-05
 
 **Raison de l'update** : deux invariants d'une série datée n'étaient écrits nulle part — son sens de lecture et son fuseau —, et aucun compteur ne les rattrape.

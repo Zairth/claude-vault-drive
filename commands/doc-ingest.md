@@ -268,10 +268,20 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
      Heure absente de la source (une capture qui n'affiche que le jour) →
      `AAAA-MM-JJ` seul, jamais une heure inventée.
 
-     **Du plus ancien au plus récent, toujours.** Une série se lit dans le sens
-     où elle s'est déroulée. Certaines sources rendent l'inverse — une API qui
-     pagine à rebours, un export qui commence par le dernier message : remettre
-     d'aplomb, ne jamais reporter l'ordre de la source. Rien dans un recomptage
+     **Du plus ancien au plus récent, toujours — et l'ordre vient des
+     horodatages, pas de la séquence de la source.** Une série se lit dans le
+     sens où elle s'est déroulée. Certaines sources rendent l'inverse — une API
+     qui pagine à rebours, un export qui commence par le dernier message :
+     remettre d'aplomb, ne jamais reporter l'ordre du fichier.
+     Le cas insidieux n'est pas celui-là, c'est l'**entrée isolée hors de son
+     rang** : un export place volontiers ses messages système — avis de
+     chiffrement, « untel a rejoint », en-tête de conversation — en tête de
+     fichier tout en les horodatant à l'heure de l'export, donc **après** le
+     premier vrai message de la journée. Reportées telles quelles, ces lignes
+     donnent une note dont les titres de jour progressent impeccablement et
+     dont les entrées reculent à l'intérieur d'un jour. Trier sur
+     l'horodatage règle les deux formes d'un coup ; suivre l'ordre du fichier
+     n'en règle aucune. Rien dans un recomptage
      ne trahit une note écrite à l'envers — le total est juste, chaque entrée
      est là, et pourtant l'échange se lit à rebours et se cite mal. Le contrôle
      est fait par `verify-entries.py`, qui a déjà les ancres en main ; encore

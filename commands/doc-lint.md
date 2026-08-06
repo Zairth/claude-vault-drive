@@ -159,10 +159,19 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
    conforme, les liens résolvent — et l'échange se lit à rebours. Il vient
    presque toujours d'une source qui rend l'inverse (un journal de versions,
    une API paginée à rebours) et d'un lecteur qui a fidèlement reporté son
-   ordre. Comparer la suite des horodatages à elle-même triée ; signaler la
-   note, son nombre d'entrées, et laquelle des deux formes — **entièrement
-   retournée**, ou **ruptures d'ordre éparses**, qui trahissent plutôt un
-   assemblage de tranches remises dans le désordre.
+   ordre.
+   **Le contrôle porte sur les lignes d'entrée, jamais sur les titres de
+   jour.** Les deux se contredisent couramment, et c'est le piège : les titres
+   `### AAAA-MM-JJ` peuvent progresser parfaitement pendant que les entrées
+   **à l'intérieur** de chaque jour reculent. Constaté sur cinq notes d'un
+   vault réel — titres ordonnés, entrées en désordre — que le contrôle mené
+   sur les titres déclarait saines. Extraire les horodatages des lignes
+   `- AAAA-MM-JJ HH:MM`, et comparer cette suite-là à elle-même triée.
+   Signaler la note, son nombre d'entrées, et laquelle des deux formes —
+   **entièrement retournée** (signature d'une source antéchronologique
+   reportée telle quelle), ou **ruptures d'ordre éparses**, qui viennent
+   plutôt de lignes que l'export place hors de leur rang, messages système
+   horodatés à l'ouverture du fichier par exemple.
    `verify-entries.py` fait le même contrôle à l'ingestion ; celui-ci rattrape
    les notes écrites avant, qui ne repasseront jamais par là.
    **Ne pas corriger d'office** : réordonner réécrit une couche immuable. Le
@@ -388,7 +397,28 @@ deviner. La question, parce qu'elle s'adresse à l'utilisateur.
      > Lis `${CLAUDE_PLUGIN_ROOT}/commands/doc-repair.md` et exécute-le sur le
      > vault `<$VAULT>` pour : note `<chemin>`, passage `<le passage exact>`,
      > valeur proposée `<l'autre affirmation du callout>`. Tu n'écris RIEN.
-     Aucune pièce ne départage → le callout reste, c'est sa raison d'être.
+
+     **Cette délégation s'enchaîne d'office, elle ne se soumet pas.**
+     `/doc-repair` est un fork qui n'écrit rien : il ouvre la pièce et rend un
+     verdict. Le lancer ne détruit rien, ne coûte que des jetons, et c'est la
+     seule façon d'obtenir la réponse. Demander l'autorisation **avant** d'aller
+     voir revient à faire arbitrer sans la réponse en main — précisément ce que
+     ce plugin refuse partout ailleurs. Ce qui se soumet, c'est l'**application**
+     du verdict : mettre à jour la valeur courante, pousser l'ancienne en
+     `## Historique`, retirer le callout.
+     **Trier d'abord, pour ne pas dépenser en vain.** Tu as lu les callouts :
+     dis pour chacun si une pièce du vault peut plausiblement le trancher.
+     - « quel est le texte exact de tel article », « sur quelle année porte ce
+       tableau » → la réponse **est** dans `archives/`, personne n'a assez
+       regardé : à déléguer ;
+     - « tel message a-t-il causé tel effet », « combien coûtait réellement tel
+       abonnement » → **aucune pièce du corpus ne l'établit**, seule une pièce
+       nouvelle le pourra. Rien à déléguer, le callout reste : c'est sa raison
+       d'être.
+     Annoncer les deux nombres. Un lint qui rend « 9 tranchées, 4 en attente
+     d'une pièce » a fait le travail ; un lint qui rend « 13 à trancher » l'a
+     seulement déplacé.
+     Délégation faite, aucune pièce ne départage → le callout reste aussi.
      Le reste des vérifications ne passe PAS par là : un lien pendant, un trou
      d'INDEX ou un frontmatter incomplet se constatent dans le vault, remonter
      à la pièce pour eux ne serait qu'une dépense. Pour un `[!warning]` requalifié : le retyper en
