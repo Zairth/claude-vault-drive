@@ -261,9 +261,15 @@ indexée par rien** — toute note vit dans un de ces dossiers.
 - Le journal `LOG/` est **append-only, un fichier par jour**
   (`LOG/YYYY-MM-DD.md`, créé au besoin — jamais de fichier unique partagé) :
   entrées `## [YYYY-MM-DD] <action> | <titre>` (actions : `init`, `ingest`,
-  `lint`, `synthese`, `bench`), suivies d'une ligne de détail. Ne jamais modifier une
-  entrée existante. Un `LOG.md` racine hérité d'une version antérieure est
-  **gelé** : il se consulte, on n'y écrit plus.
+  `lint`, `synthese`, `bench`, `references`), suivies d'une ligne de détail. Ne
+  jamais modifier une entrée existante. Un `LOG.md` racine hérité d'une version
+  antérieure est **gelé** : il se consulte, on n'y écrit plus.
+  **Aucun wikilink dans le journal** — les notes s'y nomment en clair. Une
+  entrée relie les pages touchées le même jour, ce qui est une coïncidence de
+  calendrier et non un rapport de sens : en faire des `[[...]]` fabrique des
+  arêtes qui n'énoncent rien, et rend le journal d'autant plus central dans le
+  graphe qu'on s'en sert. Pire, une page pointée depuis le seul journal
+  paraîtrait reliée alors qu'aucune connaissance ne la cite.
 - `inbox/` est un **sas**, pas un stockage : un fichier ingéré avec succès est
   **déplacé vers `archives/`** (jamais supprimé) ; un fichier local ingéré
   depuis l'extérieur du vault y est **copié** (l'original de l'utilisateur

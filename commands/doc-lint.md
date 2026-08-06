@@ -60,10 +60,17 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
      installée.
 2. **Pages orphelines** : pour chaque note de `wiki/concepts/` et `wiki/entites/`,
    chercher `[[<nom-du-fichier-sans-extension>` **et**
-   `[[<dossier>/<nom-du-fichier-sans-extension>` dans tout le vault (hors la
+   `[[<dossier>/<nom-du-fichier-sans-extension>` **dans `wiki/`** (hors la
    note elle-même). Les deux formes existent — un slug partagé entre deux
    dossiers oblige à préfixer —, et ne chercher que la première déclarerait
    orphelines des notes correctement pointées.
+   **Le périmètre s'arrête à `wiki/`**, et c'est ce qui donne son sens au
+   contrôle : être orpheline, c'est n'être atteignable depuis aucune
+   **connaissance**. Un renvoi venu du journal ne prouve rien — il dit qu'on a
+   touché la page un jour, pas qu'elle s'articule à quoi que ce soit ; une
+   compilation de `references/` est régénérable et citerait n'importe quoi.
+   Élargir le périmètre transformerait ce contrôle en faux négatif silencieux :
+   la page resterait isolée dans le savoir tout en étant déclarée reliée.
 3. **Wikilinks pendants et ambigus** : recenser les cibles de tous les
    `[[...]]` des notes de `wiki/` — la cible est ce qui précède un éventuel
    `|` (texte affiché) ou `#` (section).
@@ -254,6 +261,13 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
      dossier cherche justement à éviter.
    - **notes vides** (0 octet, ou frontmatter seul sans corps) n'importe où
      dans le vault → lister.
+   - **wikilinks dans `LOG/`** → lister, et les délier (le nom reste en clair).
+     Une entrée de journal relie les pages touchées le même jour : c'est une
+     coïncidence de calendrier, pas un rapport de sens. Les `[[...]]` y
+     fabriquent des arêtes qui n'énoncent rien, et font du journal un nœud
+     d'autant plus central qu'on s'en sert. Défaut irrégulier par nature — une
+     ingestion sur deux en pose, l'autre non —, donc à balayer sur tout le
+     journal et pas seulement sur le fichier du jour.
    - **nœuds fantômes — d'abord dans `wiki/`, ensuite dans `archives/`.**
      Une référence de fichier qui ne pointe nulle part
      (`![img-0.jpeg](…)`, `[[piece-jointe]]`…) apparaît dans le graphe

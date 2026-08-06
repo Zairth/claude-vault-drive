@@ -9,6 +9,29 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.42.1] — 2026-08-06
+
+**Raison de l'update** : rien n'interdisait les wikilinks dans le journal, et une page citée par le seul journal passait pour reliée.
+
+### Corrigé
+- **Le journal ne porte plus de wikilinks — les notes s'y nomment en clair.**
+  Rien ne le disait, d'où un résultat irrégulier : une entrée d'ingestion en
+  posait trois, celle de la veille aucune. Une entrée de journal relie les
+  pages touchées le même jour, ce qui est une **coïncidence de calendrier et
+  non un rapport de sens** : les `[[...]]` y fabriquent des arêtes qui
+  n'énoncent rien, et rendent le journal d'autant plus central dans le graphe
+  qu'on s'en sert. Le contrôle 11 de `/doc-lint` les signale et les délie, sur
+  tout le journal — le défaut étant irrégulier, le fichier du jour ne suffit
+  pas.
+- **Le contrôle des orphelines s'arrête à `wiki/`.** Il cherchait « dans tout
+  le vault », donc un renvoi venu de `LOG/` ou d'une compilation de
+  `references/` suffisait à déclarer une page reliée. C'est un faux négatif
+  silencieux : la page reste isolée dans le savoir tout en étant comptée
+  saine. Être orpheline, c'est n'être atteignable depuis aucune
+  **connaissance** — le journal dit qu'on a touché une page un jour, pas
+  qu'elle s'articule à quoi que ce soit, et une compilation est régénérable et
+  citerait n'importe quoi.
+
 ## [1.42.0] — 2026-08-06
 
 **Raison de l'update** : le lint demandait l'autorisation d'aller chercher une réponse, donc faisait arbitrer sans elle ; et son contrôle d'ordre pouvait s'appliquer aux titres de jour, qui progressent, plutôt qu'aux entrées, qui reculent.

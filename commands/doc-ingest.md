@@ -568,6 +568,11 @@ double emploi : l'une est fidèle, l'autre est utile.
    au besoin ; jamais dans un `LOG.md` racine hérité, gelé) :
    `## [YYYY-MM-DD] ingest | <titre de la source>`
    suivi d'une ligne listant les fichiers créés/modifiés.
+   **Les noms de notes s'y écrivent en clair, jamais en `[[wikilink]]`.** Une
+   entrée de journal relie les pages touchées le même jour : coïncidence de
+   calendrier, pas rapport de sens. Des `[[...]]` y fabriqueraient des arêtes
+   qui n'énoncent rien, et une page citée par le seul journal paraîtrait
+   reliée alors qu'aucune connaissance ne la mentionne.
 6. Archiver la pièce d'origine — pour TOUTE source qui est un fichier local :
    venue de `$VAULT/inbox/` → la **déplacer** vers `$VAULT/archives/` ; venue
    d'ailleurs sur la machine → l'y **copier** (le fichier de l'utilisateur
