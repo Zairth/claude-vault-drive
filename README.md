@@ -35,10 +35,23 @@ Il demande en retour `uv` et une clé d'API Mistral, gratuite —
 l'utilisation de vos données pour l'entraînement. Si vous ne l'installez pas,
 rien ne casse : les commandes annoncent leur repli au lieu de faire semblant.
 
+> **Comment taper les commandes de ce plugin.** Elles s'appellent par leur nom
+> complet, préfixé du plugin :
+>
+> ```
+> /claude-vault-drive:vault-init …    /claude-vault-drive:doc-ingest …
+> /claude-vault-drive:doc-query …     /claude-vault-drive:doc-lint …
+> ```
+>
+> La forme courte `/doc-query` échoue avec `Unknown command` : c'est le
+> fonctionnement de Claude Code, pas un défaut d'installation. **La suite de ce
+> document les écrit en abrégé** pour rester lisible ; à la saisie, préfixez
+> toujours.
+
 Puis dans le projet qui doit avoir sa mémoire :
 
 ```
-/vault-init "/chemin/vers/mon-vault"
+/claude-vault-drive:vault-init "/chemin/vers/mon-vault"
 ```
 
 Relancez la session : le vault existe, il est vide.

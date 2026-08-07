@@ -9,6 +9,54 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.47.1] — 2026-08-07
+
+**Raison de l'update** : la documentation écrivait les commandes en forme courte (`/doc-query`), qui échoue avec `Unknown command`. Un utilisateur suivant le README à la lettre ne pouvait rien lancer.
+
+### Corrigé
+- **`/doc-query --all-references` — une question porte souvent plusieurs
+  demandes, et elles ne se valent pas.** La règle ne connaissait qu'un critère
+  par question : trouver un terme littéral pour l'une des demandes dispensait
+  de fait des autres. « Comment X a géré l'arrivée de Y, combien de fois s'est-il
+  plaint, et a-t-il été de bonne foi ? » en contient trois, dont deux sans
+  aucun terme cherchable. Chacune doit désormais être déclarée pour ce qu'elle
+  est.
+  **Et une demande qui appelle un nombre est traitée à part** : « combien de
+  fois » produit un chiffre, et un chiffre se lit comme une mesure même quand
+  c'est un avis. La définition de ce qu'on compte n'est pas dans le corpus,
+  elle vient du lecteur — elle s'écrit, avec ce qu'elle exclut. Un chiffre
+  livré sans sa définition est la seule façon, dans ce mode, de faire passer un
+  jugement pour une preuve.
+- **`--all-references` — une seule ligne de temps, tous canaux confondus.** Le
+  rapport annonçait l'ordre chronologique et la règle n'interdisait pas de
+  grouper par canal : chaque changement de groupe produisait alors un retour en
+  arrière, constaté d'une heure cinquante-trois sur un rapport réel. Au-delà de
+  la cohérence, l'entrelacement **est** la matière : ce qui a été dit en privé à
+  la minute où autre chose se disait en public ne se lit que sur une ligne
+  unique.
+- **`--all-references` — une pièce brute ne se cherche pas comme un markdown.**
+  L'obligation de remonter à l'original existait mais restait lettre morte,
+  faute de dire comment. Un export au format JSON échappe ses guillemets en
+  `\"` et ses retours à la ligne en `\n` littéraux : chercher la citation telle
+  qu'elle est écrite dans la note n'y rend rien, et **l'échec est silencieux**
+  — on conclut « absente de la pièce » alors qu'elle y est. Mesuré sur un
+  export réel : 108 guillemets échappés, 248 retours à la ligne.
+- **`--all-references` — deux fichiers, jamais un seul.** La règle disait où va
+  chaque livrable mais jamais qu'il ne fallait pas les réunir : un fichier
+  portant à la fois la compilation et la synthèse n'a plus de bon endroit où
+  aller. Dans `syntheses/`, il traîne les entrées recopiées dans l'index —
+  mesuré sur un cas réel, 48 entrées dont 39 déjà vectorisées par
+  `wiki/sources/`, soit 81 % du fichier compté deux fois. Dans `references/`,
+  c'est la synthèse qui devient introuvable, alors qu'elle est la seule prose
+  neuve du lot.
+- **Forme d'appel des commandes.** Celles d'un plugin s'appellent par leur nom
+  complet, préfixé : `/claude-vault-drive:doc-query …`. Le README et
+  `PREREQUIS.md` le disent désormais **avant la première commande montrée**, et
+  non après — un lecteur rencontrait `/doc-ingest` deux écrans plus haut que
+  l'explication. Les deux documents continuent d'écrire la forme abrégée dans
+  leur prose, en le déclarant : préfixer 78 occurrences les rendrait
+  illisibles, et c'est la lisibilité qui fait lire un README.
+
 ## [1.47.0] — 2026-08-07
 
 **Raison de l'update** : une citation sans auteur ni point de retour n'est pas une preuve, c'est une affirmation. La contrôler supposait de relire la pièce entière — donc personne ne la contrôlait.

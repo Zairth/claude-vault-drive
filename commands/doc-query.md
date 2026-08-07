@@ -67,6 +67,22 @@ terme littéral (« tout ce qui montre une satisfaction ») → le dire en tête
 rapport : le périmètre reposera sur le seul jugement, donc l'exhaustivité
 n'est **pas** garantie, et c'est une information, pas un détail.
 
+**Une question en porte souvent plusieurs, et elles ne se valent pas.**
+« Comment X a géré l'arrivée de Y, combien de fois s'est-il plaint, et
+a-t-il été de bonne foi ? » en contient trois : « Y » est littéral, « plainte »
+et « bonne foi » ne le sont pas. Trouver un critère littéral pour UNE des
+demandes ne dispense pas des autres : découper la question, et déclarer pour
+**chacune** si elle repose sur un terme cherchable ou sur un jugement.
+
+**Une demande qui appelle un nombre est la plus dangereuse.** « Combien de
+fois » produit un chiffre, et un chiffre se lit comme une mesure même quand
+c'est un avis. Y répondre suppose d'avoir défini ce qu'on compte — ce qui est
+une plainte, un refus, un manquement. Cette définition n'est pas dans le
+corpus, elle vient du lecteur. Alors : **l'écrire**, dire ce qu'elle inclut et
+ce qu'elle exclut, et présenter le total comme ce qu'il est — le résultat de
+ce découpage-là, pas un décompte. Un chiffre livré sans sa définition est la
+seule façon, dans ce mode, de faire passer un jugement pour une preuve.
+
 **2. Le grep d'abord — c'est le plancher.** Sur le critère et ses variantes
 (racine, accents repliés, casse ignorée), à travers `wiki/`. Il rend **toutes**
 les occurrences, pas un classement : c'est la seule couche qui garantisse
@@ -98,14 +114,35 @@ auteur sur sa ligne. Trop de fichiers pour un seul lecteur → les répartir ent
 plusieurs sub-agents lecteurs, chacun rendant ses entrées ; jamais
 d'échantillonnage.
 
-**6. Le rapport rend les entrées, dans l'ordre chronologique**, chacune avec
-son **auteur** et de quoi **remonter à la pièce brute** — pas seulement la note
-d'où elle vient. Une entrée qui sert de contre-argument doit pouvoir être
+**6. Le rapport rend les entrées sur UNE SEULE ligne de temps**, strictement
+croissante, **tous canaux confondus** — et non par canal, par pièce ou par
+phase. C'est le point où un rapport se dégrade sans qu'on le voie : regrouper
+par canal produit des retours en arrière d'une heure ou d'un jour à chaque
+changement de groupe, alors que le rapport annonce l'ordre chronologique.
+Et l'entrelacement **est** la matière : ce qui a été dit en privé à la minute
+où autre chose se disait en public ne se lit que sur une ligne unique. Les
+séparer, c'est détruire l'information qu'on est venu chercher.
+Des intertitres restent utiles pour donner du rythme, à condition qu'ils
+découpent la **ligne de temps** — une période — et jamais une source.
+Chaque entrée porte son **auteur** et de quoi **remonter à la pièce brute** —
+pas seulement la note d'où elle vient. Une entrée qui sert de contre-argument doit pouvoir être
 rouverte dans la source qui n'a subi aucun traitement, sans quoi elle ne vaut
 que ce que vaut sa transcription :
 la note de `wiki/sources/` avec sa ligne, **et** l'original — la pièce brute,
 qui n'a subi aucun traitement. La ligne s'obtient par `grep -n`, jamais à
 l'estime. Sur un PDF, citer l'original suffit : il n'a pas de lignes.
+**L'original n'est pas facultatif** : `wiki/sources/…` prouve ce que dit la
+NOTE, pas ce que dit la pièce. Sur un dossier destiné à être opposé, c'est
+précisément la note qu'on cherchera à contester.
+**Et une pièce brute ne se cherche pas comme un markdown.** Un export au
+format JSON échappe ses guillemets en `\"` et ses retours à la ligne en `\n`
+littéraux : chercher la citation telle qu'elle est écrite dans la note n'y
+rend **rien**, et l'échec est silencieux — on croit la citation absente alors
+qu'elle est là. Mesuré sur un export réel : 108 guillemets échappés, 248
+retours à la ligne. Chercher donc sur un **fragment sans guillemet ni
+ponctuation coupante** (`grep -n` sur une dizaine de mots consécutifs), ou
+défaire les échappements avant de comparer. Ne jamais conclure « absente de la
+pièce » sans avoir essayé ainsi.
 Ce rapport n'est pas une note du vault et n'est pas vectorisé : l'attribution
 s'y écrit en clair, sans bloc `[!source]`.
 Puis, obligatoirement, **ce qui n'a pas été couvert** : fichiers non lus, dossiers hors périmètre, `inbox/` non ingéré.
@@ -120,6 +157,16 @@ des entrées déjà présentes dans `wiki/sources/` vectoriserait deux fois le m
 texte, ferait remonter le même contenu en double à toute recherche suivante, et
 transformerait le dossier des conclusions en le plus gros du vault.
 Elles vont dans `references/`, hors de `wiki/` donc hors index sémantique.
+
+**Deux fichiers, jamais un seul.** Le défaut à éviter n'est pas de se tromper
+de dossier, c'est de réunir la compilation et la synthèse dans un même
+fichier : il n'y a alors plus de bon endroit où le mettre. Dans `syntheses/`,
+il traîne les entrées recopiées dans l'index — mesuré sur un cas réel, 48
+entrées dont 39 déjà vectorisées par `wiki/sources/`, soit 81 % du fichier
+compté deux fois et 14 chunks créés en double. Dans `references/`, c'est la
+synthèse qui devient introuvable par la recherche, alors qu'elle est la seule
+prose neuve du lot et donc précisément ce qui méritait d'être indexé.
+Écrire **deux fichiers**, chacun à sa place, se pointant en wikilink.
 
 **Et les deux livrables se proposent ensemble, dans cet ordre.** La compilation
 porte les pièces, la synthèse porte la thèse qu'on en tire ; ni l'une ni

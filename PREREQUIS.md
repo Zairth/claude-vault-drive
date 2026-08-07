@@ -5,6 +5,12 @@ sections 1 et 2 sont indispensables ; 3 et 4 ne concernent qu'un vault partagé
 via Google Drive ; 5 n'est nécessaire que pour la recherche sémantique et l'OCR
 (sans elle, tout fonctionne en repli grep) ; 6 est la vitrine humaine.
 
+
+> **Comment taper les commandes.** Celles d'un plugin s'appellent par leur nom
+> complet : `/claude-vault-drive:doc-ingest …`. La forme courte `/doc-ingest`
+> échoue avec `Unknown command`. Ce document les écrit en abrégé pour rester
+> lisible ; à la saisie, préfixez toujours.
+
 ## 1. Un terminal Linux — sous Windows : WSL
 
 Claude Code tourne dans un terminal (Linux, macOS, ou Windows via WSL). Les
