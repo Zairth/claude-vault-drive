@@ -105,7 +105,7 @@ claude-vault-drive/
 │   ├── vault-init.md        # /vault-init — initialiser le vault du projet courant
 │   ├── doc-ingest.md        # /doc-ingest — ingérer une source (lecture, standardisation, contrôle, lint enchaîné)
 │   ├── doc-query.md         # /doc-query — interroger le vault (fork isolé, réponse citée ; --all-references pour l'exhaustif)
-│   ├── doc-lint.md          # /doc-lint — maintenance (fork isolé : treize vérifications, dont les identifiants en clair)
+│   ├── doc-lint.md          # /doc-lint — maintenance (fork isolé : quatorze vérifications, dont les repères de citation)
 │   ├── doc-repair.md        # /doc-repair — corriger une information et rebrancher sa chaîne, vérification contre la pièce
 │   └── doc-bench.md         # /doc-bench — banc de questions de référence (mesure mécanique, ou réelle via /doc-query)
 ├── hooks/
@@ -123,6 +123,7 @@ claude-vault-drive/
 │   ├── pdf-text.py          # couche de texte d'un PDF, sans dépendance ni réseau (essayée avant l'OCR)
 │   ├── pdf-signatures.py    # signatures électroniques d'un PDF — ni le texte ni l'OCR ne les voient
 │   ├── verify-entries.py    # recompte les entrées datées d'une source dans la note produite
+│   ├── verify-citations.py  # rouvre la pièce : la citation est-elle bien à la ligne annoncée ?
 │   ├── hook-session-start.sh    # hook : INDEX.md injecté à l'ouverture de session
 │   ├── hook-prompt-context.sh   # hook : pistes par mots-clés sous chaque prompt (gratuit)
 │   └── hook-precompact-inbox.sh # hook : transcript déposé dans inbox/ avant compactage, identifiants masqués

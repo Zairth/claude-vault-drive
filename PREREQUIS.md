@@ -236,7 +236,10 @@ s'en sert dans le plugin, et ce qui se passe s'il manque :
   ne l'est pas ;
 - **recomptage des entrées d'une série datée** (`scripts/verify-entries.py`)
   → sans `python3`, l'ingestion d'un relevé ou d'un export perd sa
-  vérification d'intégralité : elle reste correcte, elle n'est plus prouvée.
+  vérification d'intégralité : elle reste correcte, elle n'est plus prouvée ;
+- **contrôle des repères de citation** (`scripts/verify-citations.py`) → sans
+  `python3`, un numéro de ligne inexact ne se distingue plus d'un numéro
+  exact. Les citations restent lisibles, elles ne sont plus contrôlables.
 
 Bibliothèque standard seule dans tous ces cas : aucun `pip install`, aucun
 accès réseau. (Le moteur sémantique, lui, a ses propres prérequis Python —

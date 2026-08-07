@@ -99,8 +99,16 @@ plusieurs sub-agents lecteurs, chacun rendant ses entrées ; jamais
 d'échantillonnage.
 
 **6. Le rapport rend les entrées, dans l'ordre chronologique**, chacune avec
-la note d'où elle vient. Puis, obligatoirement, **ce qui n'a pas été
-couvert** : fichiers non lus, dossiers hors périmètre, `inbox/` non ingéré.
+son **auteur** et de quoi **remonter à la pièce brute** — pas seulement la note
+d'où elle vient. Une entrée qui sert de contre-argument doit pouvoir être
+rouverte dans la source qui n'a subi aucun traitement, sans quoi elle ne vaut
+que ce que vaut sa transcription :
+la note de `wiki/sources/` avec sa ligne, **et** l'original — la pièce brute,
+qui n'a subi aucun traitement. La ligne s'obtient par `grep -n`, jamais à
+l'estime. Sur un PDF, citer l'original suffit : il n'a pas de lignes.
+Ce rapport n'est pas une note du vault et n'est pas vectorisé : l'attribution
+s'y écrit en clair, sans bloc `[!source]`.
+Puis, obligatoirement, **ce qui n'a pas été couvert** : fichiers non lus, dossiers hors périmètre, `inbox/` non ingéré.
 Une couverture partielle se dit ; elle ne se devine pas.
 Dans ce mode, le rapport **recopie** donc les entrées, contrairement au mode
 normal où recopier serait l'erreur : ici les entrées **sont** le livrable, et

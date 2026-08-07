@@ -402,8 +402,13 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
      reviendrait à jeter ce qu'on vient d'ingérer. Le critère est la qualité,
      pas le nombre : une idée par enseignement, aucun qui n'apporte un fait
      durable, aucun remplissage. Pour chacun une citation verbatim ≤ 125
-     caractères, les concepts/entités candidats (wikilinks), et une
-     description en quelques mots pour l'INDEX ;
+     caractères **avec son attribution complète** — qui l'a dit ou écrit, dans
+     quel fichier de la pièce, et à quelle ligne —, les concepts/entités
+     candidats (wikilinks), et une description en quelques mots pour l'INDEX.
+     **La ligne s'obtient mécaniquement, jamais de mémoire ni à l'estime** :
+     `grep -n` sur la citation dans le fichier, et on reporte ce qu'il rend.
+     Un numéro plausible est pire que pas de numéro — il donne à une citation
+     approximative l'apparence d'une citation vérifiée ;
   4. ne retourner QUE ce dossier et le chemin du fichier standardisé — jamais
      la source brute, jamais ce fichier lui-même, jamais de longs
      extraits. S'il constate en lisant que la source dépasse ce qu'il peut
@@ -551,8 +556,54 @@ double emploi : l'une est fidèle, l'autre est utile.
 2. `$VAULT/wiki/enseignements/YYYY-MM-DD-<slug>.md` — **ce qu'on en retient**.
    Frontmatter `type: enseignements`, même `origine`, wikilink vers la note de
    source. Corps : **un titre `###` par enseignement**, chacun suivi de sa
-   citation verbatim ≤ 125 caractères et des wikilinks vers les
-   concepts/entités concernés.
+   citation verbatim ≤ 125 caractères, de sa ligne d'attribution, et des
+   wikilinks vers les concepts/entités concernés.
+
+   **Toute citation porte son bloc d'attribution, juste en dessous :**
+
+   ```
+   > « <citation verbatim ≤ 125 caractères> »
+
+   > [!source]- <auteur>, <date de l'entrée>
+   > `wiki/sources/<slug>.md` Ligne <n>
+   > original `archives/<pièce brute>` Ligne <n>
+   ```
+
+   Une citation sans attribution n'est pas une preuve, c'est une affirmation :
+   pour la contrôler il faut relire la pièce en entier, donc personne ne la
+   contrôle. Les trois éléments répondent à trois questions distinctes —
+   **qui** l'a dit, **dans quelle pièce**, **où exactement** — et aucune ne se
+   déduit des deux autres.
+
+   **Deux pointeurs, deux rôles.** La note de `wiki/sources/` est toujours
+   adressable ligne à ligne, quelle que soit la pièce : c'est elle qui donne le
+   repère précis. L'**original** est la pièce brute, celle qui n'a subi aucun
+   traitement : c'est elle qui fait foi. Sans lui, la citation ne remonte qu'à
+   une **lecture** de la pièce — or c'est la lecture qui est faillible, et
+   qu'il faut pouvoir contredire.
+   Le repère de l'original suit ce que son format porte, et rien de plus :
+   ligne pour un fichier lisible ligne à ligne (`grep -n`, jamais estimé),
+   **rien pour un PDF** — il n'a pas de lignes, il a une mise en page, et
+   `p. <n>` n'y est qu'un bonus. Réclamer d'un format ce qu'il ne porte pas ne
+   produit que des repères inventés.
+
+   **Le bloc `[!source]` est tenu hors du texte vectorisé** par l'indexation :
+   c'est de la plomberie, et mesuré sur un corpus réel elle représenterait la
+   moitié du vecteur d'une section médiane. Deux conséquences à respecter :
+   - **l'auteur d'une citation figure parmi les wikilinks de sa section.**
+     C'est la règle qui rend l'exclusion sûre : le nom sort du bloc mais reste
+     dans le vecteur par son wikilink, et « les messages où telle personne se
+     plaint » continue de remonter. L'oublier revient à rendre l'auteur
+     introuvable ;
+   - **ne rien mettre dans ce bloc qui doive être cherchable.** Ce qui y entre
+     cesse d'exister pour la recherche sémantique.
+
+   `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/verify-citations.py" "$VAULT"`
+   rouvre chaque pièce et vérifie que la citation est bien là où elle le dit.
+   Le lancer après écriture : c'est le seul contrôle qui distingue un repère
+   exact d'un repère plausible. Sorties : `0` tout retrouvé, `1` au moins un
+   défaut, `2` rien de contrôlable — **une absence de contrôle, pas un
+   succès** —, `3` vault illisible.
    Le `###` n'est pas cosmétique : le découpage sémantique se fait par titre,
    donc un enseignement devient exactement un extrait indexé — ni dilué dans
    ses voisins, ni coupé en deux.

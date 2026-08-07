@@ -275,6 +275,17 @@ _TOKEN = re.compile(
 
 def extract(pdf_path: Path) -> tuple[str, float]:
     """(texte, part des glyphes effectivement traduits)."""
+    pages, rate = pages_of(pdf_path)
+    return "\n\n".join(pages), rate
+
+
+def pages_of(pdf_path: Path) -> tuple[list[str], float]:
+    """(texte de chaque page pris à part, part des glyphes traduits).
+
+    Rendre les pages séparément plutôt qu'un texte joint permet de situer une
+    citation **par page**, seul repère qu'un PDF admette : il n'a pas de
+    lignes, il a une mise en page.
+    """
     objects = _objects(pdf_path.read_bytes())
     known, drawn, translated, pages = {}, 0, 0, []
 
@@ -330,7 +341,7 @@ def extract(pdf_path: Path) -> tuple[str, float]:
         if page.strip():
             pages.append(page)
 
-    return "\n\n".join(pages), (translated / drawn if drawn else 0.0)
+    return pages, (translated / drawn if drawn else 0.0)
 
 
 def main() -> int:

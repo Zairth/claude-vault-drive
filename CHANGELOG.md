@@ -9,6 +9,101 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.47.0] — 2026-08-07
+
+**Raison de l'update** : une citation sans auteur ni point de retour n'est pas une preuve, c'est une affirmation. La contrôler supposait de relire la pièce entière — donc personne ne la contrôlait.
+
+### Ajouté
+- **Bloc d'attribution sous chaque citation**, dans `enseignements/` :
+
+  ```
+  > « <citation verbatim ≤ 125 caractères> »
+
+  > [!source]- <auteur>, <date de l'entrée>
+  > `wiki/sources/<slug>.md` Ligne <n>
+  > original `archives/<pièce brute>` Ligne <n>
+  ```
+
+  Trois questions distinctes dont aucune ne se déduit des deux autres :
+  **qui** l'a dit, **dans quelle pièce**, **où exactement**.
+  **Deux pointeurs, deux rôles.** La note de `wiki/sources/` est toujours
+  adressable ligne à ligne, quelle que soit la pièce : elle donne le repère
+  précis. L'**original** est la pièce brute, celle qui n'a subi aucun
+  traitement : c'est elle qui fait foi. Sans lui, la citation ne remonte qu'à
+  une *lecture* de la pièce — or c'est la lecture qui est faillible, et qu'il
+  faut pouvoir contredire.
+  L'exigence se gradue selon ce que le format porte, parce que réclamer d'un
+  format ce qu'il n'a pas ne produit que des repères inventés : ligne
+  obligatoire sur une pièce lisible ligne à ligne, **rien pour un PDF** — il
+  n'a pas de lignes, il a une mise en page, et `p. <n>` n'y est qu'un bonus.
+- **`scripts/verify-citations.py`** — le contrôle qui rend la règle tenable.
+  Ajouter un repère résout un problème et en crée un pire : un repère est un
+  chiffre, et un chiffre se fabrique sans effort. Une ligne inventée donne à
+  une citation approximative l'**apparence** d'une citation vérifiée.
+  Le script rouvre les deux pièces et regarde. Défauts distingués : citation
+  sans bloc · bloc sans auteur · repère faux, la ligne réelle étant donnée ·
+  ligne manquante sur une pièce qui en admet une · citation introuvable ·
+  original absent · original désignant une transcription au lieu d'une pièce
+  brute. Sorties `0` / `1` / `2` (rien de contrôlable) / `3`.
+  De la double vérification sort un contrôle qui n'existe nulle part ailleurs :
+  une citation **présente dans la version standardisée et absente de
+  l'original** n'a ni mauvais repère ni mauvais texte — c'est la
+  **standardisation** qui l'a altérée. Aucune relecture de note n'attrape ça.
+  **Deux comportements que seule l'épreuve sur un vault réel a révélés.** Une
+  note condense parfois une entrée en n'en gardant que les valeurs, rejointes
+  par d'autres séparateurs et avec une date reformatée : la déclarer
+  introuvable serait un faux positif, l'accepter comme une citation en serait
+  un autre. Elle est donc localisée et **nommée pour ce qu'elle est** —
+  recomposée, pas verbatim. Et les **échappements** d'un export comptent autant
+  que les blancs : un format JSON stocke ses guillemets en `\"` et ses retours
+  à la ligne en `\n` littéraux. Mesuré sur un export réel — 108 guillemets
+  échappés, 248 retours à la ligne — sans les défaire, **aucune** citation de
+  la note concernée n'était retrouvable dans la pièce brute ; en les défaisant,
+  28 sur 29 le sont à la ligne près.
+  La localisation se fait **au caractère**, pas dans une fenêtre de quelques
+  lignes autour du repère : une fenêtre valide un repère faux dès qu'il tombe à
+  côté de peu, c'est-à-dire exactement le cas à attraper. Citation élidée
+  comparée fragment par fragment dans l'ordre, blancs normalisés, le reste au
+  caractère près.
+- **Le bloc d'attribution est tenu hors du texte vectorisé.** L'indexation
+  passe `--exclude-callout source` au moteur, qui l'accepte depuis sa 4.7.0.
+  Mesuré sur un corpus réel : section médiane 221 caractères, bloc
+  d'attribution 110 — la moitié du vecteur serait des chemins et des chiffres.
+  Un vecteur étant une moyenne, ce bloc tirerait tous les chunks d'une note
+  vers une même direction et abîmerait la discrimination.
+  **Moteur plus ancien : l'option est retirée de l'appel, pas l'indexation.**
+  Les blocs sont alors vectorisés avec le texte — une perte de finesse se
+  rattrape par une mise à jour, un index qu'on n'a pas pu construire non.
+  Un avertissement le dit sur `stderr`.
+  Mesuré sur une note réelle migrée : 32 chunks avant comme après — aucun
+  perdu —, **27,5 % de caractères vectorisés en moins**, aucun bloc
+  d'attribution restant dans un vecteur, et le contenu intégral toujours rendu
+  par la recherche.
+  Deux règles en découlent, portées par la convention et non par le moteur :
+  **l'auteur d'une citation figure aussi parmi les wikilinks de sa section**
+  — sinon son nom sort du vecteur et « les messages où telle personne se
+  plaint » cesse de remonter —, et **rien de cherchable n'entre dans ce bloc**.
+
+### Modifié
+- **`/doc-ingest`** — le dossier d'ingestion porte l'attribution complète de
+  chaque citation, et **la ligne s'obtient par `grep -n`, jamais à l'estime**.
+- **`/doc-lint`** — quatorzième vérification : citations sans attribution,
+  repère faux, original manquant ou désignant une transcription. Le code `2` y
+  est traité comme partout ailleurs — **une absence de contrôle, pas un
+  succès**. Deux défauts que le script ne voit pas et que le lint relève :
+  auteur absent des wikilinks de sa section, et contenu cherchable enfermé dans
+  le bloc exclu.
+- **`/doc-query --all-references`** — chaque entrée rendue porte son auteur, la
+  note de `wiki/sources/` avec sa ligne, et l'original. Une entrée qui sert de
+  contre-argument doit pouvoir être rouverte dans la source non traitée, sans
+  quoi elle ne vaut que ce que vaut sa transcription. Ce rapport n'étant pas
+  une note du vault, l'attribution s'y écrit en clair.
+- **`vault-template/INSTRUCTIONS-CLAUDE.md`** — la règle entre dans les
+  conventions du vault, à côté de la limite de 125 caractères.
+- **`scripts/pdf-text.py`** — le texte est disponible page par page
+  (`pages_of`), ce qui permet de situer une citation dans un PDF. Sortie en
+  ligne de commande inchangée, vérifiée identique à l'octet sur quinze PDF.
+
 ## [1.46.0] — 2026-08-07
 
 **Raison de l'update** : une signature électronique ne s'écrit pas dans le texte d'un PDF. Lue par extraction ou par OCR, une pièce signée est indiscernable d'une pièce qui ne l'est pas — et le vault concluait « non signée » à partir d'un silence.

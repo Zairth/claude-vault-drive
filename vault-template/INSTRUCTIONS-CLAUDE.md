@@ -176,8 +176,9 @@ indexée par rien** — toute note vit dans un de ces dossiers.
     référencé relativement au vault ;
   - `type: enseignements` : `origine` (même pièce que la note de source
     correspondante) et un wikilink vers cette note ; le corps est une suite de
-    titres `###`, un par enseignement, chacun suivi de sa citation verbatim et
-    des wikilinks vers les concepts/entités concernés. Le `###` n'est pas
+    titres `###`, un par enseignement, chacun suivi de sa citation verbatim,
+    de sa ligne d'attribution et des wikilinks vers les concepts/entités
+    concernés. Le `###` n'est pas
     cosmétique : le découpage sémantique se fait par titre, donc un
     enseignement = un extrait indexé, ni dilué dans ses voisins ni coupé en
     deux.
@@ -205,6 +206,33 @@ indexée par rien** — toute note vit dans un de ces dossiers.
   `original` (pointent vers `archives/` ou hors vault — hors graphe, voulu).
 - Citations verbatim ≤ 125 caractères ; au-delà, paraphraser — le verbatim long
   reste dans `wiki/sources/`.
+- **Toute citation porte son bloc d'attribution, juste en dessous** :
+
+  ```
+  > « <citation> »
+
+  > [!source]- <auteur>, <date de l'entrée>
+  > `wiki/sources/<slug>.md` Ligne <n>
+  > original `archives/<pièce brute>` Ligne <n>
+  ```
+
+  Trois questions distinctes, dont aucune ne se déduit des autres : **qui** l'a
+  dit, **dans quelle pièce**, **où exactement**. Sans elles, contrôler la
+  citation suppose de relire la pièce entière — donc personne ne la contrôle.
+  Deux pointeurs, deux rôles : la note de `wiki/sources/` est toujours
+  adressable ligne à ligne et donne le repère précis ; l'**original** est la
+  pièce brute, qui fait foi. Sans lui, la citation ne remonte qu'à une lecture
+  de la pièce, et c'est la lecture qui est faillible.
+  Le repère de l'original suit ce que son format porte : ligne pour un fichier
+  lisible ligne à ligne, **rien pour un PDF** — il n'a pas de lignes, la page
+  n'est qu'un bonus. La ligne s'obtient par `grep -n`, jamais à l'estime : un
+  numéro plausible donne à une citation approximative l'apparence d'une
+  citation vérifiée.
+  **Ce bloc est tenu hors du texte vectorisé.** D'où deux règles : l'auteur
+  d'une citation **figure aussi parmi les wikilinks de sa section** — sans quoi
+  son nom disparaît de la recherche —, et rien de ce qui doit être cherchable
+  n'entre dans ce bloc.
+
 - **Deux callouts, et deux seulement**, ont un sens dans le vault. Ils ne se
   distinguent pas par leur gravité mais par leur **durée de vie** — l'un est
   définitif, l'autre est une tâche en attente. Ne jamais les confondre :

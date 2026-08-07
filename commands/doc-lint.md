@@ -28,7 +28,7 @@ dans son invite, et tout ce qui se résout depuis le projet casse — à commenc
 par `.claude/vault-path.local`. Travailler en **chemins absolus**, ou isoler le
 déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
 
-## Vérifications (les treize)
+## Vérifications (les quatorze)
 
 1. **Callouts** — deux natures que la convention d'`INSTRUCTIONS-CLAUDE.md`
    sépare par leur durée de vie ; ne jamais les additionner :
@@ -292,7 +292,44 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
    Le wikilink croisé attendu est **préfixé du dossier**
    (`[[sources/<slug>]]`) : un lien croisé en nom nu est ambigu, les deux
    notes portant le même slug — le signaler comme à corriger.
-11. **Parasites hors `wiki/`** — les autres vérifications ne regardent que
+11. **Citations sans attribution, ou dont le repère est faux** — dans
+   `enseignements/`, toute citation doit porter juste en dessous un bloc
+   `> [!source]-` donnant son auteur, la note de `wiki/sources/` avec sa ligne,
+   et l'**original** — la pièce brute, celle qui n'a subi aucun traitement.
+   Le contrôle est mécanique, ne pas le faire à l'œil :
+   `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/verify-citations.py" "$VAULT"`
+   — il rouvre chaque pièce et regarde si le texte cité commence bien à la
+   ligne annoncée. Sortie `0` tout retrouvé, `1` défauts listés, `2` rien de
+   contrôlable, `3` vault illisible.
+   **Le code `2` n'est pas un succès, c'est une absence de contrôle** : il dit
+   qu'aucune citation ne porte de repère, donc qu'aucune n'est vérifiable.
+   Trois défauts distincts, à ne pas confondre dans le rapport :
+   - **citation sans repère** → rien ne permet de la contrôler sans relire la
+     pièce entière ; à compléter, la ligne s'obtenant par `grep -n`. La ligne
+     n'est exigée que des pièces **adressables ligne à ligne** : sur un PDF,
+     citer l'original suffit ;
+   - **repère faux** — la citation existe mais ailleurs → le script donne la
+     ligne réelle, la correction est mécanique. C'est le défaut qui compte le
+     plus : un numéro plausible donne à une citation approximative
+     l'apparence d'une citation vérifiée ;
+   - **citation introuvable dans la pièce** → ce n'est plus un défaut de
+     référence mais de **fidélité**. Ne jamais « corriger » le repère pour le
+     faire tomber juste : remonter à la pièce, et si le propos n'y est pas
+     sous cette forme, c'est la citation qu'il faut reprendre ;
+   - **repère visant une lecture et non la pièce** — une note de `sources/`,
+     une sortie d'OCR, un fichier standardisé. Le défaut n'est pas formel :
+     une citation qui ne remonte qu'à une transcription ne permet pas de
+     contredire cette transcription. Repointer vers la pièce brute.
+   - **citation présente dans la version standardisée mais absente de
+     l'original** → ce n'est ni le repère ni la citation qui sont en cause,
+     c'est la **standardisation** qui a altéré le texte. Aucune relecture de
+     note ne peut attraper ça.
+   Deux points que le script ne voit pas et que le lint doit relever :
+   **l'auteur** d'une citation doit aussi figurer parmi les **wikilinks de sa
+   section** — le bloc `[!source]` étant hors du texte vectorisé, un auteur qui
+   n'est que là devient introuvable par la recherche —, et **rien de
+   cherchable ne doit entrer dans ce bloc**.
+12. **Parasites hors `wiki/`** — les autres vérifications ne regardent que
    `wiki/`, or Obsidian indexe TOUT le vault : ce qui traîne ailleurs pollue
    le graphe humain (l'index sémantique, lui, ne couvre que `wiki/`).
    Vérifier d'abord que `.obsidian/app.json` exclut bien **`archives/` et
@@ -353,7 +390,7 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
      Dans **`archives/`** c'est sans conséquence tant que l'exclusion Obsidian
      est en place : compter seulement, et ne jamais modifier un fichier
      archivé — la couche est immuable.
-12. **Doublons suspectés (pages vivantes)** : sur l'ensemble `wiki/concepts/`
+13. **Doublons suspectés (pages vivantes)** : sur l'ensemble `wiki/concepts/`
    + `wiki/entites/` — les doublons traversent les deux dossiers
    (`Docker.md` dans l'un, `conteneurisation-docker.md` dans l'autre) :
    - collision de **noms normalisés** (casse, accents, tirets/underscores,
@@ -375,7 +412,7 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
    convention « une idée par note » tranche la plupart des cas.
    Détection et verdict seulement — aucune fusion sans validation (voir
    corrections).
-13. **Identifiants en clair dans le vault** — un vault vit sur un dossier
+14. **Identifiants en clair dans le vault** — un vault vit sur un dossier
    **synchronisé** : ce qui y traîne part avec lui, et un secret oublié n'est
    plus un secret. Chercher dans TOUT le vault, `inbox/` et `archives/`
    compris (ce sont eux qui reçoivent les exports bruts, donc eux qui les
