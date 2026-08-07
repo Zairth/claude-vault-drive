@@ -9,6 +9,33 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.43.1] — 2026-08-07
+
+**Raison de l'update** : la règle « appliquer d'office » était écrite dans le fichier que seul le fork lit — et le fork ne peut pas écrire. Deux lints de suite ont annoncé des corrections sans en appliquer une seule.
+
+### Corrigé
+- **Les corrections d'office passent par le rapport, seul canal vers qui peut
+  écrire.** `doc-lint.md` s'exécute en fork : tout son contenu s'adresse au
+  sub-agent, qui est en lecture seule stricte. L'agent principal, lui, ne lit
+  jamais ce fichier. Une règle écrite là et adressée à lui n'atteignait donc
+  personne — deux rapports ont annoncé « ce qui s'applique d'office, sans rien
+  demander », et rien n'a été appliqué ni la première ni la seconde fois.
+  Les corrections mécaniques doivent désormais figurer dans le rapport comme
+  une **liste d'actions exécutables** — un fichier, un geste précis —, sous un
+  titre qui dit qu'elles s'appliquent *maintenant*. « Corrections appliquées »,
+  jamais « à appliquer » : c'est cette formulation que l'agent principal lit,
+  et elle décide de ce qu'il fait. Elles n'entrent jamais dans la question
+  finale, qui rendrait conditionnel ce qui ne demande aucune autorisation.
+- **Une entrée sans heure ne bloque plus la remise en ordre.** La condition
+  exigeait un horodatage complet partout ; en pratique, la ligne système d'un
+  export porte une date sans heure et faisait renoncer à trier toute la note.
+  Le tri est **stable** et une entrée sans heure vaut « début de son jour » :
+  elle garde son rang relatif. Seule une entrée **sans date** bloque encore —
+  là, plus rien ne dit où elle va.
+- **Le balayage couvre toutes les notes de `sources/`**, et non les seules
+  déjà signalées : un rapport en a listé sept et manqué la huitième, qu'aucun
+  autre contrôle n'aurait rattrapée.
+
 ## [1.43.0] — 2026-08-06
 
 **Raison de l'update** : le lint signalait les séries à l'envers sans les réparer, au motif qu'écrire dans une couche immuable se soumet — un raisonnement faux, puisqu'un tri ne touche à aucune ligne.

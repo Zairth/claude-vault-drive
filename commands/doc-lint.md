@@ -188,9 +188,17 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
    que l'ordre se déduit des **horodatages**, jamais de la séquence du fichier —
    remettre d'aplomb, c'est appliquer la standardisation qui aurait dû l'être,
    pas la défaire.
+   **Balayer les notes de `sources/` une par une**, sans se limiter à celles
+   qu'un contrôle précédent avait signalées : une série omise ici ne sera
+   rattrapée par rien. Constaté — un rapport en a listé sept et manqué la
+   huitième.
    Les quatre conditions, à vérifier avant d'écrire :
-   1. **chaque entrée porte un horodatage complet** — sans quoi il n'y a rien
-      sur quoi trier, et l'ordre relatif des lignes nues serait perdu ;
+   1. **chaque entrée porte un horodatage exploitable.** Le tri est **stable**
+      et une entrée sans heure vaut « début de son jour » : elle garde donc son
+      rang relatif au lieu de bloquer la réparation. Ce cas est fréquent et
+      bénin — la ligne système d'un export, datée sans heure, ouvre le premier
+      jour. Ce qui bloque vraiment, c'est une entrée **sans date du tout** :
+      là, plus rien ne dit où elle va ;
    2. **la pièce d'origine est dans `archives/`** — c'est elle qui rend le
       geste rattrapable, l'ordre du fichier restant lisible là-bas ;
    3. **le multiensemble des lignes est identique avant et après** — même
@@ -430,13 +438,23 @@ deviner. La question, parce qu'elle s'adresse à l'utilisateur.
      d'un callout : **appliquer sans demander**. Rien de tout cela ne détruit
      quoi que ce soit, et attendre un accord ne fait que reporter la même
      correction.
-     **Les appliquer AVANT de présenter quoi que ce soit**, et les rapporter au
-     passé — « 3 wikilinks déliés dans le journal », jamais « à délier ». Une
-     liste d'intentions placée au-dessus d'une question finale devient
-     conditionnelle : tout attend la réponse, y compris ce qui ne demandait
-     aucune autorisation. Constaté — un rapport annonçant « ce qui s'applique
-     d'office, sans rien demander » suivi d'une question, et rien d'appliqué.
-     La question ne doit porter que sur ce qui reste ;
+     **Ce paragraphe s'adresse à qui écrit — et ce n'est pas toi.** Tu es en
+     lecture seule stricte ; l'agent principal, lui, ne lit PAS ce fichier. Le
+     seul canal entre vous est ton rapport. Une règle écrite ici et adressée à
+     lui n'atteint donc personne : constaté deux fois, un rapport annonçant
+     « ce qui s'applique d'office, sans rien demander » suivi d'une question,
+     et **rien d'appliqué** ni la première ni la seconde fois.
+     Conséquence pratique, et c'est une contrainte de forme sur ton rapport :
+     ce que tu veux voir appliqué doit y figurer comme une **liste d'actions
+     exécutables** — un fichier, un geste précis, de quoi agir sans te
+     redemander —, sous un titre qui dit qu'elles s'appliquent **maintenant**
+     et non qu'elles sont proposées. « Corrections appliquées » et non « à
+     appliquer » : c'est ce que l'agent principal lira, et la formulation
+     décide de ce qu'il fait.
+     **Et elles ne doivent jamais entrer dans la question finale.** Une liste
+     placée au-dessus d'une question devient conditionnelle : tout attend la
+     réponse, y compris ce qui ne demandait aucune autorisation. C'est
+     exactement ce qui s'est produit. La question ne porte que sur ce qui reste ;
      S'y ajoutent les suppressions **sans perte possible** : note vide (0 octet
      ou frontmatter seul), fichier de conflit Drive sur un dérivé jetable,
      reliquat d'index d'une version antérieure. Il n'y a rien à sauver dans un
