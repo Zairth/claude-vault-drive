@@ -79,6 +79,28 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
     colonnes et tableaux sortent cellule après cellule. C'est la
     standardisation qui leur rend leur structure, comme pour toute autre
     source.
+  - **PDF — relever les signatures, quelle que soit la branche prise
+    ci-dessus.** Une signature électronique ne s'écrit pas dans le texte du
+    document : elle vit dans une structure du fichier que ni l'extraction de
+    texte ni l'OCR ne rencontrent jamais. Une pièce signée n'affiche donc
+    souvent que des noms dactylographiés sous des mentions de fonction — et se
+    lit, pour qui n'a que son texte, exactement comme une pièce non signée.
+    **Ne jamais déduire du texte qu'une pièce n'est pas signée** : c'est une
+    affirmation sur ce qui fait foi, et le texte n'en sait rien.
+    `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/pdf-signatures.py" <fichier>`
+    — **0** signature(s) apposée(s), relevé sur stdout ; **1** aucun champ de
+    signature ; **2** champ(s) ouverts mais vides, pièce préparée et non
+    signée ; **3** fichier illisible. À lancer sur **tout** PDF, y compris
+    celui qui part à l'OCR : un scan signé est un cas ordinaire, et c'est
+    justement celui où le texte ne dira rien.
+    Ce qu'on en écrit se limite à ce qu'il établit : la **présence** d'une
+    signature, ce qu'elle déclare, sa date, et si elle **couvre tout le
+    fichier**. Il ne valide aucune chaîne de certificats — écrire « signée »
+    sans cette réserve transforme un constat de structure en garantie
+    juridique. Un `ATTENTION : aucune signature ne couvre la fin du fichier`
+    se reporte tel quel : le document a été modifié après avoir été signé.
+    Un champ resté vide se distingue d'une partie à qui aucun emplacement n'a
+    été ouvert — ce n'est pas le même fait.
   - **Scan, photo de document, PDF sans couche de texte** → là seulement,
     conversion markdown par OCR (outil MCP
     `mcp__plugin_agentic-toolbox_toolbox__ocr_convert` si disponible, sinon la

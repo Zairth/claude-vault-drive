@@ -229,11 +229,16 @@ s'en sert dans le plugin, et ce qui se passe s'il manque :
 - **lecture des PDF à couche de texte** (`scripts/pdf-text.py`) → sans
   `python3`, un PDF produit par un logiciel repart vers l'OCR, qui le lira
   moins bien et à un coût d'API. Rien ne casse, la qualité baisse ;
+- **relevé des signatures d'un PDF** (`scripts/pdf-signatures.py`) → sans
+  `python3`, une pièce signée est ingérée sans que sa signature soit vue. Ce
+  n'est pas une perte de qualité mais un **silence sur ce qui fait foi** : le
+  texte d'un document signé ne se distingue en rien de celui d'un document qui
+  ne l'est pas ;
 - **recomptage des entrées d'une série datée** (`scripts/verify-entries.py`)
   → sans `python3`, l'ingestion d'un relevé ou d'un export perd sa
   vérification d'intégralité : elle reste correcte, elle n'est plus prouvée.
 
-Bibliothèque standard seule dans les trois cas : aucun `pip install`, aucun
+Bibliothèque standard seule dans tous ces cas : aucun `pip install`, aucun
 accès réseau. (Le moteur sémantique, lui, a ses propres prérequis Python —
 section 5.)
 

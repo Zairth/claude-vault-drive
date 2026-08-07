@@ -98,6 +98,14 @@ proposée :
      telles. Sortie 1 → **ne pas relancer l'OCR**, le dire, et déclarer la
      vérification **partielle** en précisant que l'original n'a pas pu être lu
      autrement que par le moteur qui a produit la version archivée.
+     Quand la contradiction porte sur la **signature ou la date** de la pièce,
+     ni le texte ni l'OCR ne peuvent la trancher : ces faits ne sont pas dans
+     le texte. Passer par
+     `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/pdf-signatures.py" <le PDF>`,
+     qui les lit dans la structure du fichier. Une note affirmant qu'une pièce
+     n'est pas signée sans que ce relevé ait tourné énonce une **conclusion
+     tirée d'un silence** — et c'est exactement le type d'erreur que cette
+     commande existe pour trouver.
    - **Bureautique binaire** (`.docx`, `.xlsx`, `.pptx`…) → convertir avec ce
      qui est présent (`libreoffice --headless --convert-to txt|csv`,
      `pandoc`), lire la conversion. Aucun convertisseur → vérification

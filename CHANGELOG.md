@@ -9,6 +9,45 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.46.0] — 2026-08-07
+
+**Raison de l'update** : une signature électronique ne s'écrit pas dans le texte d'un PDF. Lue par extraction ou par OCR, une pièce signée est indiscernable d'une pièce qui ne l'est pas — et le vault concluait « non signée » à partir d'un silence.
+
+### Ajouté
+- **`scripts/pdf-signatures.py`** — relevé des signatures électroniques d'un
+  PDF, bibliothèque standard seule, aucun réseau. Rend pour chaque signature
+  le signataire déclaré, la date, le lieu, le format, et vérifie si le
+  `/ByteRange` **couvre tout le fichier**. Codes de sortie : `0` signatures
+  apposées, `1` aucun champ de signature, `2` champs ouverts mais vides —
+  pièce préparée, non signée —, `3` fichier illisible.
+  Le cas qui motive l'ajout est ordinaire et il est grave : le texte d'un
+  document signé n'affiche souvent que des noms dactylographiés sous des
+  mentions de fonction. Ni l'extraction ni l'OCR ne peuvent voir autre chose,
+  parce que la signature n'est pas dans le texte — elle est dans une structure
+  du fichier. Une note qui affirme « non signée » sur cette base n'énonce pas
+  un constat mais une **conclusion tirée d'un silence**, et elle porte sur ce
+  qui fait foi.
+- **Détection des ajouts postérieurs à la signature.** Une signature ne
+  garantit que les octets que son `/ByteRange` désigne. Quand aucune ne
+  couvre la fin du fichier, le document a été modifié après avoir été signé,
+  et le relevé le dit avec le nombre d'octets concernés. Le cas des signatures
+  successives, où seules les dernières couvrent l'ensemble, est traité comme
+  normal et ne déclenche rien.
+
+### Modifié
+- **`/doc-ingest`** — le relevé se lance sur **tout** PDF, y compris celui qui
+  part à l'OCR : un scan signé est un cas ordinaire, et c'est justement celui
+  où le texte ne dira rien. Ne jamais déduire du texte qu'une pièce n'est pas
+  signée.
+- **`/doc-repair`** — quand la contradiction porte sur la signature ou la date
+  d'une pièce, ni le texte ni l'OCR ne peuvent la trancher : le relevé est la
+  seule voie.
+- **Réserve tenue partout** : le relevé établit la **présence** d'une
+  signature, jamais sa validité. Aucune chaîne de certificats n'est vérifiée,
+  et écrire « signée » sans cette précision transforme un constat de structure
+  en garantie juridique. Une signature présente et invalide est précisément ce
+  qu'un contrôle sérieux doit pouvoir dire.
+
 ## [1.45.0] — 2026-08-07
 
 **Raison de l'update** : l'extracteur de couche de texte ne reconnaissait qu'une seule des façons dont un PDF écrit ses caractères, et déclarait « scan » des documents parfaitement lisibles. Mesuré sur un lot de quinze PDF : treize partaient à l'OCR pour rien.

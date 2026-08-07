@@ -121,6 +121,7 @@ claude-vault-drive/
 │   ├── vault-lexical.sh     # recherche par mots-clés BM25 — zéro appel API, aucun index requis
 │   ├── vault-ocr.sh         # conversion OCR — scan, photo : le seul cas où l'OCR est le bon outil
 │   ├── pdf-text.py          # couche de texte d'un PDF, sans dépendance ni réseau (essayée avant l'OCR)
+│   ├── pdf-signatures.py    # signatures électroniques d'un PDF — ni le texte ni l'OCR ne les voient
 │   ├── verify-entries.py    # recompte les entrées datées d'une source dans la note produite
 │   ├── hook-session-start.sh    # hook : INDEX.md injecté à l'ouverture de session
 │   ├── hook-prompt-context.sh   # hook : pistes par mots-clés sous chaque prompt (gratuit)
