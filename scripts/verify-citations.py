@@ -2,7 +2,7 @@
 """Vérifie que chaque citation d'une note pointe là où elle dit pointer.
 
 Usage : python3 verify-citations.py <vault> [<note.md> …]
-Sans note nommée, toutes celles de `wiki/enseignements/` sont contrôlées.
+Sans note nommée : `wiki/enseignements/` et `references/`.
 
 Codes de sortie :
   0 — toutes les citations localisables ont été retrouvées à leur repère
@@ -65,9 +65,18 @@ _QUOTE = re.compile(r"^>\s*[«\"](?P<texte>.+?)[»\"]\s*$", re.M)
 # ligne et absorberait le premier pointeur dans le champ auteur.
 _BLOCK = re.compile(r"^>[^\S\n]*\[!source\][-+]?[^\S\n]*(?P<auteur>.*)$(?P<corps>(?:\n>.*)*)",
                     re.M | re.I)
-_POINTER = re.compile(r"^>\s*(?P<original>original\s*:?\s*)?`(?P<chemin>[^`]+)`"
-                      r"\s*(?P<repere>Ligne\s*\d+|p\.\s*\d+|#\S+)?", re.M | re.I)
-_LINES = re.compile(r"^Ligne\s*(\d+)", re.I)
+_POINTER = re.compile(r"(?P<original>original\s*:?\s*)?`(?P<chemin>[^`]+)`"
+                      r"\s*(?P<repere>(?:Ligne|l\.|L)\s*\d+|p\.\s*\d+|#\S+)?", re.I)
+# Une ligne d'attribution en clair : au moins un chemin entre accents graves.
+# La compilation de `references/` n'est pas vectorisée, donc la commande lui
+# prescrit l'attribution en clair plutôt qu'un bloc `[!source]` — il n'y a rien
+# à soustraire à un index qui n'existe pas.
+_PLAIN = re.compile(r"^[^>\n]*`[^`]+`[^\n]*$", re.M)
+# Tolérant à la LECTURE — « Ligne 292 », « l. 292 », « L292 » désignent la même
+# chose et des fichiers existants portent chacune des formes. La commande, elle,
+# n'en prescrit qu'une : être laxiste au contrôle et strict à l'écriture évite de
+# casser l'existant sans laisser la forme dériver.
+_LINES = re.compile(r"^(?:Ligne|l\.|L)\s*(\d+)", re.I)
 
 
 def _flatten(text: str) -> str:
@@ -158,6 +167,12 @@ def _derived(target: str) -> str:
         return "une note du vault"
     if ".ocr." in low:
         return "une transcription OCR"
+    if ".transcription." in low:
+        # Le cas le plus trompeur : une série de captures n'a AUCUNE autre
+        # lecture que celle qu'un agent en a faite à l'œil. Sa transcription
+        # n'a donc pas de seconde voix qui la contredise — c'est précisément
+        # pour ça qu'elle ne peut pas tenir lieu d'original.
+        return "une transcription de captures"
     if ".standardise" in low:
         return "une version standardisée"
     return ""
@@ -205,35 +220,114 @@ class Citation:
         self.standardised, self.original = standardised, original
 
 
+def _quote_above(lines: list[str], index: int) -> str:
+    """La citation qui précède la ligne d'attribution : le bloc `>` juste au-dessus.
+
+    On s'ancre sur l'attribution et non sur la citation, parce que l'attribution
+    a une forme reconnaissable — un chemin entre accents graves — alors que la
+    citation en a deux : entre guillemets dans `enseignements/`, en simple
+    citation markdown dans une compilation de `references/`.
+    """
+    collected, cursor = [], index - 1
+    while cursor >= 0 and not lines[cursor].strip():
+        cursor -= 1
+    while cursor >= 0 and lines[cursor].startswith(">"):
+        body = lines[cursor][1:].strip()
+        if body.startswith("[!"):          # le bloc d'attribution lui-même
+            break
+        collected.append(body)
+        cursor -= 1
+    text = " ".join(reversed(collected)).strip()
+    stripped = text.strip("«»\"' ")
+    return stripped or text
+
+
+def _author_above(lines: list[str], index: int) -> str:
+    """L'auteur annoncé au-dessus d'une citation, dans une compilation.
+
+    Une compilation titre chaque entrée — `**<date> — <auteur>** — <note>` —
+    au lieu de porter l'auteur dans son attribution. Chercher l'auteur au seul
+    endroit prévu par l'autre forme le déclarerait manquant partout.
+    """
+    cursor = index - 1
+    while cursor >= 0 and (not lines[cursor].strip() or lines[cursor].startswith(">")):
+        cursor -= 1
+    if cursor < 0:
+        return ""
+    header = lines[cursor].strip()
+    if not header.startswith(("**", "#", "-")):
+        return ""
+    parts = re.split(r"\s+[—–-]\s+", re.sub(r"[*#`]", "", header))
+    return parts[1].strip() if len(parts) > 1 else ""
+
+
+def _pointers(text: str) -> tuple[tuple[str, str] | None, tuple[str, str] | None]:
+    """(pointeur de lecture, pointeur d'original) lus dans un texte d'attribution."""
+    reading = original = None
+    for found in _POINTER.finditer(text):
+        entry = (found.group("chemin").strip(), (found.group("repere") or "").strip())
+        if found.group("original"):
+            original = entry
+        elif reading is None:
+            reading = entry
+    return reading, original
+
+
+class Citation:
+    """Une citation, son auteur, et les deux pointeurs de son attribution."""
+
+    def __init__(self, line: int, text: str, author: str,
+                 standardised: tuple[str, str] | None, original: tuple[str, str] | None):
+        self.line, self.text, self.author = line, text, author
+        self.standardised, self.original = standardised, original
+
+
 def _citations(note: Path) -> list[Citation]:
-    """Les citations d'une note, chacune avec le bloc `[!source]` qui la suit."""
+    """Les citations d'une note, quelle que soit la forme de leur attribution.
+
+    Deux formes coexistent, et c'est voulu : dans `enseignements/`, un bloc
+    `> [!source]` que l'indexation soustrait au vecteur ; dans une compilation
+    de `references/`, une ligne en clair — ce fichier n'étant pas vectorisé, il
+    n'y a rien à soustraire.
+    """
     body = note.read_text(encoding="utf-8", errors="replace")
-    found = []
-    for quote in _QUOTE.finditer(body):
-        after = body[quote.end():]
-        # Le bloc suit la citation, séparé d'elle par une ligne vide — sans quoi
-        # les deux citations markdown fusionneraient en une seule.
-        block = _BLOCK.match(after.lstrip("\n"))
-        standardised = original = None
-        author = ""
-        if block:
-            author = block.group("auteur").strip(" ·—-,")
-            for pointer in _POINTER.finditer(block.group("corps")):
-                entry = (pointer.group("chemin").strip(),
-                         (pointer.group("repere") or "").strip())
-                if pointer.group("original"):
-                    original = entry
-                elif standardised is None:
-                    standardised = entry
-        found.append(Citation(body[:quote.start()].count("\n") + 1,
-                              quote.group("texte").strip(), author, standardised, original))
-    return found
+    lines = body.splitlines()
+    found, consumed = [], set()
+
+    for block in _BLOCK.finditer(body):
+        index = body[:block.start()].count("\n")
+        consumed.update(range(index, index + block.group(0).count("\n") + 1))
+        reading, original = _pointers(block.group("corps"))
+        found.append(Citation(index + 1, _quote_above(lines, index),
+                              block.group("auteur").strip(" ·—-,"), reading, original))
+
+    for number, raw in enumerate(lines):
+        if number in consumed or not _PLAIN.match(raw) or "`" not in raw:
+            continue
+        reading, original = _pointers(raw)
+        if reading is None:
+            continue
+        quote = _quote_above(lines, number)
+        if not quote:
+            continue
+        found.append(Citation(number + 1, quote,
+                              _author_above(lines, number), reading, original))
+
+    return sorted(found, key=lambda c: c.line)
 
 
 def _locate(vault: Path, target: str, locator: str, quote: str,
             label: str, role: str) -> tuple[str, bool]:
     """(défaut ou '', citation retrouvée). `role` nomme le pointeur dans le message."""
     piece = (vault / target).resolve()
+    if piece.is_dir():
+        # Une série de captures est un original légitime, mais elle n'a ni
+        # lignes ni pages : le dossier ne désigne aucun endroit. Ce n'est pas
+        # une absence, c'est un repère trop grossier — et le dire ainsi évite
+        # de le confondre avec une pièce manquante.
+        return (f"{label} — {role} : « {target} » est une série de {len(list(piece.iterdir()))} "
+                "captures, pas un fichier. Citer la capture précise et son rang dans la "
+                "série ; le contrôle mécanique s'arrête là, la vérification est visuelle."), False
     if not piece.is_file():
         return f"{label} — {role} introuvable : {target}", False
 
@@ -350,7 +444,12 @@ def main() -> int:
     if len(sys.argv) > 2:
         notes = [Path(a) for a in sys.argv[2:]]
     else:
+        # `enseignements/` porte les citations d'une pièce ; `references/` porte
+        # les compilations de `--all-references`, qui sont précisément le
+        # livrable destiné à être opposé — donc celui qu'il faut le plus
+        # vérifier. Ne balayer que le premier laissait le second sans contrôle.
         notes = sorted((vault / "wiki" / "enseignements").glob("*.md"))
+        notes += sorted((vault / "references").glob("*.md"))
     notes = [n for n in notes if n.is_file()]
     if not notes:
         print("Aucune note d'enseignements à contrôler.", file=sys.stderr)

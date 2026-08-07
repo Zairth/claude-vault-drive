@@ -9,6 +9,59 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.48.0] — 2026-08-07
+
+**Raison de l'update** : le livrable le plus important de `--all-references` — la compilation qui porte les pièces — était le seul qu'aucun contrôle ne vérifiait.
+
+### Ajouté
+- **`verify-citations.py` balaie aussi `references/`.** Il ne connaissait que
+  `wiki/enseignements/`. Or une compilation est précisément le document destiné
+  à être opposé : c'est celui dont les repères doivent le plus être
+  re-vérifiables. Lancé sur une compilation réelle, il ne rendait rien —
+  « aucune citation trouvée » — et ses 53 pointeurs n'avaient été contrôlés par
+  personne.
+- **Deux formes d'attribution reconnues.** Dans `enseignements/`, le bloc
+  `> [!source]` que l'indexation soustrait au vecteur ; dans une compilation,
+  une ligne en clair — ce fichier n'étant pas vectorisé, il n'y a rien à
+  soustraire. Le contrôle s'ancre désormais sur l'**attribution** et non sur la
+  citation : l'attribution a une forme reconnaissable — un chemin entre accents
+  graves —, la citation en a deux.
+  L'auteur se lit aussi dans le **titre d'entrée** d'une compilation
+  (`**<date> — <auteur>**`) : le chercher au seul endroit prévu par l'autre
+  forme le déclarait manquant sur toutes les entrées.
+- **Repère toléré à la lecture, prescrit à l'écriture.** `Ligne 292`, `l. 292`
+  et `L292` désignent la même chose et des fichiers existants portent chacune
+  des formes ; la commande n'en prescrit qu'une. Laxiste au contrôle, strict à
+  l'écriture : c'est ce qui évite de casser l'existant sans laisser la forme
+  dériver.
+
+- **Trois natures d'original, et une seule est adressable par ligne.** Un
+  export texte se cite à la ligne ; un PDF se cite sans ligne ; une **série de
+  captures** ne se cite ni par l'une ni par l'autre. Le contrôle distinguait
+  mal ce dernier cas d'une pièce manquante : un dossier de captures est un
+  original légitime, mais le dossier ne désigne aucun endroit. Il le dit
+  maintenant pour ce que c'est — série de N captures, citer la capture précise
+  et son rang, la vérification s'achève à l'œil.
+- **Une transcription n'est jamais un original**, `.transcription.md` compris.
+  Le contrôle ne refusait que `.ocr.` et les versions standardisées. Le cas des
+  captures est le plus trompeur : leur transcription n'a aucune autre lecture
+  qui la contredise, puisqu'un agent l'a produite à l'œil — c'est exactement ce
+  qui l'empêche de tenir lieu de pièce.
+
+- **Dire qu'une partie d'`archives/` est invisible depuis Obsidian.** Son
+  explorateur n'affiche que les formats qu'il sait rendre : un export brut en
+  `.json` ou en `.txt` n'apparaît pas, bien qu'il soit là et intact — et ce
+  sont souvent les pièces qui font le plus foi. Constaté en usage : on conclut
+  de l'absence à l'écran que la pièce manque. Le template le dit désormais, et
+  renvoie à l'explorateur du système pour ouvrir un original de ce type.
+
+### Modifié
+- **`/doc-query --all-references`** — la forme de l'attribution d'une
+  compilation est désormais **écrite dans la commande**, au caractère près.
+  Elle ne l'était pas : l'agent l'inventait, et il écrivait `l. 292` là où le
+  vault tient `Ligne 292`. Une abréviation de développeur sur une pièce
+  destinée à être lue par un tiers lui demande de deviner.
+
 ## [1.47.1] — 2026-08-07
 
 **Raison de l'update** : la documentation écrivait les commandes en forme courte (`/doc-query`), qui échoue avec `Unknown command`. Un utilisateur suivant le README à la lettre ne pouvait rien lancer.

@@ -144,7 +144,34 @@ ponctuation coupante** (`grep -n` sur une dizaine de mots consécutifs), ou
 défaire les échappements avant de comparer. Ne jamais conclure « absente de la
 pièce » sans avoir essayé ainsi.
 Ce rapport n'est pas une note du vault et n'est pas vectorisé : l'attribution
-s'y écrit en clair, sans bloc `[!source]`.
+s'y écrit **en clair**, sans bloc `[!source]` — il n'y a rien à soustraire à un
+index qui n'existe pas. La forme, à respecter au caractère près pour que le
+contrôle mécanique la lise :
+
+```
+**<date> — <auteur>** — *<qualification facultative>*
+> <texte de l'entrée, verbatim>
+
+`wiki/sources/<slug>.md` Ligne <n> · original `archives/<pièce brute>` Ligne <n>
+```
+
+**`Ligne <n>`, pas `l. <n>` ni `L<n>`.** Ce n'est pas une coquetterie : le vault
+tient une seule forme, et une abréviation de développeur sur une pièce destinée
+à être lue par un tiers lui demande de deviner. Sur un PDF, l'original se cite
+sans ligne — il n'en a pas.
+**Une série de captures se cite par sa capture**, jamais par son dossier :
+`archives/<serie>/<fichier>.png`, avec le rang dans la série. Un dossier ne
+désigne aucun endroit, et sur une série de cinquante images c'est un repère qui
+ne fait pas gagner une minute à qui doit retrouver le passage.
+**Et une transcription n'est jamais l'original** — ni `.ocr.md`, ni
+`.transcription.md`, ni la note de `wiki/sources/`. Le cas des captures est le
+plus trompeur : leur transcription n'a **aucune autre lecture** qui la
+contredise, puisqu'un agent l'a produite à l'œil. C'est exactement pour ça
+qu'elle ne peut pas tenir lieu de pièce.
+**Contrôler après écriture**, c'est mécanique et c'est le seul garde-fou :
+`python3 "${CLAUDE_PLUGIN_ROOT}/scripts/verify-citations.py" "$VAULT"`
+— il balaie `wiki/enseignements/` **et** `references/`, rouvre chaque pièce, et
+distingue un repère faux d'une citation recomposée d'une citation absente.
 Puis, obligatoirement, **ce qui n'a pas été couvert** : fichiers non lus, dossiers hors périmètre, `inbox/` non ingéré.
 Une couverture partielle se dit ; elle ne se devine pas.
 Dans ce mode, le rapport **recopie** donc les entrées, contrairement au mode

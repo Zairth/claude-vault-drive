@@ -97,6 +97,14 @@ Deux invariants d'une série, qu'aucun compteur ne rattrape :
   Fuseau indéterminable → l'écrire tel quel (`heure locale, fuseau non porté
   par la pièce`) et poser un `> [!warning]` dans la note d'enseignements.
 
+> **Une partie d'`archives/` est invisible depuis Obsidian, et c'est normal.**
+> L'explorateur n'affiche que les formats qu'Obsidian sait rendre — markdown,
+> images, PDF, canvas, audio, vidéo. Un export brut en `.json` ou en `.txt`
+> n'apparaît donc pas, bien qu'il soit là et intact. Or ce sont souvent les
+> pièces qui font le plus foi. Pour ouvrir un original de ce type, passer par
+> l'explorateur de fichiers du système, jamais par Obsidian — et ne jamais
+> conclure d'une absence à l'écran que la pièce manque.
+
 3. `archives/<nom d'origine>` — la **pièce elle-même**, telle qu'elle est
    arrivée. Jamais indexée, jamais modifiée. C'est ce qui fait foi quand le
    texte standardisé est mis en doute.
