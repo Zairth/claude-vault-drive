@@ -9,6 +9,30 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.43.0] — 2026-08-06
+
+**Raison de l'update** : le lint signalait les séries à l'envers sans les réparer, au motif qu'écrire dans une couche immuable se soumet — un raisonnement faux, puisqu'un tri ne touche à aucune ligne.
+
+### Modifié
+- **`/doc-lint` remet les séries datées dans l'ordre, d'office.** La règle
+  précédente les comptait et les soumettait : « réordonner réécrit une couche
+  immuable ». C'était mal raisonné. L'immuabilité protège **ce que la pièce
+  dit** ; une permutation ne touche à aucune ligne, et la règle d'ingestion
+  pose depuis la 1.41.0 que l'ordre se déduit des **horodatages**, jamais de la
+  séquence du fichier. Trier n'est donc pas s'écarter de la pièce, c'est
+  appliquer la standardisation qui aurait dû l'être.
+  Quatre conditions, vérifiables avant d'écrire, et qui renvoient à la
+  soumission si l'une manque : chaque entrée porte un horodatage complet ; la
+  pièce d'origine est dans `archives/`, ce qui rend le geste rattrapable ; le
+  **multiensemble des lignes est identique** avant et après, vérifié après
+  écriture et non affirmé ; le dossier est réindexé, le découpage suivant
+  l'ordre du fichier.
+  Trois formes se rencontrent et le tri les règle toutes : série entièrement
+  retournée, **titres de jour retournés avec entrées ordonnées à l'intérieur**
+  — la plus fréquente sur un journal de versions, une rupture par changement
+  de jour —, et ruptures éparses. Mesuré sur un vault réel : 7 séries
+  fautives, dont un relevé de 332 entrées à 121 titres retournés.
+
 ## [1.42.3] — 2026-08-06
 
 **Raison de l'update** : initialiser depuis le dossier du vault lui-même envoie la config locale — qui n'est faite que de chemins de la machine — sur le dossier synchronisé, sans que rien ne le dise.

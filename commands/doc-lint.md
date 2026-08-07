@@ -181,8 +181,31 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
    horodatés à l'ouverture du fichier par exemple.
    `verify-entries.py` fait le même contrôle à l'ingestion ; celui-ci rattrape
    les notes écrites avant, qui ne repasseront jamais par là.
-   **Ne pas corriger d'office** : réordonner réécrit une couche immuable. Le
-   compter et le soumettre, comme toute édition de cette couche.
+
+   **Réparer d'office, sous quatre conditions vérifiables.** Trier n'est pas
+   s'écarter de la pièce : l'immuabilité protège **ce que la pièce dit**, et
+   une permutation ne touche à aucune ligne. La règle d'ingestion dit d'ailleurs
+   que l'ordre se déduit des **horodatages**, jamais de la séquence du fichier —
+   remettre d'aplomb, c'est appliquer la standardisation qui aurait dû l'être,
+   pas la défaire.
+   Les quatre conditions, à vérifier avant d'écrire :
+   1. **chaque entrée porte un horodatage complet** — sans quoi il n'y a rien
+      sur quoi trier, et l'ordre relatif des lignes nues serait perdu ;
+   2. **la pièce d'origine est dans `archives/`** — c'est elle qui rend le
+      geste rattrapable, l'ordre du fichier restant lisible là-bas ;
+   3. **le multiensemble des lignes est identique avant et après** — même
+      nombre, mêmes lignes, seul le rang change. Le vérifier après écriture,
+      pas seulement l'affirmer ;
+   4. **réindexer le dossier** ensuite : le découpage suit l'ordre du fichier,
+      les vecteurs sont à refaire.
+   Une condition manque → ne pas écrire, soumettre.
+   Trois formes se rencontrent, et le tri les règle toutes de la même façon :
+   série entièrement retournée, **titres de jour retournés avec des entrées
+   ordonnées à l'intérieur** (la plus fréquente sur un journal de versions —
+   une rupture par changement de jour), et ruptures éparses. Replacer chaque
+   entrée sous le titre de **sa propre date**, et ordonner les titres.
+   Rapporter le geste au passé, avec les deux nombres qui le prouvent :
+   « <n> entrées remises d'aplomb, multiensemble identique vérifié ».
 9. **Cohérence vectorielle** — il y a **un index par dossier de `wiki/`**
    (`concepts/`, `entites/`, `syntheses/`, `enseignements/`, `sources/`), pas
    un index global.
@@ -424,6 +447,12 @@ deviner. La question, parce qu'elle s'adresse à l'utilisateur.
      Le vault n'est pas versionné : ces trois-là ne se défont pas. Une seule fois, avec ton
      verdict et ce qui le motive, et la question porte sur l'**autorisation**,
      jamais sur la réponse.
+     **Une exception, et elle est raisonnée** : remettre une série datée dans
+     l'ordre. C'est une écriture en couche immuable, mais **aucune ligne n'est
+     touchée** — c'est une permutation, dont l'innocuité se vérifie (même
+     multiensemble de lignes) et dont l'original reste lisible dans
+     `archives/`. Ce n'est pas « éditer ce que la pièce dit », c'est appliquer
+     la standardisation qui aurait dû l'être. Conditions au contrôle 8.
 
    **Ne jamais demander à l'utilisateur une information qu'il n'a pas.** Ce qui arrive dans
    `inbox/` y est déposé pour que le vault s'en serve, souvent sans que
