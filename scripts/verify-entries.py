@@ -353,11 +353,11 @@ def main(argv):
     note_anchors, note_forms, disordered = [], set(), []
     for path in notes:
         found, form = anchors_of(path)
-        # Une série se lit du plus ancien au plus récent. Rien dans le compte
-        # ne trahit une note écrite à l'envers : le total est juste, chaque
-        # entrée est là, et pourtant la conversation se lit à rebours. C'est
-        # le seul défaut d'une série datée que le recomptage peut voir sans
-        # rien coûter, puisqu'il a déjà toutes les ancres en main.
+        # Ordre non chronologique : un CONSTAT, jamais un verdict. La note
+        # doit suivre l'ordre de sa pièce, et une pièce peut être
+        # antichronologique par nature — un journal de versions, un export qui
+        # ouvre sur son avis de chiffrement. Trancher suppose d'ouvrir
+        # l'archive, ce que ce script ne fait pas. Il signale, il n'accuse pas.
         if found != sorted(found):
             inversions = sum(1 for a, b in zip(found, found[1:]) if b < a)
             direction = "antichronologique" if found == sorted(found, reverse=True) \
@@ -376,8 +376,9 @@ def main(argv):
               "entrée) : comptage déduit, à confirmer avant de conclure")
 
     for name, direction in disordered:
-        print(f"⚠ {name} : entrées dans le désordre — {direction}. Une série se "
-              "lit du plus ancien au plus récent ; le compte ne le dit pas.")
+        print(f"· {name} : entrées non chronologiques — {direction}. "
+              "Constat, pas défaut : la note doit suivre l'ordre de SA PIÈCE, "
+              "qui peut être antichronologique. À comparer à l'archive.")
 
     source_count = Counter(source_anchors)
     note_count = Counter(note_anchors)

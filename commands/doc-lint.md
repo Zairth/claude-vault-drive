@@ -182,12 +182,41 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
    `verify-entries.py` fait le même contrôle à l'ingestion ; celui-ci rattrape
    les notes écrites avant, qui ne repasseront jamais par là.
 
-   **Réparer d'office, sous quatre conditions vérifiables.** Trier n'est pas
-   s'écarter de la pièce : l'immuabilité protège **ce que la pièce dit**, et
-   une permutation ne touche à aucune ligne. La règle d'ingestion dit d'ailleurs
-   que l'ordre se déduit des **horodatages**, jamais de la séquence du fichier —
-   remettre d'aplomb, c'est appliquer la standardisation qui aurait dû l'être,
-   pas la défaire.
+   **Le défaut n'est PAS « la note n'est pas chronologique » — c'est « la note
+   ne suit pas l'ordre de sa pièce ».** La distinction décide de tout, et se
+   tranche en ouvrant l'archive, jamais en regardant la note seule.
+   Une pièce peut être antichronologique **par nature** : un journal de
+   versions descend du plus récent, un export place son avis de chiffrement en
+   tête, une capture d'écran montre un événement système hors rang. Une note
+   qui reproduit fidèlement cet ordre-là **n'a aucun défaut** :
+   `wiki/sources/` est défini comme le texte intégral « fidèle et sans tri »,
+   et la trier l'écarterait du document qui fait foi. Sur une capture, l'ordre
+   affiché est même un **fait observable de la pièce** — l'effacer, c'est
+   effacer une information.
+   La lisibilité chronologique n'est pas le métier de cette couche : c'est
+   celui d'`enseignements/` et des pages vivantes, qui organisent librement.
+   **Comparer donc l'ordre de la note à celui de sa pièce archivée** (la pièce
+   elle-même si elle est lisible, sa transcription fidèle sinon — l'une des
+   deux est toujours dans `archives/`).
+   **Section par section, jamais document contre document.** Une même pièce
+   porte couramment plusieurs listes de sens opposés — un relevé ouvre sur un
+   récapitulatif croissant puis déroule un détail décroissant. Comparer la
+   liste de la note au mauvais tableau conclut à une divergence qui n'existe
+   pas : constaté deux fois de suite sur la même pièce, par deux lecteurs
+   indépendants. Repérer d'abord **de quelle section les entrées de la note
+   sont tirées** — le **nombre d'entrées** le dit sans ambiguïté, 71 contre 71
+   ne se confond pas avec un récapitulatif de 21 lignes — puis comparer à
+   celle-là seulement.
+   Deux issues :
+   - **ordres identiques** → aucun défaut. Le signaler **une fois** comme
+     réserve documentaire (« pièce antichronologique, note conforme ») pour que
+     le prochain lint ne le rejoue pas, et passer ;
+   - **ordres divergents** → défaut de transcription réel : la standardisation
+     a réordonné ce que la pièce ne réordonnait pas. Là, réparer rétablit la
+     fidélité au lieu de l'entamer.
+
+   **Réparer d'office, sous quatre conditions vérifiables** — et seulement dans
+   le second cas.
    **Balayer les notes de `sources/` une par une**, sans se limiter à celles
    qu'un contrôle précédent avait signalées : une série omise ici ne sera
    rattrapée par rien. Constaté — un rapport en a listé sept et manqué la
@@ -207,13 +236,10 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
    4. **réindexer le dossier** ensuite : le découpage suit l'ordre du fichier,
       les vecteurs sont à refaire.
    Une condition manque → ne pas écrire, soumettre.
-   Trois formes se rencontrent, et le tri les règle toutes de la même façon :
-   série entièrement retournée, **titres de jour retournés avec des entrées
-   ordonnées à l'intérieur** (la plus fréquente sur un journal de versions —
-   une rupture par changement de jour), et ruptures éparses. Replacer chaque
-   entrée sous le titre de **sa propre date**, et ordonner les titres.
+   Remettre la note dans **l'ordre de sa pièce**, pas dans l'ordre du calendrier
+   — ce sont deux choses différentes, et c'est le premier qui fait foi.
    Rapporter le geste au passé, avec les deux nombres qui le prouvent :
-   « <n> entrées remises d'aplomb, multiensemble identique vérifié ».
+   « <n> entrées réalignées sur la pièce, multiensemble identique vérifié ».
 9. **Cohérence vectorielle** — il y a **un index par dossier de `wiki/`**
    (`concepts/`, `entites/`, `syntheses/`, `enseignements/`, `sources/`), pas
    un index global.
@@ -370,10 +396,17 @@ fork : ta sortie lui est présentée telle quelle. Il n'y a pas d'agent principa
 qui trierait ce qui le concerne de ce qui ne le concerne pas — **une consigne
 écrite dans ton rapport sera affichée**, quel que soit son titre.
 
-Trois tentatives l'ont établi : interdire l'affichage dans ce fichier (l'agent
-principal ne le lit pas), titrer le bloc « NE PAS AFFICHER » (il a été affiché
-avec son titre), et écrire les consignes sur disque — **impossible, tu es en
-lecture seule stricte et n'as aucun outil d'écriture**.
+Deux tentatives l'ont établi : interdire l'affichage dans ce fichier (l'agent
+principal ne le lit pas), et titrer le bloc « NE PAS AFFICHER » (il a été
+affiché avec son titre).
+Une troisième voie existe pourtant, et il faut la nommer pour qu'on cesse de
+la croire fermée : **tu peux écrire sur disque par `Bash`**. `Edit` et `Write`
+te manquent, pas `cat > fichier`. Ce n'est donc pas une impossibilité
+technique, c'est un choix — et il tient à ceci : **ton rapport est ce que
+l'utilisateur lit**. Le renvoyer vers un fichier lui retirerait la seule chose
+qui lui permette de juger ton travail, pour épargner un contexte que la
+concision épargne déjà. On écrit sur disque quand le **volume** l'exige, jamais
+pour cacher un raisonnement.
 
 La conclusion est simple : **il n'y a pas de consignes à transmettre.** L'agent
 principal n'en a pas besoin — les conventions d'écriture sont dans
@@ -420,6 +453,11 @@ deviner. La question, parce qu'elle s'adresse à l'utilisateur.
      pas long de huit démonstrations d'innocence.
    - **Quelque chose trouvé →** le détail utile à la décision : quoi, où,
      combien, et le verdict. Rien de plus.
+     La concision ne s'applique **jamais** à la liste d'actions finale : elle
+     s'adresse à qui exécute, pas à qui lit, et deux exigences opposées s'y
+     rencontrent. Un constat se résume ; une action se décrit assez pour être
+     faite sans rouvrir le vault. Économiser des lignes là coûte un
+     aller-retour.
    - **Une seule exception, et elle est étroite** : une décision qui, sans
      être consignée, serait **reprise à zéro au prochain lint** — une paire
      suspectée puis délibérément conservée, un `[!warning]` examiné puis non
@@ -446,11 +484,25 @@ deviner. La question, parce qu'elle s'adresse à l'utilisateur.
      et **rien d'appliqué** ni la première ni la seconde fois.
      Conséquence pratique, et c'est une contrainte de forme sur ton rapport :
      ce que tu veux voir appliqué doit y figurer comme une **liste d'actions
-     exécutables** — un fichier, un geste précis, de quoi agir sans te
-     redemander —, sous un titre qui dit qu'elles s'appliquent **maintenant**
-     et non qu'elles sont proposées. « Corrections appliquées » et non « à
-     appliquer » : c'est ce que l'agent principal lira, et la formulation
-     décide de ce qu'il fait.
+     exécutables** — un fichier, une ligne, le remplacement exact, de quoi agir
+     **sans rouvrir le vault**.
+     **N'écris jamais que tu les as appliquées.** Tu n'as rien appliqué et tu ne
+     le peux pas ; l'affirmer serait faux, et le mensonge tiendrait tant que
+     l'agent principal échouerait à agir — l'utilisateur lirait « corrigé » sur
+     ce qui ne l'a pas été. Écris un **impératif adressé à qui exécute**, avec
+     la mention qui lève l'ambiguïté :
+     > **À exécuter maintenant, sans demander d'autorisation** (mécanique et
+     > réversible) :
+     > 1. `LOG/AAAA-MM-JJ.md` ligne 44 — remplacer `[[<nom>]]` par `<nom>`
+     >    (3 liens sur la ligne).
+     C'est la mention « sans demander » qui décide, pas le temps du verbe. « À
+     appliquer » seul se lit comme une proposition et attend ; l'impératif
+     qualifié ne laisse pas le choix.
+     **Cette liste échappe à la règle de concision** : elle est le seul endroit
+     du rapport où le détail sert à agir et non à convaincre. Un rapport court
+     avec une liste d'actions imprécise force à tout rouvrir — on aurait
+     économisé des lignes pour dépenser un aller-retour. Comprimer les sections
+     **sans trouvaille**, jamais les actions.
      **Et elles ne doivent jamais entrer dans la question finale.** Une liste
      placée au-dessus d'une question devient conditionnelle : tout attend la
      réponse, y compris ce qui ne demandait aucune autorisation. C'est

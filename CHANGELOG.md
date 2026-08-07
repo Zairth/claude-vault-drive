@@ -9,6 +9,74 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.44.0] — 2026-08-07
+
+**Raison de l'update** : la 1.43.0 faisait trier les séries datées vers l'ordre chronologique. C'était une erreur : `wiki/sources/` doit suivre l'ordre de SA PIÈCE, qui peut être antichronologique par nature.
+
+### Modifié
+- **L'invariant d'une série n'est pas « chronologique », c'est « conforme à la
+  pièce ».** La 1.43.0 posait que trier n'était pas s'écarter de la pièce mais
+  appliquer la standardisation. Faux dès que la pièce elle-même est
+  antichronologique — et c'est fréquent : un journal de versions descend du
+  plus récent, un export place son avis de chiffrement en tête tout en
+  l'horodatant à l'heure de l'export, une capture montre un événement système
+  hors rang. Ce sont des **propriétés observables de la pièce** ; les corriger
+  efface une information au lieu d'en ajouter.
+  Le modèle définit d'ailleurs cette couche comme le texte intégral « fidèle et
+  sans tri », et place la lisibilité chronologique ailleurs — dans
+  `enseignements/` et les pages vivantes, qui organisent librement ce qu'elles
+  retiennent.
+  Vérifié sur un vault réel : sur sept notes que le lint donnait pour fautives,
+  **six reproduisaient fidèlement leur archive**. Les trier aurait écarté six
+  notes de leur pièce pour en réparer une.
+- **La comparaison se fait section par section, jamais document contre
+  document.** Une même pièce porte couramment plusieurs listes de sens
+  opposés : un relevé ouvre sur un récapitulatif croissant puis déroule un
+  détail décroissant. Comparer la liste de la note au mauvais tableau conclut à
+  une divergence qui n'existe pas — constaté deux fois de suite sur la même
+  pièce, par deux lecteurs indépendants. Le **nombre d'entrées** désigne la
+  bonne section sans ambiguïté : 71 contre 71 ne se confond pas avec un
+  récapitulatif de 21 lignes.
+- **Le contrôle compare donc la note à sa pièce archivée, plus au calendrier.**
+  Ordres identiques → aucun défaut, signalé une fois comme réserve
+  documentaire pour que le prochain lint ne le rejoue pas. Ordres divergents →
+  défaut de transcription réel, réparé d'office : là, réaligner rétablit la
+  fidélité au lieu de l'entamer.
+- **`/doc-ingest` ne trie plus rien** : la note reproduit l'ordre de la pièce.
+  Une pièce franchement antichronologique se signale par un `> [!warning]` en
+  enseignements — réserve documentaire, pas défaut à réparer.
+- **Le fork n'écrit plus qu'il a « appliqué » ce qu'il n'a pas pu appliquer.**
+  La 1.43.1 lui demandait d'annoncer « corrections appliquées » plutôt que « à
+  appliquer », pour que l'agent principal agisse. Mais le fork n'applique
+  rien — il ne le peut pas —, et l'affirmer était donc faux : le mensonge
+  tenait tant que l'agent principal échouait à agir, et l'utilisateur lisait
+  « corrigé » sur ce qui ne l'était pas. Le rapport porte désormais un
+  **impératif adressé à qui exécute**, avec la mention qui lève l'ambiguïté —
+  « à exécuter maintenant, sans demander d'autorisation ». C'est cette mention
+  qui décide, pas le temps du verbe.
+- **La liste d'actions échappe à la règle de concision.** Les deux exigences
+  sont opposées et se rencontraient sans être distinguées : un rapport court
+  sert qui lit, une liste précise sert qui exécute. Un rapport comprimé avec
+  des actions vagues force à rouvrir le vault — on économise des lignes pour
+  dépenser un aller-retour. La concision porte sur les sections **sans
+  trouvaille**, jamais sur les actions, qui se décrivent assez pour être faites
+  sans rien rouvrir : un fichier, une ligne, le remplacement exact.
+- **Correction d'une affirmation fausse des trois commandes en fork.** Elles
+  déclaraient qu'écrire sur disque était « impossible, tu es en lecture seule
+  stricte et n'as aucun outil d'écriture ». C'est faux : l'agent `Explore` n'a
+  ni `Edit` ni `Write`, mais il a **`Bash`** — un `cat > fichier` passe. La
+  tentative d'origine avait échoué pour une autre raison, et il en avait été
+  tiré une impossibilité technique qui n'existe pas. Une contrainte inventée
+  ferme des options qu'on n'examine plus.
+  Ce n'est donc pas une impossibilité mais un **choix**, désormais énoncé comme
+  tel : le rapport est ce que l'utilisateur lit, et le renvoyer vers un fichier
+  lui retirerait la seule chose qui lui permette de juger le travail. On écrit
+  sur disque quand le **volume** l'exige, jamais pour cacher un raisonnement.
+- **`verify-entries.py` rend l'ordre en constat, plus en avertissement.**
+  Trancher suppose d'ouvrir l'archive, ce que ce script ne fait pas : il
+  signale que la note n'est pas chronologique et rappelle que la comparaison
+  se fait contre la pièce. Il ne conclut plus à un défaut.
+
 ## [1.43.1] — 2026-08-07
 
 **Raison de l'update** : la règle « appliquer d'office » était écrite dans le fichier que seul le fork lit — et le fork ne peut pas écrire. Deux lints de suite ont annoncé des corrections sans en appliquer une seule.

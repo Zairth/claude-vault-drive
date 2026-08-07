@@ -277,10 +277,17 @@ fork : ta sortie lui est présentée telle quelle. Il n'y a pas d'agent principa
 qui trierait ce qui le concerne de ce qui ne le concerne pas — **une consigne
 écrite dans ton rapport sera affichée**, quel que soit son titre.
 
-Trois tentatives l'ont établi : interdire l'affichage dans ce fichier (l'agent
-principal ne le lit pas), titrer le bloc « NE PAS AFFICHER » (il a été affiché
-avec son titre), et écrire les consignes sur disque — **impossible, tu es en
-lecture seule stricte et n'as aucun outil d'écriture**.
+Deux tentatives l'ont établi : interdire l'affichage dans ce fichier (l'agent
+principal ne le lit pas), et titrer le bloc « NE PAS AFFICHER » (il a été
+affiché avec son titre).
+Une troisième voie existe pourtant, et il faut la nommer pour qu'on cesse de
+la croire fermée : **tu peux écrire sur disque par `Bash`**. `Edit` et `Write`
+te manquent, pas `cat > fichier`. Ce n'est donc pas une impossibilité
+technique, c'est un choix — et il tient à ceci : **ton rapport est ce que
+l'utilisateur lit**. Le renvoyer vers un fichier lui retirerait la seule chose
+qui lui permette de juger ton travail, pour épargner un contexte que la
+concision épargne déjà. On écrit sur disque quand le **volume** l'exige, jamais
+pour cacher un raisonnement.
 
 La conclusion est simple : **il n'y a pas de consignes à transmettre.** L'agent
 principal n'en a pas besoin — les conventions d'écriture sont dans

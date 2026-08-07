@@ -268,24 +268,25 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
      Heure absente de la source (une capture qui n'affiche que le jour) →
      `AAAA-MM-JJ` seul, jamais une heure inventée.
 
-     **Du plus ancien au plus récent, toujours — et l'ordre vient des
-     horodatages, pas de la séquence de la source.** Une série se lit dans le
-     sens où elle s'est déroulée. Certaines sources rendent l'inverse — une API
-     qui pagine à rebours, un export qui commence par le dernier message :
-     remettre d'aplomb, ne jamais reporter l'ordre du fichier.
-     Le cas insidieux n'est pas celui-là, c'est l'**entrée isolée hors de son
-     rang** : un export place volontiers ses messages système — avis de
-     chiffrement, « untel a rejoint », en-tête de conversation — en tête de
-     fichier tout en les horodatant à l'heure de l'export, donc **après** le
-     premier vrai message de la journée. Reportées telles quelles, ces lignes
-     donnent une note dont les titres de jour progressent impeccablement et
-     dont les entrées reculent à l'intérieur d'un jour. Trier sur
-     l'horodatage règle les deux formes d'un coup ; suivre l'ordre du fichier
-     n'en règle aucune. Rien dans un recomptage
-     ne trahit une note écrite à l'envers — le total est juste, chaque entrée
-     est là, et pourtant l'échange se lit à rebours et se cite mal. Le contrôle
-     est fait par `verify-entries.py`, qui a déjà les ancres en main ; encore
-     faut-il que la note soit écrite dans le bon sens.
+     **L'ordre de la note est celui de la pièce — on ne trie pas.** Cette
+     couche est le texte intégral, « fidèle et sans tri » : elle reproduit la
+     pièce, y compris quand celle-ci est antichronologique. Un journal de
+     versions descend du plus récent, un export place son avis de chiffrement
+     en tête tout en l'horodatant à l'heure de l'export, une capture montre un
+     événement système hors rang — **ce sont des propriétés observables de la
+     pièce**, et les corriger effacerait une information au lieu d'en ajouter.
+     Sur un corpus dont on doit pouvoir produire chaque élément, une note dont
+     l'ordre ne correspond plus au document qui fait foi est un handicap, pas
+     un progrès.
+     La lisibilité chronologique n'est pas le métier de cette couche : c'est
+     celui d'`enseignements/` et des pages vivantes, qui organisent librement
+     ce qu'elles retiennent. Une pièce franchement antichronologique se
+     signale par un `> [!warning]` dans la note d'enseignements — réserve
+     documentaire, pas défaut à réparer.
+     Ce qui reste interdit, c'est de **réordonner** : ni tri, ni regroupement,
+     ni déplacement. `/doc-lint` compare plus tard l'ordre de la note à celui
+     de sa pièce archivée, et ne signale que les **divergences** — une note
+     conforme à une pièce désordonnée n'a aucun défaut.
 
      **Le fuseau se déclare, il ne se convertit pas.** Deux séries d'outils
      différents n'expriment pas leurs heures dans le même référentiel — une API
