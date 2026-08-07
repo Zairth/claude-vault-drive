@@ -9,6 +9,72 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.45.0] — 2026-08-07
+
+**Raison de l'update** : l'extracteur de couche de texte ne reconnaissait qu'une seule des façons dont un PDF écrit ses caractères, et déclarait « scan » des documents parfaitement lisibles. Mesuré sur un lot de quinze PDF : treize partaient à l'OCR pour rien.
+
+### Corrigé
+- **Chaînes hexadécimales.** Un PDF écrit ses chaînes entre parenthèses
+  `(Bonjour)` ou en hexadécimal `<0025004F>`. Seule la première forme était
+  lue. Les suites bureautiques les plus répandues n'émettent que la seconde :
+  l'extraction rendait **zéro caractère**, le script concluait « c'est un
+  scan », et l'ingestion basculait sur l'OCR alors que le texte exact était
+  disponible. C'est la cause principale des treize sur quinze.
+- **Largeur d'un code selon la police.** Les codes étaient lus sur deux
+  octets sans condition. C'est juste pour une police composite (`/Type0`),
+  faux pour une police simple, dont les codes tiennent sur un octet — le texte
+  en ressortait inexploitable. La largeur se déduit désormais du type de la
+  police.
+- **Résolution des polices par portée.** La correspondance `/F1 → police`
+  était construite à plat sur tout le fichier, en écrasant les doublons. Or ce
+  nom est **local** : le `/F1` de la page 3 n'est pas celui de la page 1, et
+  celui d'un formulaire n'est ni l'un ni l'autre. Mesuré sur un document
+  contractuel : 273 collisions, donc autant d'occasions d'appliquer la
+  mauvaise table de traduction. Chaque portée — page, puis chaque formulaire
+  appelé — garde désormais ses propres polices.
+  C'est le plus sournois des défauts corrigés ici, parce que son symptôme
+  n'est pas l'absence mais l'**erreur** : sur un document mis en page, un
+  « : » ressortait « f » et un trait d'union « l ». Une lettre qui manque se
+  voit ; une lettre remplacée, non. Vérifié depuis contre le texte que rend un
+  lecteur de PDF : **4 060 caractères, 100,0000 % de concordance, zéro écart**
+  — là où la version précédente en donnait une lecture fausse par endroits.
+- **Ordre des pages.** Les pages étaient prises dans l'ordre des objets du
+  fichier, qui n'est pas celui de la lecture. Un texte suivi en ressortait
+  mêlé. L'arbre des pages est désormais parcouru.
+- **Glyphes pointant sur U+0000.** Certaines polices y font pointer un glyphe
+  non défini ; la valeur était retenue telle quelle et insérait un octet nul
+  dans un fichier qu'on croyait propre.
+
+### Ajouté
+- **Descente dans les formulaires.** Un document mis en page ne dessine pas
+  son texte dans le flux de la page mais dans des formulaires que la page
+  appelle. La page paraissait vide alors que tout son texte était là, tables
+  de traduction comprises.
+- **Reconstitution des lignes.** La sortie était un flux continu sans
+  retours. Les lignes sont retrouvées par la position verticale réelle du
+  texte, matrices de transformation comprises. Colonnes et tableaux ressortent
+  toujours cellule après cellule — c'est la standardisation qui leur rend leur
+  structure.
+- **Marque « � » sur tout glyphe non traduit, comptée et annoncée.** Une
+  police peut être appelée sans que sa table de correspondance couvre tous les
+  glyphes qu'elle dessine. Le texte sortait alors amputé de caractères
+  isolés — tirets, apostrophes, accents —, ce qui se relit comme une faute de
+  l'auteur et non comme une extraction ratée. Chaque perte laisse désormais
+  une marque visible dans le fichier produit, et un avertissement sur
+  `stderr`. En dessous de 97 % de glyphes traduits, l'extraction est refusée
+  et la pièce repart à l'OCR : sur le lot mesuré, huit documents à 100 %, sept
+  entre 99,2 % et 100 %. Ce taux a par ailleurs servi à trouver le défaut de
+  portée ci-dessus, qu'il ne mesurait pas : un document à 93 % ne souffrait
+  pas de tables incomplètes mais de tables interverties. Un chiffre bas dit
+  qu'il faut aller voir, pas seulement qu'il faut passer à l'OCR.
+
+### Modifié
+- **`/doc-ingest`** — ne jamais présumer du résultat sans avoir lancé la
+  commande, et reporter les `�` tels quels plutôt que de les combler.
+- **`/doc-repair`** — la voie de lecture indépendante se lance **même** quand
+  la pièce a été ingérée par OCR : c'est le cas où elle a le plus à dire. Une
+  position marquée `�` reste non tranchée et se déclare comme telle.
+
 ## [1.44.0] — 2026-08-07
 
 **Raison de l'update** : la 1.43.0 faisait trier les séries datées vers l'ordre chronologique. C'était une erreur : `wiki/sources/` doit suivre l'ordre de SA PIÈCE, qui peut être antichronologique par nature.

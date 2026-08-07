@@ -2,7 +2,7 @@
   "name": "claude-vault-drive",
   "displayName": "Claude Vault Drive",
   "description": "Vault compatible Obsidian sur un dossier synchronisé, alimenté et interrogé par Claude Code : ingestion standardisée, recherche sémantique, maintenance.",
-  "version": "1.44.0",
+  "version": "1.45.0",
   "author": {
     "name": "Zairth"
   },

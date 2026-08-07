@@ -64,12 +64,20 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
     — bibliothèque standard seule, aucun réseau, aucune clé. Il rend le texte
     et sort en **0** ; il sort en **1** avec un message explicite quand le PDF
     ne porte pas de couche de texte exploitable, et c'est ce code de sortie
-    qui décide : 0 → **c'est lui la transcription**, dépôt dans
+    qui décide : 0 → **c'est lui la version standardisée**, dépôt dans
     `$VAULT/inbox/`, pas d'OCR, pas d'appel API ; 1 → passer à la ligne
     suivante.
-    Il ne reconstruit pas la mise en page : la sortie est le texte dans
-    l'ordre où le PDF le dessine, cellule après cellule pour un tableau. C'est
-    la standardisation qui lui rend sa structure, comme pour toute autre
+    **Ne jamais présumer du résultat sans avoir lancé la commande.** Un PDF
+    dont on « voit bien » qu'il est un scan peut porter tout son texte, et
+    l'inverse est vrai aussi : seul le code de sortie tranche.
+    S'il émet un `AVERTISSEMENT : n glyphe(s) sans traduction`, le texte est
+    retenu — il sort en 0 — mais il porte `�` à chaque endroit où le PDF
+    dessine un caractère sans le déclarer. Reporter ces marques telles quelles
+    et ouvrir la pièce pour les positions concernées avant d'en citer le
+    passage entre guillemets.
+    Il ne reconstruit pas la mise en page : les lignes sont retrouvées, mais
+    colonnes et tableaux sortent cellule après cellule. C'est la
+    standardisation qui leur rend leur structure, comme pour toute autre
     source.
   - **Scan, photo de document, PDF sans couche de texte** → là seulement,
     conversion markdown par OCR (outil MCP

@@ -84,17 +84,20 @@ proposée :
      réglé pour un document, il aplatit une interface en flux linéaire et fait
      disparaître la disposition — c'est même souvent là qu'est née l'erreur
      qu'on vérifie.
-   - **PDF, scan** → attention, c'est le cas piégeux. La transcription
-     archivée **est déjà la sortie d'OCR de ce PDF** : la relancer rendrait le
-     même texte, avec la même erreur. Un OCR ne se contrôle pas par lui-même.
+   - **PDF, scan** → attention, c'est le cas piégeux. La version archivée
+     **est déjà la sortie d'OCR de ce PDF** : la relancer rendrait le même
+     texte, avec la même erreur. Un OCR ne se contrôle pas par lui-même.
      Passer par la **voie de lecture indépendante** que le plugin embarque :
      `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/pdf-text.py" <le PDF>`
      — il rend la couche de texte que le logiciel producteur a écrite, sans
-     dépendance ni réseau. Sortie 0 → c'est la lecture de référence, elle
-     prime sur l'OCR. Sortie 1 (aucune couche de texte : vrai scan) → **ne pas
-     relancer l'OCR**, le dire, et déclarer la vérification **partielle** en
-     précisant que l'original n'a pas pu être lu autrement que par le moteur
-     qui a produit la transcription.
+     dépendance ni réseau. **La lancer même si la pièce a été ingérée par
+     OCR** : c'est le cas le plus fréquent où elle a quelque chose à dire, et
+     c'est précisément pour cela qu'elle est la voie indépendante.
+     Sortie 0 → c'est la lecture de référence, elle prime sur l'OCR ; si elle
+     porte des `�`, ces positions-là restent non tranchées et se disent comme
+     telles. Sortie 1 → **ne pas relancer l'OCR**, le dire, et déclarer la
+     vérification **partielle** en précisant que l'original n'a pas pu être lu
+     autrement que par le moteur qui a produit la version archivée.
    - **Bureautique binaire** (`.docx`, `.xlsx`, `.pptx`…) → convertir avec ce
      qui est présent (`libreoffice --headless --convert-to txt|csv`,
      `pandoc`), lire la conversion. Aucun convertisseur → vérification
