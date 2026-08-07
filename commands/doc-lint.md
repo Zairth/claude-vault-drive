@@ -261,6 +261,22 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
      dossier cherche justement à éviter.
    - **notes vides** (0 octet, ou frontmatter seul sans corps) n'importe où
      dans le vault → lister.
+   - **un `.claude/` à la racine du vault** → lister, avec ce qu'il contient.
+     C'est de la configuration de **poste** dans un dossier **partagé** :
+     chemins de cette machine, emplacement du cache des plugins, liste des
+     plugins actifs. Répliquée par la synchronisation, elle est fausse partout
+     ailleurs, et deux machines finissent par se disputer le même fichier.
+     **Aucun réglage ne l'empêche**, et c'est pourquoi le contrôle existe :
+     `settings.json` est écrit par Claude Code dès qu'une session s'ouvre dans
+     ce dossier — le plugin n'a pas la main dessus. Il ne peut que le voir
+     après coup.
+     Le remède dépend de l'origine : si le projet est un dossier distinct, ce
+     `.claude/` est un résidu, à supprimer une fois vérifié qu'il ne porte rien
+     que le projet n'ait déjà (comparer `vault-path.local`) ; si le vault
+     **est** le projet, c'est un montage assumé et il n'y a rien à corriger —
+     le signaler une fois, ne pas le répéter à chaque lint.
+     Suppression soumise, jamais d'office : la distinguer d'un résidu demande
+     de savoir depuis où l'utilisateur travaille, ce que le vault ne dit pas.
    - **wikilinks dans `LOG/`** → lister, et les délier (le nom reste en clair).
      Une entrée de journal relie les pages touchées le même jour : c'est une
      coïncidence de calendrier, pas un rapport de sens. Les `[[...]]` y

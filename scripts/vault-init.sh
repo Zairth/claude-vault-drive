@@ -33,6 +33,19 @@ plugin_root="$(cd "$script_directory/.." && pwd)"
 template_directory="$plugin_root/vault-template"
 project_claude_directory="$PWD/.claude"
 
+# Le projet et le vault confondus : ça fonctionne — le portier remonte
+# l'arborescence pour trouver `vault-path.local` —, mais la config locale part
+# alors sur le dossier synchronisé. Or elle ne contient QUE des chemins propres
+# à cette machine : l'emplacement du vault, et celui du cache des plugins. Un
+# second poste synchronisant ce vault les recevrait faux, et les deux machines
+# se disputeraient le même fichier. Prévenir, sans rien empêcher : le montage
+# est légitime pour qui travaille seul.
+if [[ "$(cd "$PWD" && pwd -P)" == "$(cd "$vault_path" 2>/dev/null && pwd -P || echo '')" ]]; then
+    echo "Note : le projet EST le vault — la config locale (.claude/) vivra donc dans le dossier synchronisé." >&2
+    echo "  Elle ne porte que des chemins propres à cette machine : un autre poste les recevrait faux." >&2
+    echo "  Sans conséquence si vous êtes seul dessus ; sinon, initialiser depuis un dossier de projet distinct." >&2
+fi
+
 if [[ ! -d "$template_directory" ]]; then
     echo "ERREUR : vault-template/ introuvable dans le plugin ($plugin_root) — installation du plugin incomplète." >&2
     exit 1

@@ -9,6 +9,35 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.42.3] — 2026-08-06
+
+**Raison de l'update** : initialiser depuis le dossier du vault lui-même envoie la config locale — qui n'est faite que de chemins de la machine — sur le dossier synchronisé, sans que rien ne le dise.
+
+### Ajouté
+- **`/doc-lint` repère un `.claude/` à la racine du vault.** C'est de la
+  configuration de **poste** dans un dossier **partagé** — chemins de la
+  machine, emplacement du cache des plugins, liste des plugins actifs —,
+  répliquée par la synchronisation et fausse partout ailleurs.
+  **Aucun réglage ne l'empêche**, et c'est toute la raison du contrôle :
+  `settings.json` est écrit par Claude Code dès qu'une session s'ouvre dans le
+  dossier du vault. Le plugin n'a pas la main dessus ; il ne peut que le voir
+  après coup. Un avertissement à l'initialisation ne couvre que les deux
+  fichiers que le plugin écrit lui-même, pas celui-là.
+  Le remède dépend de l'origine — résidu d'une session ouverte au mauvais
+  endroit, ou montage assumé où le vault est le projet — donc la suppression
+  se soumet, jamais d'office.
+- **`/vault-init` prévient quand le projet et le vault sont le même dossier.**
+  Le montage fonctionne — le portier remonte l'arborescence pour trouver
+  `vault-path.local` — et il est légitime pour qui travaille seul. Mais
+  `.claude/` part alors sur le dossier synchronisé, or il ne contient **que**
+  des chemins propres à la machine : l'emplacement du vault, et celui du cache
+  des plugins. Un second poste synchronisant ce vault les recevrait faux, et
+  les deux machines se disputeraient le même fichier.
+  Une note à l'initialisation, rien de bloquant. Constaté en usage : un
+  `/vault-init` lancé depuis le dossier du vault avait écrit sa configuration
+  dedans, pendant qu'on la cherchait dans le projet d'où la session semblait
+  partir.
+
 ## [1.42.2] — 2026-08-06
 
 **Raison de l'update** : le rapport de lint justifiait aussi longuement les contrôles qui passent que ceux qui échouent — huit sections vides sur douze, et dix lignes utiles noyées dans cent cinquante.
