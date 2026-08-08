@@ -9,6 +9,44 @@ l'installer. Format inspiré de
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
 
+## [1.49.0] — 2026-08-07
+
+**Raison de l'update** : un document porte parfois en annexe une image qui est sa seule preuve. Les deux voies de lecture la détruisaient — l'OCR l'aplatit, la couche de texte l'ignore — et le plugin la remplaçait par un marqueur inerte.
+
+### Ajouté
+- **`scripts/pdf-images.py`** — sort les images d'un PDF pour qu'on les
+  **ouvre**. Bibliothèque standard seule : un flux `DCTDecode` EST un fichier
+  JPEG et s'écrit tel quel ; un flux `FlateDecode` est fait de pixels bruts,
+  qu'on enveloppe dans un PNG écrit à la main — en-tête, données, somme de
+  contrôle. Codes de sortie : `0` images extraites, `1` aucune de taille
+  utile, `2` présentes mais non décodables, `3` illisible.
+  Seuil de surface réglable (`--min`), parce qu'un PDF contient des dizaines
+  d'ornements — puces, filets, logos — et que les extraire tous noierait la
+  pièce utile. Le relevé annonce toujours combien d'images ont été écartées :
+  un écart annoncé n'est pas un écart silencieux.
+- **Ce que ça répare, et pourquoi aucune autre voie ne le pouvait.** Mesuré
+  sur un courrier réel : son annexe est une capture d'interface. L'OCR l'a
+  aplatie en flux linéaire, si bien que l'horodatage affiché **dans la
+  gouttière**, au survol d'une ligne, s'est retrouvé collé au texte d'un
+  **autre** message. Lu comme la date de la pièce, il datait la seule preuve du
+  document d'un jour trop tard — et rien dans le texte produit ne le signalait.
+  L'extraction de couche de texte, elle, ne rendait que la légende : on croyait
+  tenir la pièce, on ne tenait que ce que son auteur en disait. Sur l'image
+  ouverte, la gouttière se voit.
+
+### Modifié
+- **`/doc-ingest`** — les images d'un PDF s'extraient et **s'ouvrent avec
+  l'outil Read**, quelle que soit la branche de lecture prise. Ce qu'elles
+  montrent se reporte comme tel, distinct de ce que la légende en dit : un
+  désaccord entre les deux est un fait sur la pièce, à consigner.
+- **Le marqueur `[figure n — non extraite]` constate une absence, il ne
+  l'excuse plus.** Sur un PDF, il devient `[figure n — <ce que montre
+  l'image>]` ; le marqueur nu ne subsiste que si l'image n'a pas pu être
+  décodée, et il faut alors le dire.
+- **`/doc-repair`** — quand la contradiction porte sur ce qu'une image du
+  document montre, ni le texte ni l'OCR ne peuvent la trancher : l'un
+  l'ignore, l'autre l'aplatit.
+
 ## [1.48.0] — 2026-08-07
 
 **Raison de l'update** : le livrable le plus important de `--all-references` — la compilation qui porte les pièces — était le seul qu'aucun contrôle ne vérifiait.

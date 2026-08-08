@@ -243,6 +243,10 @@ s'en sert dans le plugin, et ce qui se passe s'il manque :
 - **recomptage des entrées d'une série datée** (`scripts/verify-entries.py`)
   → sans `python3`, l'ingestion d'un relevé ou d'un export perd sa
   vérification d'intégralité : elle reste correcte, elle n'est plus prouvée ;
+- **extraction des images d'un PDF** (`scripts/pdf-images.py`) → sans
+  `python3`, une pièce annexée en image reste invisible : l'OCR l'aplatit, la
+  couche de texte l'ignore, et il ne reste que la légende qu'en donne l'auteur
+  du document ;
 - **contrôle des repères de citation** (`scripts/verify-citations.py`) → sans
   `python3`, un numéro de ligne inexact ne se distingue plus d'un numéro
   exact. Les citations restent lisibles, elles ne sont plus contrôlables.

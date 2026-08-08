@@ -135,6 +135,7 @@ claude-vault-drive/
 │   ├── vault-ocr.sh         # conversion OCR — scan, photo : le seul cas où l'OCR est le bon outil
 │   ├── pdf-text.py          # couche de texte d'un PDF, sans dépendance ni réseau (essayée avant l'OCR)
 │   ├── pdf-signatures.py    # signatures électroniques d'un PDF — ni le texte ni l'OCR ne les voient
+│   ├── pdf-images.py        # sort les images d'un PDF pour qu'on les OUVRE — l'OCR les aplatit
 │   ├── verify-entries.py    # recompte les entrées datées d'une source dans la note produite
 │   ├── verify-citations.py  # rouvre la pièce : la citation est-elle bien à la ligne annoncée ?
 │   ├── hook-session-start.sh    # hook : INDEX.md injecté à l'ouverture de session

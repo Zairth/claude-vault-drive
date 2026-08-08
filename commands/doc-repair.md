@@ -98,6 +98,13 @@ proposée :
      telles. Sortie 1 → **ne pas relancer l'OCR**, le dire, et déclarer la
      vérification **partielle** en précisant que l'original n'a pas pu être lu
      autrement que par le moteur qui a produit la version archivée.
+     Quand la contradiction porte sur ce qu'une **image** du document montre —
+     une annexe, une capture, un extrait de relevé — ni le texte ni l'OCR ne
+     peuvent la trancher : l'un l'ignore, l'autre l'aplatit. Extraire puis
+     ouvrir :
+     `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/pdf-images.py" <le PDF> <dossier>`
+     — et regarder. Une disposition ne se transcrit pas ; c'est pourtant
+     souvent elle qui porte le fait.
      Quand la contradiction porte sur la **signature ou la date** de la pièce,
      ni le texte ni l'OCR ne peuvent la trancher : ces faits ne sont pas dans
      le texte. Passer par

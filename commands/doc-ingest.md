@@ -101,6 +101,28 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
     se reporte tel quel : le document a été modifié après avoir été signé.
     Un champ resté vide se distingue d'une partie à qui aucun emplacement n'a
     été ouvert — ce n'est pas le même fait.
+  - **PDF — en extraire les images et les OUVRIR, quelle que soit la branche
+    prise.** Un document porte parfois, en annexe, une image qui est **sa
+    seule preuve** : capture d'écran, photo, extrait de relevé. Le texte ne
+    fait que la légender — et les deux voies de lecture la détruisent. L'OCR
+    l'**aplatit** : réglé pour une mise en page de document, il rend d'une
+    capture d'interface un flux linéaire où la disposition a disparu.
+    L'extraction de couche de texte l'**ignore** : elle rend la légende et
+    rien d'autre, si bien qu'on croit tenir la pièce alors qu'on ne tient que
+    ce que son auteur en dit.
+    `python3 "${CLAUDE_PLUGIN_ROOT}/scripts/pdf-images.py" <fichier> <dossier>`
+    — **0** images extraites, **1** aucune de taille utile, **2** présentes
+    mais non décodables, **3** illisible. Puis les **ouvrir avec l'outil
+    Read**, une par une : une capture se lit avec des yeux.
+    Ce que ça change concrètement, mesuré : dans un courrier, l'horodatage
+    affiché au survol d'une ligne — dans la gouttière, à gauche — se retrouve,
+    une fois aplati, collé au texte d'un **autre** message. Lu comme la date de
+    la pièce, il datait la seule preuve du document d'un jour trop tard, et
+    rien dans le texte produit ne le signalait. Sur l'image, la gouttière se
+    voit.
+    Ce qui est lu ainsi se reporte dans la note comme **ce que montre
+    l'image**, distinct de ce que la légende en dit — et un désaccord entre les
+    deux est un fait sur la pièce, à consigner en `> [!warning]`.
   - **Scan, photo de document, PDF sans couche de texte** → là seulement,
     conversion markdown par OCR (outil MCP
     `mcp__plugin_agentic-toolbox_toolbox__ocr_convert` si disponible, sinon la
@@ -394,7 +416,11 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
      Obsidian** — et un clic dessus crée une note vide. Remplacer chacune par un
      marqueur textuel inerte (`[figure 1 — non extraite]`, numéroté dans
      l'ordre) : l'information « il y avait une figure ici » est conservée, le
-     lien mort disparaît. Cette couche est fidèle au **texte**, pas aux liens
+     lien mort disparaît.
+     **Ce marqueur constate une absence, il ne l'excuse pas.** Sur un PDF, les
+     images s'extraient et se lisent (voir plus haut) : le marqueur devient
+     alors `[figure 1 — <ce que montre l'image>]`. N'en rester au marqueur nu
+     que lorsque l'image n'a pas pu être décodée — et le dire. Cette couche est fidèle au **texte**, pas aux liens
      brisés de son convertisseur ;
   3. rédiger le **dossier d'ingestion** : les enseignements clés (une ligne
      chacun), **autant qu'en porte la source** — pas de plafond : un article
