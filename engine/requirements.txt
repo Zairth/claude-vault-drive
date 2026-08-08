@@ -1,0 +1,4 @@
+# Versions épinglées, éprouvées ensemble
+httpx==0.28.1                # Client HTTP des fournisseurs (providers/base.py)
+pydantic-settings==2.14.2    # Settings depuis l'env (>=2.5.2 exigé par mcp)
+mcp==1.28.1                  # SDK MCP (serveur stdio lancé par le plugin Claude Code — mcp_server/)

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# claude-vault-drive/scripts/vault-check.sh
+# claude-vault/scripts/vault-check.sh
 # Vérifie que le vault Obsidian est accessible et initialisé, puis imprime son
 # chemin sur stdout. Échec explicite sinon — jamais de vault vide silencieux.
 # Consommé par les commandes /doc-ingest, /doc-query, /doc-lint.

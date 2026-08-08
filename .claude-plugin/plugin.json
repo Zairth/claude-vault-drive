@@ -1,18 +1,43 @@
 {
-  "name": "claude-vault-drive",
+  "name": "claude-vault",
   "displayName": "Claude Vault Drive",
-  "description": "Vault compatible Obsidian sur un dossier synchronisé, alimenté et interrogé par Claude Code : ingestion standardisée, recherche sémantique, maintenance.",
-  "version": "1.49.0",
+  "description": "Vault compatible Obsidian sur un dossier synchronisé, alimenté et interrogé par Claude Code : ingestion standardisée, recherche sémantique par embeddings, OCR de PDF et de scans, maintenance.",
+  "version": "2.0.0",
   "author": {
     "name": "Zairth"
   },
-  "repository": "https://github.com/Zairth/claude-vault-drive",
+  "repository": "https://github.com/Zairth/claude-vault",
   "license": "MIT",
   "keywords": [
     "obsidian",
     "vault",
     "google-drive",
     "knowledge-base",
-    "rag"
-  ]
+    "rag",
+    "semantic-search",
+    "ocr"
+  ],
+  "mcpServers": {
+    "engine": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory", "${CLAUDE_PLUGIN_ROOT}/engine",
+        "--with-requirements", "${CLAUDE_PLUGIN_ROOT}/engine/requirements.txt",
+        "python", "-m", "mcp_server"
+      ],
+      "env": {
+        "MISTRAL_API_KEY": "${user_config.mistral_api_key}"
+      }
+    }
+  },
+  "userConfig": {
+    "mistral_api_key": {
+      "type": "string",
+      "title": "Clé API Mistral",
+      "description": "Embeddings et OCR (tier gratuit — console.mistral.ai). Laissée vide, la recherche dégrade vers grep et l'OCR est indisponible.",
+      "sensitive": true,
+      "required": false
+    }
+  }
 }

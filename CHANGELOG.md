@@ -1,4 +1,4 @@
-# Changelog — claude-vault-drive
+# Changelog — claude-vault
 
 Ce que contient chaque mise à jour du plugin : la raison en une ligne, puis le
 détail des changements — de quoi savoir si elle vaut le coup avant de
@@ -8,6 +8,86 @@ l'installer. Format inspiré de
 
 Installer une mise à jour : `/plugin marketplace update zairth_store` puis
 `/reload-plugins` (le cache n'est invalidé que si la version change).
+
+## [2.0.0] — 2026-08-08
+
+**Raison de l'update** : le moteur sémantique et OCR vit désormais dans le plugin. Fin des deux versions à accorder — et des sondages de capacité que les scripts faisaient à chaque indexation pour savoir ce que le moteur acceptait. Le plugin prend au passage son nom définitif, `claude-vault`.
+
+### ⚠ Rupture — la mise à jour ne se fait PAS toute seule
+
+Le plugin **change de nom** : `claude-vault-drive` devient `claude-vault`. Pour
+Claude Code, c'est un autre plugin — `/plugin marketplace update` ne migre
+personne. La migration est manuelle, une fois :
+
+```
+/plugin uninstall claude-vault-drive
+/plugin install claude-vault@zairth_store
+```
+
+Ce qui change à la saisie : les commandes prennent le nouveau préfixe
+(`/claude-vault:doc-query …` au lieu de `/claude-vault-drive:doc-query …`).
+
+**Rien à refaire côté vault** : le `.claude/vault-path.local` du projet, les
+notes et les index sémantiques sont inchangés — le nom du plugin n'entre dans
+aucun d'eux. Une exception à connaître : `.claude/settings.local.json` autorise
+les scripts par leur chemin, qui contient le nom du plugin. Rejouer
+`/claude-vault:vault-init <chemin du vault>` dans chaque projet remet
+l'autorisation à jour (la commande est idempotente et ne touche pas au
+contenu).
+
+### Ajouté
+- **`engine/` — le moteur sémantique, lexical et OCR, embarqué dans le
+  plugin.** Le manifeste déclare son **serveur MCP** (lancé par Claude Code via
+  `uv`) et lui passe la clé Mistral par `userConfig` : les outils
+  `mcp__plugin_claude-vault_engine__*` sont là dès l'installation.
+  Le moteur **ne connaît pas le vault** — il reçoit ses dossiers en argument et
+  n'en suppose aucun. C'est une frontière, pas un détail : `engine/` cherche
+  dans des dossiers markdown, les commandes `/doc-*` et les wrappers
+  `scripts/vault-*.sh` sont seuls à savoir lequel est le vault du projet.
+- **`skills/vault-engine/SKILL.md`** — le mode d'emploi des outils du moteur
+  pour l'agent : quel outil pour quel besoin, et les pièges qui coûtent cher
+  (un `top_k` qui compte des fichiers et non des passages, un score BM25 qui ne
+  se lit qu'en rang, un front matter jamais indexé).
+
+### Modifié
+- **`README.md` réduit à ce que le plugin permet de faire** — installer,
+  déposer, interroger, et ce que devient un document ingéré. Il ne se lisait
+  plus comme une présentation mais comme une spécification : le détail de
+  construction (contenu du repo, principes, usage commande par commande, hooks,
+  fonctionnement de la recherche sémantique) en sort.
+- **Prérequis réduits à `uv` et la clé Mistral**, saisie **à l'installation**
+  dans le formulaire du plugin. La clé est **facultative** : laissée vide, le
+  vault fonctionne, `/doc-query` annonce son repli grep et la recherche
+  lexicale continue de marcher (elle ne consomme aucune API).
+- **`scripts/engine-env.sh` remplace `toolbox-env.sh`.** La résolution du
+  moteur passe de quatre niveaux (fichier de chemin local, plugin voisin dans
+  le cache, autre place de marché, clone) à un seul : il est dans le plugin.
+  Disparaissent avec elle le `.claude/toolbox-path.local` et le message
+  d'erreur « installer le moteur en version X ou plus ».
+- **`vault-index.sh` ne sonde plus le moteur.** Il lançait un sous-processus
+  `index --help` à chaque indexation pour savoir si l'option d'exclusion des
+  callouts existait, et se rabattait avec un avertissement sinon. Les deux
+  avancent maintenant ensemble : l'option est passée directement.
+
+### Corrigé
+- **Les deux portes indexaient différemment, ce qui revectorisait tout le
+  corpus à chaque alternance.** Le wrapper excluait les blocs `source` du texte
+  vectorisé, les appels MCP décrits par les commandes ne les excluaient pas.
+  Comme le hash d'un chunk dérive du texte vectorisé, les deux index n'avaient
+  pas le même contrat : passer d'une porte à l'autre — un `/doc-query` après un
+  `/doc-ingest` tombé sur le repli, par exemple — refaisait payer **l'intégralité
+  des embeddings**. Les six appels `semantic_index_build` décrits dans les
+  commandes portent désormais `excluded_callouts: ["source"]`, comme le
+  wrapper.
+- **Un chemin relatif passé à un wrapper était résolu depuis le dossier du
+  moteur.** Chaque wrapper faisait `cd` dans le moteur avant de l'appeler : un
+  dossier à indexer ou un `--out` d'OCR donné en relatif désignait alors une
+  cible dans le **cache des plugins**, que Claude Code réécrit à chaque mise à
+  jour. L'invocation passe maintenant par `PYTHONPATH` — le paquet est
+  importable sans que le processus change de répertoire, et les chemins de
+  l'appelant veulent dire ce qu'il croit.
+- **`vault-init.sh` n'inscrit plus `.claude/toolbox-path.local`** dans le
+  `.gitignore` des projets : ce fichier n'existe plus.
 
 ## [1.49.0] — 2026-08-07
 

@@ -1,9 +1,21 @@
-# claude-vault-drive/.gitignore
+# claude-vault/.gitignore
 # Config locale à la machine (règles de dev, permissions, chemins sensibles) —
 # jamais versionnée. Le plugin lui-même vit à la racine (commands/, scripts/…).
 .claude/
 /CLAUDE.md
 
-# artefacts Python
+# Documentation interne de développement : le détail de construction du plugin
+# (contenu du repo, principes, usage commande par commande, hooks, recherche
+# sémantique). Utile pour travailler dessus, hors sujet pour qui l'installe —
+# le README public dit ce que le plugin permet de faire, et c'est tout.
+docs/ARCHITECTURE.md
+
+# artefacts Python (le moteur, engine/, tourne sous uv)
 __pycache__/
 *.pyc
+
+# clés en clair : le moteur lit MISTRAL_API_KEY dans son environnement, que le
+# plugin remplit depuis userConfig. Un .env n'existe qu'en développement local
+# et n'a rien à faire dans un dépôt public.
+.env
+.pytest_cache/

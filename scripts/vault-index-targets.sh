@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# claude-vault-drive/scripts/vault-index-targets.sh
+# claude-vault/scripts/vault-index-targets.sh
 # Liste les dossiers de wiki/ à indexer SÉPARÉMENT, un par ligne, en chemin
 # relatif à wiki/. Usage : vault-index-targets.sh [chemin de wiki]
 #

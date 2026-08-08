@@ -121,8 +121,9 @@ ni les recherches ni les notes. Sa mission :
 1. **Réindexation incrémentale d'abord** (mesurer sur un index à jour) —
    il y a **un index par dossier de `wiki/`** : obtenir la liste par
    `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index-targets.sh"`, puis un
-   `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` par cible avec
-   `directory: $VAULT/wiki/<cible>` **explicite** ; sinon
+   `mcp__plugin_claude-vault_engine__semantic_index_build` par cible avec
+   `directory: $VAULT/wiki/<cible>` **explicite** et `excluded_callouts:
+   ["source"]` (même contrat que le wrapper) ; sinon
    `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"` sans argument, qui
    boucle lui-même. Moteur indisponible → ouvrir le rapport par
    « ⚠ sémantique indisponible (<raison>) — score partiel » et sauter les

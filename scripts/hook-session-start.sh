@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# claude-vault-drive/scripts/hook-session-start.sh
+# claude-vault/scripts/hook-session-start.sh
 # Hook SessionStart : injecte la carte du vault (INDEX.md) dans le contexte à
 # l'ouverture de session — Claude sait d'emblée ce que le vault contient.
 # Projet sans vault (.claude/vault-path.local absent) : sortie 0 silencieuse,
@@ -21,14 +21,14 @@ cd "${CLAUDE_PROJECT_DIR:-.}"
 [[ -f .claude/vault-path.local ]] || exit 0
 
 if ! vault="$(bash "$script_directory/vault-check.sh" 2>&1)"; then
-    printf 'Vault du projet (plugin claude-vault-drive) : configuré mais inaccessible — %s\n' "$vault"
+    printf 'Vault du projet (plugin claude-vault) : configuré mais inaccessible — %s\n' "$vault"
     exit 0
 fi
 
 index_file="$vault/INDEX.md"
 [[ -f "$index_file" ]] || exit 0
 
-printf 'Vault du projet (plugin claude-vault-drive) : %s\n' "$vault"
+printf 'Vault du projet (plugin claude-vault) : %s\n' "$vault"
 printf 'Sa carte ci-dessous — interroger via /doc-query, alimenter via /doc-ingest, maintenir via /doc-lint.\n\n'
 
 if (( $(wc -c < "$index_file") <= budget )) || ! command -v python3 >/dev/null 2>&1; then

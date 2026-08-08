@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# claude-vault-drive/scripts/vault-init.sh
+# claude-vault/scripts/vault-init.sh
 # Initialise tout en un appel, POUR LE PROJET COURANT ($PWD) : config locale
 # dans son .claude/, .gitignore complété, structure du vault + fichiers du
 # template (embarqué dans le plugin). Idempotent : ne remplace jamais un
@@ -158,7 +158,7 @@ fi
 
 # .gitignore du projet : les fichiers locaux ne sont jamais versionnés.
 gitignore_file="$PWD/.gitignore"
-for ignore_line in ".claude/settings.local.json" ".claude/vault-path.local" ".claude/toolbox-path.local"; do
+for ignore_line in ".claude/settings.local.json" ".claude/vault-path.local"; do
     if [[ ! -f "$gitignore_file" ]] || ! grep -qxF "$ignore_line" "$gitignore_file"; then
         printf '%s\n' "$ignore_line" >> "$gitignore_file"
         echo "OK : $ignore_line ajouté au .gitignore."

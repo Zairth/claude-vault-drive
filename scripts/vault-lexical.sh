@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# claude-vault-drive/scripts/vault-lexical.sh
+# claude-vault/scripts/vault-lexical.sh
 # Recherche LEXICALE (BM25) dans un ou tous les dossiers de wiki/, via la porte
-# en ligne de commande d'agentic-toolbox.
+# en ligne de commande du moteur embarqué.
 #
 # Usage : vault-lexical.sh "question" [dossier] [top_k]
 #
@@ -22,7 +22,7 @@
 set -euo pipefail
 
 script_directory="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$script_directory/toolbox-env.sh"
+source "$script_directory/engine-env.sh"
 
 question="${1:?Usage : vault-lexical.sh \"question\" [dossier] [top_k]}"
 requested_directory="${2:-}"
@@ -47,5 +47,4 @@ else
     fi
 fi
 
-cd "$toolbox_directory"
-exec "${toolbox_run[@]}" lexical "$question" "${directory_arguments[@]}" --top-k "$top_k"
+exec "${engine_run[@]}" lexical "$question" "${directory_arguments[@]}" --top-k "$top_k"

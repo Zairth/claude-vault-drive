@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# claude-vault-drive/scripts/hook-prompt-context.sh
+# claude-vault/scripts/hook-prompt-context.sh
 # Hook UserPromptSubmit : recherche LEXICALE (BM25) sur le prompt de
 # l'utilisateur, quelques pistes injectées comme contexte. Ce sont des PISTES,
 # pas une réponse — /doc-query reste la vraie recherche.

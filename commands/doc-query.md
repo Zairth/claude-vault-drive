@@ -217,9 +217,8 @@ jamais été ingéré, ni ce qu'une lecture d'image a laissé passer.
 concourent qu'entre semblables, ce qui empêche une entité de dix lignes d'être
 écrasée par un extrait d'un texte intégral de trois cents. Et surtout, ça
 permet de **chercher dans une couche sans l'autre**.
-Cette séparation ne coûte rien à la requête : depuis agentic-toolbox 4.1.0, un
-seul appel porte plusieurs dossiers et **la question n'est vectorisée qu'une
-fois**. Interroger cinq index coûte exactement le même appel réseau qu'un
+Cette séparation ne coûte rien à la requête : un seul appel porte plusieurs
+dossiers et **la question n'est vectorisée qu'une fois**. Interroger cinq index coûte exactement le même appel réseau qu'un
 seul.
 
 1. Si `$ARGUMENTS` contient le jeton `--no-index`, le retirer de la question et
@@ -229,7 +228,7 @@ seul.
    est en lecture seule et dont l'indexation appartient à son équipe).
    Incrémental : seuls les chunks nouveaux/modifiés coûtent un appel API.
    Deux portes d'entrée, dans cet ordre :
-   - **MCP** (plugin agentic-toolbox installé) : d'abord obtenir la liste des
+   - **MCP** (voie nominale) : d'abord obtenir la liste des
      dossiers à indexer —
      `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index-targets.sh"` (une cible
      par ligne, relative à `wiki/`) —, puis un appel
@@ -238,16 +237,25 @@ seul.
      `$VAULT/wiki/` qui contiennent au moins un `.md`. C'est exactement ce que
      le script calcule ; il existe pour centraliser la règle, pas pour la
      détenir. Le signaler en une ligne, et continuer.
-     `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` par cible,
+     `mcp__plugin_claude-vault_engine__semantic_index_build` par cible,
      avec `directory: $VAULT/wiki/<cible>` **explicite** — jamais de dossier
      implicite, et jamais `$VAULT/wiki` seul : le moteur indexe
-     récursivement, ce qui vectoriserait deux fois les sous-dossiers ;
+     récursivement, ce qui vectoriserait deux fois les sous-dossiers — et
+     `excluded_callouts: ["source"]`, **toujours**.
+
+     Ce second paramètre n'est pas un réglage de confort : le hash d'un chunk
+     dérive du texte vectorisé, donc un index construit sans lui n'a pas le
+     même contrat qu'un index construit avec. C'est exactement ce que passe le
+     wrapper `vault-index.sh` (`--exclude-callout source`) ; l'omettre ici
+     ferait revectoriser TOUT le corpus au prochain passage par l'autre porte,
+     et réciproquement, à chaque alternance. Les deux portes indexent le même
+     vault : elles doivent l'indexer pareil ;
    - **wrapper** sinon : `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"`
      sans argument (il boucle lui-même sur les cibles ; sortie : un bloc
      `## <cible>` par dossier).
 3. Chercher — même cascade, dans **chaque dossier indexé** (ou le seul dossier
    voisin, pour `dans:`) :
-   - **MCP** : `mcp__plugin_agentic-toolbox_toolbox__semantic_search` en **un
+   - **MCP** : `mcp__plugin_claude-vault_engine__semantic_search` en **un
      seul appel**, avec `directories: ["$VAULT/wiki/<cible1>", …]` — la
      question n'est vectorisée qu'une fois quel que soit le nombre de
      dossiers, et c'est le seul coût API d'une recherche. Ne jamais appeler
@@ -450,8 +458,9 @@ Exactement ces blocs, dans cet ordre :
      hérité, gelé) : `## [YYYY-MM-DD] synthese | <slug>` — le tout en
      respectant les conventions de `$VAULT/INSTRUCTIONS-CLAUDE.md`.
      Enfin **réindexer `syntheses/`** (outil MCP
-     `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` avec
-     `directory: $VAULT/wiki/syntheses`, sinon
+     `mcp__plugin_claude-vault_engine__semantic_index_build` avec
+     `directory: $VAULT/wiki/syntheses` et `excluded_callouts: ["source"]`,
+     sinon
      `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh" "$VAULT/wiki/syntheses"`).
      Sans ça, la synthèse n'entre dans l'espace vectoriel qu'à la **recherche
      suivante**, qui réindexe avant de chercher : elle existe, elle est dans

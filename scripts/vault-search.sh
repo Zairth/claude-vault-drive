@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# claude-vault-drive/scripts/vault-search.sh
+# claude-vault/scripts/vault-search.sh
 # Recherche SÉMANTIQUE dans un ou tous les dossiers indexés de wiki/, via la
-# porte en ligne de commande d'agentic-toolbox.
+# porte en ligne de commande du moteur embarqué.
 #
 # Usage : vault-search.sh "question" [dossier] [top_k]
 #   - dossier omis ou vide : toutes les cibles de vault-index-targets.sh, en UN
@@ -15,7 +15,7 @@
 set -euo pipefail
 
 script_directory="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$script_directory/toolbox-env.sh"
+source "$script_directory/engine-env.sh"
 
 question="${1:?Usage : vault-search.sh \"question\" [dossier] [top_k]}"
 requested_directory="${2:-}"
@@ -44,5 +44,4 @@ else
     fi
 fi
 
-cd "$toolbox_directory"
-exec "${toolbox_run[@]}" search "$question" "${directory_arguments[@]}" --top-k "$top_k"
+exec "${engine_run[@]}" search "$question" "${directory_arguments[@]}" --top-k "$top_k"

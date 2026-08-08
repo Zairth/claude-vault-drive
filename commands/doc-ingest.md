@@ -125,7 +125,7 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
     deux est un fait sur la pièce, à consigner en `> [!warning]`.
   - **Scan, photo de document, PDF sans couche de texte** → là seulement,
     conversion markdown par OCR (outil MCP
-    `mcp__plugin_agentic-toolbox_toolbox__ocr_convert` si disponible, sinon la
+    `mcp__plugin_claude-vault_engine__ocr_convert` si disponible, sinon la
     porte en ligne de commande du moteur :
     `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-ocr.sh" <fichier> [<sortie>]`),
     dépôt dans `$VAULT/inbox/`, puis mesure du markdown obtenu. C'est son
@@ -704,11 +704,15 @@ double emploi : l'une est fidèle, l'autre est utile.
    des pages y ont été touchées. Chacun a son propre index (la liste des dossiers indexables est
    donnée par
    `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index-targets.sh"`).
-   Outil MCP `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` avec
+   Outil MCP `mcp__plugin_claude-vault_engine__semantic_index_build` avec
    `directory: $VAULT/wiki/<dossier>` **explicite**, un appel par dossier —
    jamais `$VAULT/wiki` seul, que le moteur indexerait récursivement et qui
-   vectoriserait deux fois les sous-dossiers.
-   Sans le plugin agentic-toolbox :
+   vectoriserait deux fois les sous-dossiers — et `excluded_callouts:
+   ["source"]`, **toujours** : le hash dérive du texte vectorisé, et c'est ce
+   que passe le wrapper (`--exclude-callout source`). Omettre le paramètre ne
+   fait pas un index un peu différent, il fait un index d'un autre contrat, que
+   le passage suivant par l'autre porte revectorise en entier.
+   Outil MCP indisponible dans la session :
    `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh" "$VAULT/wiki/<dossier>"`
    par dossier, ou sans argument pour tout réindexer.
    Incrémental — seuls les chunks des notes créées/modifiées coûtent un appel

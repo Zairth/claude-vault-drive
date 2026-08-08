@@ -7,7 +7,7 @@ via Google Drive ; 5 n'est nécessaire que pour la recherche sémantique et l'OC
 
 
 > **Comment taper les commandes.** Celles d'un plugin s'appellent par leur nom
-> complet : `/claude-vault-drive:doc-ingest …`. La forme courte `/doc-ingest`
+> complet : `/claude-vault:doc-ingest …`. La forme courte `/doc-ingest`
 > échoue avec `Unknown command`. Ce document les écrit en abrégé pour rester
 > lisible ; à la saisie, préfixez toujours.
 
@@ -87,13 +87,14 @@ Dépannage détaillé : https://superuser.com/questions/1781174/google-drive-in-
 C'est exactement l'échec que `vault-check.sh` détecte : « vault introuvable —
 le lecteur du vault est-il monté ? ».
 
-## 5. agentic-toolbox (recherche sémantique + OCR — facultatif)
+## 5. La clé du moteur sémantique + OCR (facultatif)
 
-Le moteur sémantique et OCR des commandes `/doc-*` est
-**[agentic-toolbox](https://github.com/Zairth/agentic-toolbox)** : recherche
-sémantique sur dossier markdown (embeddings `mistral-embed` épinglés, index
-JSONL dans le vault), OCR de PDF/scans, routeur LLM multi-fournisseurs.
-Sans lui, `/doc-query` dégrade vers grep avec un avertissement explicite.
+Le moteur des commandes `/doc-*` est **embarqué dans le plugin** (dossier
+`engine/`) : recherche sémantique sur dossier markdown (embeddings
+`mistral-embed` épinglés, index JSONL dans le vault), recherche lexicale BM25
+sans réseau, OCR de PDF/scans. Il n'y a donc rien à installer de plus — seulement une clé à
+fournir, sans laquelle `/doc-query` dégrade vers grep avec un avertissement
+explicite (la recherche lexicale, elle, marche sans clé).
 
 Clé API (tier gratuit) : **`MISTRAL_API_KEY` est la seule requise ici** —
 embeddings et OCR sont épinglés sur Mistral, sans fallback (espaces vectoriels
@@ -141,38 +142,32 @@ remonte pas dans la conversation principale. Coller un rapport ou un extrait de
 note à la main court-circuite cette protection. Sur un vault sensible, laisser
 les commandes faire leur travail vaut mieux que n'importe quelle case cochée.
 
-### Voie nominale : le plugin (zéro clone)
+### Ce qu'il y a à installer
 
-La toolbox existe en plugin Claude Code avec **serveur MCP intégré** — les
-commandes `/doc-*` utilisent ses outils en priorité. Seul prérequis :
-[uv](https://docs.astral.sh/uv/), qui gère Python et les dépendances tout seul :
+Le moteur vit dans le plugin (dossier `engine/`) et son serveur MCP est démarré
+par lui : aucun clone, aucun venv. Il ne reste qu'un prérequis système :
+[uv](https://docs.astral.sh/uv/), qui gère Python et les dépendances tout seul.
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-Puis dans Claude Code :
-
-```
-/plugin install agentic-toolbox@zairth_store
-```
-
-Les clés API sont demandées à l'installation (stockage sécurisé Claude Code) :
-remplir `MISTRAL_API_KEY`, le reste peut rester vide. Chaque outil reçoit son
-dossier en argument — les commandes `/doc-*` passent toujours le vault du
-projet explicitement.
+La clé est demandée **à l'installation du plugin** (stockage sécurisé Claude
+Code) : remplir `MISTRAL_API_KEY`. Elle est facultative — laissée vide, le
+vault fonctionne, mais `/doc-query` dégrade vers grep et l'OCR est
+indisponible. Chaque outil reçoit son dossier en argument : les commandes
+`/doc-*` passent toujours le vault du projet explicitement.
 
 ### La porte en ligne de commande (hooks et wrappers)
 
-Le plugin installé ci-dessus suffit — **rien de plus à faire**. Cette section
-explique seulement d'où vient la seconde voie d'accès au moteur, celle
-qu'empruntent les hooks.
+Rien à faire ici — cette section explique seulement d'où vient la seconde voie
+d'accès au moteur, celle qu'empruntent les hooks.
 
 Un hook Claude Code est un script shell : pas de session, pas de client MCP.
 Cette catégorie d'appelants ne peut donc pas passer par les outils MCP, et le
-moteur expose pour elle une porte en ligne de commande (`python -m cli`, depuis
-sa version 4.1.0). Les wrappers `vault-index.sh`, `vault-search.sh` et
-`vault-lexical.sh` du plugin l'utilisent.
+moteur expose pour elle une porte en ligne de commande (`python -m cli`). Les
+wrappers `vault-index.sh`, `vault-search.sh`, `vault-lexical.sh` et
+`vault-ocr.sh` du plugin l'utilisent.
 
 Deux conséquences pratiques :
 
@@ -182,19 +177,8 @@ Deux conséquences pratiques :
 - **aucun venv à créer** : `uv` résout les dépendances depuis le
   `requirements.txt` du moteur et les met en cache.
 
-Le moteur est trouvé automatiquement dans le cache des plugins. Pour pointer
-un clone (développement du moteur), écrire son chemin — une seule ligne — dans
-le `.claude/toolbox-path.local` **du projet**, fichier gitignoré :
-
-```bash
-git clone https://github.com/Zairth/agentic-toolbox ~/projects/agentic-toolbox
-echo "$HOME/projects/agentic-toolbox" > .claude/toolbox-path.local
-```
-
-> **Version minimale** : commit `97b2dac` (« logs CLI sur stderr, stdout
-> réservé au JSON »). Depuis ce commit, stdout des CLI est du JSON pur,
-> parsable strictement — aucune parade de filtrage (`sed`) n'est nécessaire.
-> Un clone à jour de `main` suffit.
+Les deux portes servent le même moteur, à la même version, mise à jour en même
+temps que le plugin : il n'y a plus de version à accorder entre elles.
 
 ## 6. Obsidian (vitrine humaine — facultatif)
 
@@ -263,16 +247,15 @@ section 5.)
 | 2 | Claude Code | oui | `claude --version` |
 | 3 | Google Drive pour Desktop | vault partagé seulement | lecteur `G:` visible côté Windows |
 | 4 | Montage Drive dans WSL | vault partagé sous WSL | `ls "/mnt/g/Mon Drive"` |
-| 5 | agentic-toolbox (plugin) + `uv` + `MISTRAL_API_KEY` | recherche sémantique/OCR seulement | outil MCP `llm_check`, ou `/doc-query` qui annonce son repli grep |
+| 5 | `uv` + `MISTRAL_API_KEY` (le moteur, lui, est dans le plugin) | recherche sémantique/OCR seulement | outil MCP `llm_check`, ou `/doc-query` qui annonce son repli grep |
 | 6 | Obsidian | non (vitrine humaine) | ouvrir le vault comme coffre |
 | 7 | `python3` | non (hooks, fusion de config Obsidian, lecture des PDF à couche de texte ; dégradation silencieuse) | `python3 --version` |
 
-Ensuite, dans Claude Code ([README](README.md#installation)) :
+Ensuite, dans Claude Code ([README](README.md#démarrer)) :
 
 ```
 /plugin marketplace add https://github.com/Zairth/marketplace
-/plugin install claude-vault-drive@zairth_store
-/plugin install agentic-toolbox@zairth_store   # facultatif : recherche sémantique + OCR
+/plugin install claude-vault@zairth_store
 ```
 
 puis, dans chaque projet : `/vault-init "/mnt/g/Mon Drive/<Section>/<MonVault>"`.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# claude-vault-drive/scripts/hook-precompact-inbox.sh
+# claude-vault/scripts/hook-precompact-inbox.sh
 # Hook PreCompact : avant que le compactage n'écrase la conversation, dépose sa
 # partie textuelle (tours utilisateur/assistant, jamais les sorties d'outils)
 # dans le sas inbox/ du vault, en note `type: session`. L'ingestion se fait

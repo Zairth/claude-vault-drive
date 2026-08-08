@@ -268,8 +268,9 @@ Exactement ces blocs, dans cet ordre :
      enchaîner `/doc-ingest` sur la pièce — qui la relira par la voie
      désormais correcte. Ne pas réécrire à la main quarante enseignements ;
    - après application : réindexer les seuls dossiers modifiés (outil MCP
-     `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` avec
-     `directory: $VAULT/wiki/<dossier>` explicite, un appel par dossier ;
+     `mcp__plugin_claude-vault_engine__semantic_index_build` avec
+     `directory: $VAULT/wiki/<dossier>` explicite et `excluded_callouts:
+     ["source"]` (même contrat que le wrapper), un appel par dossier ;
      sinon `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh" "<dossier>"`) ;
    - re-vérifier les wikilinks des fichiers touchés ;
    - ajouter en fin de `$VAULT/LOG/YYYY-MM-DD.md` (fichier du jour, créé au

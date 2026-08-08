@@ -255,7 +255,7 @@ déplacement dans un sous-shell : `(cd "$VAULT" && …)`.
      doublon avec les index par dossier), et un `.index/` à la racine du vault
      (versions ≤ 1.5.3).
    - Pour chaque index présent → lire ses métadonnées (outil MCP
-     `mcp__plugin_agentic-toolbox_toolbox__semantic_info` avec
+     `mcp__plugin_claude-vault_engine__semantic_info` avec
      `directory: $VAULT/wiki/<cible>` — purement local, zéro quota — sinon
      ligne 1 du fichier : provider, modèle, dimension, version, `chunk_chars`)
      et les reporter. Deux divergences à ne PAS confondre :
@@ -708,13 +708,15 @@ deviner. La question, parce qu'elle s'adresse à l'utilisateur.
      elle ne s'applique pas d'office : c'est peut-être le seul exemplaire.
    - Pour la cohérence vectorielle : proposer la réindexation **des seules
      cibles en défaut** — outil MCP
-     `mcp__plugin_agentic-toolbox_toolbox__semantic_index_build` avec
-     `directory: $VAULT/wiki/<cible>` **explicite**, un appel par cible
+     `mcp__plugin_claude-vault_engine__semantic_index_build` avec
+     `directory: $VAULT/wiki/<cible>` **explicite** et `excluded_callouts:
+     ["source"]` (le même contrat que le wrapper — sans quoi l'alternance
+     entre les deux portes revectorise tout le corpus), un appel par cible
      (jamais `$VAULT/wiki` seul : le moteur indexe récursivement et
-     vectoriserait deux fois les sous-dossiers) si le plugin agentic-toolbox
-     est installé, sinon
+     vectoriserait deux fois les sous-dossiers) ; outil MCP indisponible dans
+     la session, alors
      `bash "${CLAUDE_PLUGIN_ROOT}/scripts/vault-index.sh"` — avec le chemin de
-     la cible en argument, ou sans argument pour tout reprendre (clone + venv)
+     la cible en argument, ou sans argument pour tout reprendre
      (coût API : uniquement les chunks au hash inconnu) — le rapport JSON fait
      foi : `embedded_chunks > 0` = vecteurs manquants/périmés qui viennent
      d'être réparés (notes éditées hors circuit) ; la réécriture complète
